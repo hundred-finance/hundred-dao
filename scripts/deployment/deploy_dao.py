@@ -6,7 +6,6 @@ from brownie import (
     LiquidityGauge,
     LiquidityGaugeReward,
     Minter,
-    PoolProxy,
     VotingEscrow,
     accounts,
     history,
@@ -98,7 +97,6 @@ def deploy_part_two(admin, token, voting_escrow, confs=1, deployments_json=None)
     for name, weight in GAUGE_TYPES:
         gauge_controller.add_type(name, weight, {"from": admin, "required_confs": confs})
 
-    pool_proxy = PoolProxy.deploy({"from": admin, "required_confs": confs})
     minter = Minter.deploy(token, gauge_controller, {"from": admin, "required_confs": confs})
     token.set_minter(minter, {"from": admin, "required_confs": confs})
 
@@ -109,7 +107,6 @@ def deploy_part_two(admin, token, voting_escrow, confs=1, deployments_json=None)
         "Minter": minter.address,
         "LiquidityGauge": {},
         "LiquidityGaugeReward": {},
-        "PoolProxy": pool_proxy.address,
     }
     for name, (lp_token, weight) in POOL_TOKENS.items():
         gauge = LiquidityGauge.deploy(lp_token, minter, {"from": admin, "required_confs": confs})

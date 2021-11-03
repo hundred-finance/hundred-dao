@@ -204,16 +204,6 @@ _GaugeController_ is one of the most central pieces to the system, so it must be
 controlled by the DAO. No centralized admin should control it, to not give anyone
 powers to change type weights unilaterally.
 
-## Fee burner
-
-Every pool allows the admin to collect fees using `withdraw_admin_fees`. Aragon
-should be able to collect those fees to the admin account and use them to buy
-and burn CRV on a free market once that free market exists.
-That should be possible to be done by anyone without a vote.
-
-Instead of burning, there could be different mechanisms working with the same
-interface. In any case, this will not be immediately applied.
-
 ## Gauges to rewards trading volume and governance votes
 
 Both votes and trades are discrete events, so they can use the same sort of gauge.

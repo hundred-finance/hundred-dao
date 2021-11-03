@@ -86,7 +86,7 @@ Deploy subgraphs for Curve Voting App and VotingEscrow
     brownie run transfer_dao_ownership live --network mainnet
     ```
 
-    This transfers the ownership of [`GaugeController`](../../contracts/GaugeController.vy), [`PoolProxy`](../../contracts/PoolProxy.vy), [`VotingEscrow`](../../contracts/VotingEscrow.vy) and [`ERC20CRV`](../../contracts/ERC20CRV.vy) from the main admin account to the [Aragon Ownership Agent](https://github.com/aragon/aragon-apps/blob/master/apps/agent/contracts/Agent.sol).
+    This transfers the ownership of [`GaugeController`](../../contracts/GaugeController.vy), [`VotingEscrow`](../../contracts/VotingEscrow.vy) and [`ERC20CRV`](../../contracts/ERC20CRV.vy) from the main admin account to the [Aragon Ownership Agent](https://github.com/aragon/aragon-apps/blob/master/apps/agent/contracts/Agent.sol).
 
 ### 5. Distributing Vested Tokens
 

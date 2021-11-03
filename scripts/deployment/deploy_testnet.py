@@ -13,7 +13,6 @@ from brownie import (
     LiquidityGauge,
     LiquidityGaugeReward,
     Minter,
-    PoolProxy,
     VestingEscrow,
     VotingEscrow,
     accounts,
@@ -280,8 +279,6 @@ def main():
         escrow.commit_transfer_ownership, ARAGON_AGENT, {"from": deployer, "required_confs": CONFS}
     )
     repeat(escrow.apply_transfer_ownership, {"from": deployer, "required_confs": CONFS})
-
-    repeat(PoolProxy.deploy, {"from": deployer, "required_confs": CONFS})
 
     vesting = repeat(
         VestingEscrow.deploy,

@@ -15,15 +15,6 @@ POOLS = [
     "0x7fC77b5c7614E1533320Ea6DDc2Eb61fa00A9714",
 ]
 
-
-def live():
-    admin = accounts.at("0xC447FcAF1dEf19A583F97b3620627BF69c05b5fB")
-    with open(config.DEPLOYMENTS_JSON) as fp:
-        pool_proxy = json.load(fp)["PoolProxy"]
-
-    transfer_ownership(admin, pool_proxy, config.REQUIRED_CONFIRMATIONS)
-
-
 def development():
     # only works on a forked mainnet
     admin = accounts.at("0xC447FcAF1dEf19A583F97b3620627BF69c05b5fB")

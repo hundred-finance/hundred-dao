@@ -1,13 +1,5 @@
 import pytest
 from brownie import (
-    BTCBurner,
-    CBurner,
-    ETHBurner,
-    LPBurner,
-    MetaBurner,
-    UnderlyingBurner,
-    USDNBurner,
-    YBurner,
     compile_source,
     convert,
 )
@@ -101,17 +93,6 @@ def gauge_controller(GaugeController, accounts, token, voting_escrow):
 @pytest.fixture(scope="module")
 def minter(Minter, accounts, gauge_controller, token):
     yield Minter.deploy(token, gauge_controller, {"from": accounts[0]})
-
-
-@pytest.fixture(scope="module")
-def crypto_pool_proxy(alice, CryptoPoolProxy):
-    return CryptoPoolProxy.deploy(alice, alice, alice, {"from": alice})
-
-
-@pytest.fixture(scope="module")
-def pool_proxy(PoolProxy, accounts):
-    yield PoolProxy.deploy(accounts[0], accounts[0], accounts[0], {"from": accounts[0]})
-
 
 @pytest.fixture(scope="module")
 def gauge_proxy(GaugeProxy, alice, bob):
@@ -240,30 +221,6 @@ def vesting_simple(VestingEscrowSimple, accounts, vesting_factory, coin_a, start
     yield VestingEscrowSimple.at(tx.new_contracts[0])
 
 
-# parametrized burner fixture
-
-
-@pytest.fixture(
-    scope="module",
-    params=[
-        BTCBurner,
-        CBurner,
-        ETHBurner,
-        LPBurner,
-        MetaBurner,
-        UnderlyingBurner,
-        USDNBurner,
-        YBurner,
-    ],
-)
-def burner(alice, bob, receiver, pool_proxy, request):
-    Burner = request.param
-    args = (pool_proxy, receiver, receiver, alice, bob, {"from": alice})
-    idx = len(Burner.deploy.abi["inputs"]) + 1
-
-    yield Burner.deploy(*args[-idx:])
-
-
 # testing contracts
 
 
@@ -295,18 +252,6 @@ def pool(CurvePool, accounts, mock_lp_token, coin_a, coin_b):
     mock_lp_token.set_minter(curve_pool, {"from": accounts[0]})
 
     yield curve_pool
-
-
-@pytest.fixture(scope="module")
-def fee_distributor(FeeDistributor, voting_escrow, accounts, coin_a, chain):
-    def f(t=None):
-        if not t:
-            t = chain.time()
-        return FeeDistributor.deploy(
-            voting_escrow, t, coin_a, accounts[0], accounts[0], {"from": accounts[0]}
-        )
-
-    yield f
 
 
 @pytest.fixture(scope="module")
@@ -346,45 +291,3 @@ def crypto_initial_prices():
     # ).json()
     # return tuple(int(p[cur]["usd"] * 1e18) for cur in ["bitcoin", "ethereum"])
     return (39362000000000003670016, 2493090000000000196608)
-
-
-@pytest.fixture(scope="module")
-def crypto_pool(
-    alice,
-    crypto_project,
-    crypto_math,
-    crypto_lp_token,
-    crypto_views,
-    crypto_coins,
-    crypto_initial_prices,
-):
-    # taken from curvefi/curve-crypto-contract
-    keys = [0, 1, 2, 16, 17, 18, "1,#0", "1,#1", "1,#2"]
-    values = (
-        [crypto_math.address, crypto_lp_token.address, crypto_views.address]
-        + [coin.address for coin in crypto_coins]
-        + [f"{10 ** (18 - coin.decimals())}," for coin in crypto_coins]
-    )
-    source = crypto_project.CurveCryptoSwap._build["source"]
-    for k, v in zip(keys, values):
-        if isinstance(k, int):
-            k = convert.to_address(convert.to_bytes(k, "bytes20"))
-        source.replace(k, v)
-
-    CryptoPool = compile_source(source, vyper_version="0.2.12").Vyper
-    swap = CryptoPool.deploy(
-        alice,
-        135 * 3 ** 3,  # A
-        int(7e-5 * 1e18),  # gamma
-        int(4e-4 * 1e10),  # mid_fee
-        int(4e-3 * 1e10),  # out_fee
-        int(0.0028 * 1e18),  # price_threshold
-        int(0.01 * 1e18),  # fee_gamma
-        int(0.0015 * 1e18),  # adjustment_step
-        0,  # admin_fee
-        600,  # ma_half_time
-        crypto_initial_prices,
-        {"from": alice},
-    )
-    crypto_lp_token.set_minter(swap, {"from": alice})
-    return swap
