@@ -1,4 +1,4 @@
-# @version 0.2.4
+# @version 0.2.12
 """
 @title Curve DAO Token
 @author Curve Finance
