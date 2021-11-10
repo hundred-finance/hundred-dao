@@ -23,7 +23,7 @@ rates: public(uint256[100000000000000000000000000000])
 
 
 @external
-def __init__(_epoch_length: uint256, _first_epoch_time: uint256, _admin: address):
+def __init__(_epoch_length: uint256, _first_epoch_time: uint256, _admin: address, _rates: uint256[10]):
     """
     @notice Contract constructor
     """
@@ -31,6 +31,9 @@ def __init__(_epoch_length: uint256, _first_epoch_time: uint256, _admin: address
 
     self.epoch_length = _epoch_length
     self.first_epoch_time = _first_epoch_time
+
+    for index in range(10):
+        self.rates[index] = _rates[index]
 
 
 @internal
@@ -93,6 +96,9 @@ def rate_at(_timestamp: uint256) -> uint256:
     @notice give rewards emission rate for current epoch
     @return uint256 current epoch rate
     """
+    if _timestamp < self.first_epoch_time:
+        return 0
+
     return self.rates[self._epoch_at(_timestamp)]
 
 
