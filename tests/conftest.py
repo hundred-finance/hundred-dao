@@ -1,4 +1,5 @@
 import pytest
+import logging
 from brownie import (
     compile_source,
     convert,
@@ -94,6 +95,13 @@ def gauge_controller(GaugeController, accounts, token, voting_escrow):
 def minter(Minter, accounts, gauge_controller, token):
     yield Minter.deploy(token, gauge_controller, {"from": accounts[0]})
 
+
+@pytest.fixture(scope="module")
+def reward_policy_maker(RewardPolicyMaker, accounts, alice, chain):
+    contract = RewardPolicyMaker.deploy(604800, chain.time(), alice, [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000], {"from": accounts[0]})
+    yield contract
+
+
 @pytest.fixture(scope="module")
 def gauge_proxy(GaugeProxy, alice, bob):
     yield GaugeProxy.deploy(alice, bob, {"from": alice})
@@ -112,18 +120,8 @@ def reward_contract(CurveRewards, mock_lp_token, accounts, coin_reward):
 
 
 @pytest.fixture(scope="module")
-def liquidity_gauge(LiquidityGauge, accounts, mock_lp_token, minter):
-    yield LiquidityGauge.deploy(mock_lp_token, minter, accounts[0], {"from": accounts[0]})
-
-
-@pytest.fixture(scope="module")
-def gauge_v2(LiquidityGaugeV2, alice, mock_lp_token, minter):
-    yield LiquidityGaugeV2.deploy(mock_lp_token, minter, alice, {"from": alice})
-
-
-@pytest.fixture(scope="module")
-def gauge_v3(LiquidityGaugeV3, alice, mock_lp_token, minter):
-    yield LiquidityGaugeV3.deploy(mock_lp_token, minter, alice, {"from": alice})
+def gauge_v4(LiquidityGaugeV4, alice, mock_lp_token, minter, reward_policy_maker):
+    yield LiquidityGaugeV4.deploy(mock_lp_token, minter, alice, reward_policy_maker,{"from": alice})
 
 
 @pytest.fixture(scope="module")
@@ -164,9 +162,9 @@ def reward_gauge_wrapper(LiquidityGaugeRewardWrapper, accounts, liquidity_gauge_
 
 
 @pytest.fixture(scope="module")
-def three_gauges(LiquidityGauge, accounts, mock_lp_token, minter):
+def three_gauges(LiquidityGaugeV4, reward_policy_maker, accounts, mock_lp_token, minter):
     contracts = [
-        LiquidityGauge.deploy(mock_lp_token, minter, accounts[0], {"from": accounts[0]})
+        LiquidityGaugeV4.deploy(mock_lp_token, minter, accounts[0], reward_policy_maker, {"from": accounts[0]})
         for _ in range(3)
     ]
 

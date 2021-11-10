@@ -6,6 +6,8 @@ from brownie import chain
 from brownie.test import given, strategy
 from hypothesis import settings
 
+from tests.conftest import reward_policy_maker
+
 # number of liquidity gauges
 GAUGE_COUNT = 100
 # number of gauge types (distributed evenly across the gauges)
@@ -54,11 +56,11 @@ def setup(accounts, gauge_controller, mock_lp_token, minter, token, voting_escro
 
 
 @pytest.fixture(scope="module")
-def gauges(LiquidityGauge, accounts, gauge_controller, mock_lp_token, minter, setup):
+def gauges(LiquidityGaugeV4, accounts, gauge_controller, mock_lp_token, minter, setup):
     # deploy `GAUGE_COUNT` liquidity gauges and return them as a list
     gauges = []
     for i in range(GAUGE_COUNT):
-        contract = LiquidityGauge.deploy(mock_lp_token, minter, accounts[0], {"from": accounts[0]})
+        contract = LiquidityGaugeV4.deploy(mock_lp_token, minter, accounts[0], reward_policy_maker, {"from": accounts[0]})
         gauge_controller.add_gauge(contract, i % TYPE_COUNT, {"from": accounts[0]})
         gauges.append(contract)
 
