@@ -56,7 +56,7 @@ def setup(accounts, gauge_controller, mock_lp_token, minter, token, voting_escro
 
 
 @pytest.fixture(scope="module")
-def gauges(LiquidityGaugeV4, accounts, gauge_controller, mock_lp_token, minter, setup):
+def gauges(LiquidityGaugeV4, accounts, gauge_controller, mock_lp_token, minter, reward_policy_maker):
     # deploy `GAUGE_COUNT` liquidity gauges and return them as a list
     gauges = []
     for i in range(GAUGE_COUNT):

@@ -6,7 +6,7 @@ MAX_UINT256 = 2 ** 256 - 1
 WEEK = 7 * 86400
 
 
-def test_gauge_integral(accounts, chain, mock_lp_token, token, gauge_v4, gauge_controller):
+def test_gauge_integral(accounts, chain, mock_lp_token, reward_policy_maker, gauge_v4, gauge_controller):
     alice, bob = accounts[:2]
 
     # Wire up Gauge to the controller to have proper rates and stuff
@@ -18,7 +18,7 @@ def test_gauge_integral(accounts, chain, mock_lp_token, token, gauge_v4, gauge_c
     bob_staked = 0
     integral = 0  # ∫(balance * rate(t) / totalSupply(t) dt)
     checkpoint = chain[-1].timestamp
-    checkpoint_rate = token.rate()
+    checkpoint_rate = reward_policy_maker.rate_at(checkpoint)
     checkpoint_supply = 0
     checkpoint_balance = 0
 
@@ -29,8 +29,8 @@ def test_gauge_integral(accounts, chain, mock_lp_token, token, gauge_v4, gauge_c
         nonlocal checkpoint, checkpoint_rate, integral, checkpoint_balance, checkpoint_supply
 
         t1 = chain[-1].timestamp
-        rate1 = token.rate()
-        t_epoch = token.start_epoch_time()
+        rate1 = reward_policy_maker.rate_at(t1)
+        t_epoch = reward_policy_maker.epoch_start_time(reward_policy_maker.epoch_at(t1))
         if checkpoint >= t_epoch:
             rate_x_time = (t1 - checkpoint) * rate1
         else:

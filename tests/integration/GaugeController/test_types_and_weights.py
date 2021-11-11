@@ -22,13 +22,14 @@ class StateMachine:
     st_gauge_weight = strategy("uint", min_value=10 ** 17, max_value=10 ** 19)
     st_type_weight = strategy("uint", min_value=10 ** 17, max_value=10 ** 19)
 
-    def __init__(self, LiquidityGauge, accounts, gauge_controller, mock_lp_token, minter):
-        self.LiquidityGauge = LiquidityGauge
+    def __init__(self, LiquidityGaugeV4, accounts, gauge_controller, mock_lp_token, minter, reward_policy_maker):
+        self.LiquidityGaugeV4 = LiquidityGaugeV4
         self.accounts = accounts
 
         self.lp_token = mock_lp_token
         self.minter = minter
         self.controller = gauge_controller
+        self.reward_policy_maker = reward_policy_maker
 
     def setup(self):
         self.type_weights = []
@@ -59,8 +60,8 @@ class StateMachine:
             return
 
         gauge_type = int(st_type * (len(self.type_weights)))
-        gauge = self.LiquidityGauge.deploy(
-            self.lp_token, self.minter, self.accounts[0], {"from": self.accounts[0]}
+        gauge = self.LiquidityGaugeV4.deploy(
+            self.lp_token, self.minter, self.accounts[0], self.reward_policy_maker, {"from": self.accounts[0]}
         )
 
         self.controller.add_gauge(gauge, gauge_type, st_gauge_weight, {"from": self.accounts[0]})
@@ -105,5 +106,5 @@ class StateMachine:
             assert self.controller.gauge_relative_weight(gauge) == expected
 
 
-def test_gauge(state_machine, LiquidityGauge, accounts, gauge_controller, mock_lp_token, minter):
-    state_machine(StateMachine, LiquidityGauge, accounts, gauge_controller, mock_lp_token, minter)
+def test_gauge(state_machine, LiquidityGaugeV4, accounts, gauge_controller, mock_lp_token, minter, reward_policy_maker):
+    state_machine(StateMachine, LiquidityGaugeV4, accounts, gauge_controller, mock_lp_token, minter, reward_policy_maker)

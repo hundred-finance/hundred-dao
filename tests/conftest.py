@@ -130,38 +130,6 @@ def rewards_only_gauge(RewardsOnlyGauge, alice, mock_lp_token):
 
 
 @pytest.fixture(scope="module")
-def gauge_wrapper(LiquidityGaugeWrapper, accounts, liquidity_gauge):
-    yield LiquidityGaugeWrapper.deploy(
-        "Tokenized Gauge", "TG", liquidity_gauge, accounts[0], {"from": accounts[0]}
-    )
-
-
-@pytest.fixture(scope="module")
-def liquidity_gauge_reward(
-    LiquidityGaugeReward, accounts, mock_lp_token, minter, reward_contract, coin_reward
-):
-    yield LiquidityGaugeReward.deploy(
-        mock_lp_token,
-        minter,
-        reward_contract,
-        coin_reward,
-        accounts[0],
-        {"from": accounts[0]},
-    )
-
-
-@pytest.fixture(scope="module")
-def reward_gauge_wrapper(LiquidityGaugeRewardWrapper, accounts, liquidity_gauge_reward):
-    yield LiquidityGaugeRewardWrapper.deploy(
-        "Tokenized Reward Gauge",
-        "TG",
-        liquidity_gauge_reward,
-        accounts[0],
-        {"from": accounts[0]},
-    )
-
-
-@pytest.fixture(scope="module")
 def three_gauges(LiquidityGaugeV4, reward_policy_maker, accounts, mock_lp_token, minter):
     contracts = [
         LiquidityGaugeV4.deploy(mock_lp_token, minter, accounts[0], reward_policy_maker, {"from": accounts[0]})
