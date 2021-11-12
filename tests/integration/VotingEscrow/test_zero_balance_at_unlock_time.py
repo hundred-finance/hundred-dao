@@ -6,6 +6,7 @@ WEEK = 86400 * 7
 
 @pytest.fixture(scope="module", autouse=True)
 def setup(accounts, token, voting_escrow):
+    token.mint(accounts[0], 10 ** 24)
     token.approve(voting_escrow, 10 ** 18, {"from": accounts[0]})
 
 

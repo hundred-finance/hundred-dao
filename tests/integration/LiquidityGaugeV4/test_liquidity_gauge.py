@@ -122,6 +122,7 @@ def test_mining_with_votelock(
     gauge_controller.add_gauge(gauge_v4.address, 0, 10 ** 18, {"from": alice})
 
     # Prepare tokens
+    token.mint(alice, 10 ** 24)
     token.transfer(bob, 10 ** 20, {"from": alice})
     token.approve(voting_escrow, MAX_UINT256, {"from": alice})
     token.approve(voting_escrow, MAX_UINT256, {"from": bob})

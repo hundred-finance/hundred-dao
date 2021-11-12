@@ -23,7 +23,7 @@ event Minted:
     minted: uint256
 
 
-token: public(address)
+treasury: public(address)
 controller: public(address)
 
 # user -> gauge -> value
@@ -34,8 +34,8 @@ allowed_to_mint_for: public(HashMap[address, HashMap[address, bool]])
 
 
 @external
-def __init__(_token: address, _controller: address):
-    self.token = _token
+def __init__(_treasury: address, _controller: address):
+    self.treasury = _treasury
     self.controller = _controller
 
 
@@ -48,7 +48,7 @@ def _mint_for(gauge_addr: address, _for: address):
     to_mint: uint256 = total_mint - self.minted[_for][gauge_addr]
 
     if to_mint != 0:
-        MERC20(self.token).mint(_for, to_mint)
+        MERC20(self.treasury).mint(_for, to_mint)
         self.minted[_for][gauge_addr] = total_mint
 
         log Minted(_for, gauge_addr, total_mint)

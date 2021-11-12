@@ -9,6 +9,7 @@ def gauge_vote_setup(accounts, chain, gauge_controller, three_gauges, voting_esc
     gauge_controller.add_gauge(three_gauges[0], 0, {"from": accounts[0]})
     gauge_controller.add_gauge(three_gauges[1], 1, {"from": accounts[0]})
 
+    token.mint(accounts[0], 10 ** 24)
     token.approve(voting_escrow, 10 ** 24, {"from": accounts[0]})
     voting_escrow.create_lock(10 ** 24, chain.time() + YEAR, {"from": accounts[0]})
 

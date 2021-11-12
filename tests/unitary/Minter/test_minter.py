@@ -12,8 +12,7 @@ WEEK = 7 * 86400
 
 
 @pytest.fixture(scope="module", autouse=True)
-def minter_setup(accounts, mock_lp_token, token, minter, gauge_controller, three_gauges, chain):
-    token.set_minter(minter, {"from": accounts[0]})
+def minter_setup(accounts, mock_lp_token, gauge_controller, three_gauges, chain):
 
     # ensure the tests all begin at the start of the epoch week
     chain.mine(timestamp=(chain.time() / WEEK + 1) * WEEK)
@@ -144,10 +143,10 @@ def test_mint_not_a_gauge(accounts, minter):
         minter.mint(accounts[1], {"from": accounts[0]})
 
 
-def test_mint_before_inflation_begins(accounts, chain, three_gauges, minter, token):
+def test_mint_before_inflation_begins(accounts, chain, three_gauges, minter, token, reward_policy_maker):
     three_gauges[0].deposit(1e18, {"from": accounts[1]})
 
-    chain.sleep(token.start_epoch_time() - chain.time() - 5)
+    chain.sleep(reward_policy_maker.epoch_start_time(reward_policy_maker.epoch_at(chain.time())) - chain.time() - 5)
     minter.mint(three_gauges[0], {"from": accounts[1]})
 
     assert token.balanceOf(accounts[1]) == 0

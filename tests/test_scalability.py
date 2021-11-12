@@ -38,9 +38,7 @@ class ActionEnum(IntEnum):
 
 
 @pytest.fixture(scope="module", autouse=True)
-def setup(accounts, gauge_controller, mock_lp_token, minter, token, voting_escrow):
-    # general test setup
-    token.set_minter(minter, {"from": accounts[0]})
+def setup(accounts, gauge_controller, mock_lp_token, token, voting_escrow):
 
     while len(accounts) < USER_COUNT:
         accounts.add()

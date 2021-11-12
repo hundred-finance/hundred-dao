@@ -75,8 +75,8 @@ def receiver(accounts):
 
 
 @pytest.fixture(scope="module")
-def token(ERC20CRV, accounts):
-    yield ERC20CRV.deploy("Curve DAO Token", "CRV", 18, {"from": accounts[0]})
+def token(ERC20TOKEN, accounts):
+    yield ERC20TOKEN.deploy("Test Token", "TTT", 18, 0, {"from": accounts[0]})
 
 
 @pytest.fixture(scope="module")
@@ -90,15 +90,21 @@ def voting_escrow(VotingEscrow, accounts, token):
 def gauge_controller(GaugeController, accounts, token, voting_escrow):
     yield GaugeController.deploy(token, voting_escrow, {"from": accounts[0]})
 
-
 @pytest.fixture(scope="module")
-def minter(Minter, accounts, gauge_controller, token):
-    yield Minter.deploy(token, gauge_controller, {"from": accounts[0]})
+def minter(Minter, Treasury, token, accounts, gauge_controller):
+    treasury = Treasury.deploy(token, {"from": accounts[0]})
+    token.mint(treasury, 100_000_000 * 10 ** 18, {"from": accounts[0]})
+
+    minter = Minter.deploy(treasury, gauge_controller, {"from": accounts[0]})
+    treasury.set_minter(minter)
+
+    yield minter
 
 
 @pytest.fixture(scope="module")
 def reward_policy_maker(RewardPolicyMaker, accounts, alice, chain):
-    contract = RewardPolicyMaker.deploy(604800, chain.time(), alice, [1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000], {"from": accounts[0]})
+    rate = 100 * 10 ** 18 / 604800
+    contract = RewardPolicyMaker.deploy(604800, chain.time(), alice, [rate, rate, rate, rate, rate, rate, rate, rate, rate, rate], {"from": accounts[0]})
     yield contract
 
 
@@ -208,16 +214,6 @@ def coin_c():
 @pytest.fixture(scope="module")
 def mock_lp_token(ERC20LP, accounts):  # Not using the actual Curve contract
     yield ERC20LP.deploy("Curve LP token", "usdCrv", 18, 10 ** 9, {"from": accounts[0]})
-
-
-@pytest.fixture(scope="module")
-def pool(CurvePool, accounts, mock_lp_token, coin_a, coin_b):
-    curve_pool = CurvePool.deploy(
-        [coin_a, coin_b], mock_lp_token, 100, 4 * 10 ** 6, {"from": accounts[0]}
-    )
-    mock_lp_token.set_minter(curve_pool, {"from": accounts[0]})
-
-    yield curve_pool
 
 
 @pytest.fixture(scope="module")

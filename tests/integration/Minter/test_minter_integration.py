@@ -11,8 +11,6 @@ def to_int(*args):
 def test_mint(accounts, chain, mock_lp_token, gauge_controller, three_gauges, minter, token):
     admin, bob, charlie, dan = accounts[:4]
 
-    token.set_minter(minter, {"from": admin})
-
     W = 10 ** 18
     amount = 10 ** 18
     type_weights = to_int(0.5 * W, 2 * W)

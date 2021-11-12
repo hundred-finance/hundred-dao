@@ -37,6 +37,7 @@ def test_voting_powers(web3, chain, accounts, token, voting_escrow):
     """
     alice, bob = accounts[:2]
     amount = 1000 * 10 ** 18
+    token.mint(alice, 10 ** 24)
     token.transfer(bob, amount, {"from": alice})
     stages = {}
 

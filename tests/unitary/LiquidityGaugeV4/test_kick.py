@@ -8,6 +8,7 @@ def test_kick(chain, accounts, gauge_v4, voting_escrow, token, mock_lp_token):
     alice, bob = accounts[:2]
     chain.sleep(2 * WEEK + 5)
 
+    token.mint(alice, 10 ** 24)
     token.approve(voting_escrow, MAX_UINT256, {"from": alice})
     voting_escrow.create_lock(10 ** 20, chain.time() + 4 * WEEK, {"from": alice})
 

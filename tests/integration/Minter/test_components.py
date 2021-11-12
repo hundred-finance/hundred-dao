@@ -9,8 +9,7 @@ MONTH = 86400 * 30
 
 
 @pytest.fixture(scope="module", autouse=True)
-def minter_setup(accounts, mock_lp_token, token, minter, gauge_controller, gauge_v4):
-    token.set_minter(minter, {"from": accounts[0]})
+def minter_setup(accounts, mock_lp_token, token, gauge_controller, gauge_v4):
 
     # set type
     gauge_controller.add_type(b"Liquidity", 10 ** 18, {"from": accounts[0]})

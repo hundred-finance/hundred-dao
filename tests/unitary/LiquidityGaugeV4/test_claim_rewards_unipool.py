@@ -22,7 +22,6 @@ def initial_setup(
     minter,
 ):
     # gauge setup
-    token.set_minter(minter, {"from": alice})
     gauge_controller.add_type(b"Liquidity", 10 ** 10, {"from": alice})
     gauge_controller.add_gauge(gauge_v4, 0, 0, {"from": alice})
 

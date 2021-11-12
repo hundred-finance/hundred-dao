@@ -236,7 +236,6 @@ def main():
         {"from": deployer, "required_confs": CONFS},
     )
 
-    repeat(token.set_minter, minter, {"from": deployer, "required_confs": CONFS})
     repeat(gauge_controller.add_type, b"Liquidity", {"from": deployer, "required_confs": CONFS})
     repeat(
         gauge_controller.change_type_weight,
