@@ -292,6 +292,10 @@ def _checkpoint(addr: address):
     _period: int128 = self.period
     _period_time: uint256 = self.period_timestamp[_period]
     _integrate_inv_supply: uint256 = self.integrate_inv_supply[_period]
+
+    _epoch: uint256 = RewardPolicyMaker(self.reward_policy_maker).epoch_at(block.timestamp)
+    if _period_time == 0:
+        _period_time = RewardPolicyMaker(self.reward_policy_maker).epoch_start_time(_epoch)
     
     # Update integral of 1/supply
     if block.timestamp > _period_time and not self.is_killed:
@@ -301,11 +305,12 @@ def _checkpoint(addr: address):
         Controller(_controller).checkpoint_gauge(self)
 
         prev_week_time: uint256 = _period_time
-        _epoch: uint256 = RewardPolicyMaker(self.reward_policy_maker).epoch_at(prev_week_time)
-        week_time: uint256 = RewardPolicyMaker(self.reward_policy_maker).epoch_start_time(_epoch + 1)
-        week_time = min(week_time, block.timestamp)
 
         for i in range(500):
+            _epoch = RewardPolicyMaker(self.reward_policy_maker).epoch_at(prev_week_time)
+            week_time: uint256 = RewardPolicyMaker(self.reward_policy_maker).epoch_start_time(_epoch + 1)
+            week_time = min(week_time, block.timestamp)
+
             dt: uint256 = week_time - prev_week_time
             w: uint256 = Controller(_controller).gauge_relative_weight(self, prev_week_time / WEEK * WEEK)
 
@@ -322,9 +327,6 @@ def _checkpoint(addr: address):
                 break
 
             prev_week_time = week_time
-            _epoch = RewardPolicyMaker(self.reward_policy_maker).epoch_at(prev_week_time)
-            week_time = RewardPolicyMaker(self.reward_policy_maker).epoch_start_time(_epoch + 1)
-            week_time = min(week_time, block.timestamp)
 
     _period += 1
     self.period = _period
