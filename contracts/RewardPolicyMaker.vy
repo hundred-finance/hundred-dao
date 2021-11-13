@@ -19,21 +19,18 @@ admin: public(address)
 first_epoch_time: public(uint256)
 epoch_length: public(uint256)
 
-rates: public(uint256[100000000000000000000000000000])
+rewards: public(uint256[100000000000000000000000000000])
 
 
 @external
-def __init__(_epoch_length: uint256, _first_epoch_time: uint256, _admin: address, _rates: uint256[10]):
+def __init__(_epoch_length: uint256, _first_epoch_time: uint256):
     """
     @notice Contract constructor
     """
-    self.admin = _admin
+    self.admin = msg.sender
 
     self.epoch_length = _epoch_length
-    self.first_epoch_time = _first_epoch_time
-
-    for index in range(10):
-        self.rates[index] = _rates[index]
+    self.first_epoch_time = _first_epoch_time / _epoch_length * _epoch_length
 
 
 @internal
@@ -99,7 +96,7 @@ def rate_at(_timestamp: uint256) -> uint256:
     if _timestamp < self.first_epoch_time:
         return 0
 
-    return self.rates[self._epoch_at(_timestamp)]
+    return self.rewards[self._epoch_at(_timestamp)] / self.epoch_length
 
 
 @external
@@ -129,7 +126,7 @@ def future_epoch_rate() -> uint256:
     @notice Get timestamp of the next mining epoch start
     @return Timestamp of the next epoch
     """
-    return self.rates[self._current_epoch() + 1]
+    return self.rewards[self._current_epoch() + 1] / self.epoch_length
 
 
 @external
@@ -145,11 +142,23 @@ def set_admin(_admin: address):
 
 
 @external
-def set_rate_at(_epoch: uint256, _rate: uint256):
+def set_rewards_at(_epoch: uint256, _rewards: uint256):
     """
     @notice set future epoch reward rate
     """
     assert msg.sender == self.admin  # dev: admin only
     assert _epoch > self._current_epoch()  # dev: can only modify future rates
 
-    self.rates[_epoch] = _rate
+    self.rewards[_epoch] = _rewards
+
+
+@external
+def set_rewards_starting_at(_epoch: uint256, _rewards: uint256[10]):
+    """
+    @notice set future rewards starting at _epoch
+    """
+    assert msg.sender == self.admin  # dev: admin only
+    assert _epoch > self._current_epoch() or block.timestamp < self.first_epoch_time  # dev: can only modify future rates
+
+    for index in range(10):
+        self.rewards[_epoch + index] = _rewards[index]

@@ -103,8 +103,9 @@ def minter(Minter, Treasury, token, accounts, gauge_controller):
 
 @pytest.fixture(scope="module")
 def reward_policy_maker(RewardPolicyMaker, accounts, alice, chain):
-    rate = 100 * 10 ** 18 / 604800
-    contract = RewardPolicyMaker.deploy(604800, chain.time(), alice, [rate, rate, rate, rate, rate, rate, rate, rate, rate, rate], {"from": accounts[0]})
+    reward = 100 * 10 ** 18
+    contract = RewardPolicyMaker.deploy(604800, chain.time() + 604800, {"from": accounts[0]})
+    contract.set_rewards_starting_at(0, [reward, reward, reward, reward, reward, reward, reward, reward, reward, reward])
     yield contract
 
 

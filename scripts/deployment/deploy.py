@@ -33,9 +33,11 @@ def deploy(
         {"from": admin, "required_confs": confs}
     )
     reward_policy_maker = RewardPolicyMaker.deploy(
-        reward_epoch_length, time.time() // reward_epoch_length * reward_epoch_length + reward_epoch_length, admin, rewards,
+        reward_epoch_length, time.time() + reward_epoch_length,
         {"from": admin, "required_confs": confs}
     )
+
+    reward_policy_maker.set_rewards_starting_at(0, rewards)
 
     gauge_controller = GaugeController.deploy(
         hnd_token_address, voting_escrow, {"from": admin, "required_confs": confs}

@@ -18,7 +18,7 @@ def setup(gauge_controller, accounts, three_gauges, token, voting_escrow):
 
     # Distribute coins
     for acct in accounts[:3]:
-        token.transfer(acct, 10 ** 24, {"from": accounts[0]})
+        token.mint(acct, 10 ** 24, {"from": accounts[0]})
         token.approve(voting_escrow, 10 ** 24, {"from": acct})
 
 
