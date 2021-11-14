@@ -18,8 +18,7 @@ def deploy(
         deployments_json=None, 
         gauge_types=None, 
         pool_tokens=None, 
-        reward_epoch_length=86400 * 7,
-        rewards=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        reward_epoch_length=86400 * 7
     ):
     voting_escrow = VotingEscrow.deploy(
         hnd_token_address,
@@ -33,11 +32,9 @@ def deploy(
         {"from": admin, "required_confs": confs}
     )
     reward_policy_maker = RewardPolicyMaker.deploy(
-        reward_epoch_length, time.time() + reward_epoch_length,
+        reward_epoch_length,
         {"from": admin, "required_confs": confs}
     )
-
-    reward_policy_maker.set_rewards_starting_at(0, rewards)
 
     gauge_controller = GaugeController.deploy(
         hnd_token_address, voting_escrow, {"from": admin, "required_confs": confs}

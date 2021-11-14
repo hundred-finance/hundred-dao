@@ -45,7 +45,7 @@ def setup(accounts, gauge_controller, mock_lp_token, token, voting_escrow):
 
     for i in range(len(accounts)):
         mock_lp_token.transfer(accounts[i], 10 ** 22, {"from": accounts[0]})
-        token.transfer(accounts[i], 10 ** 22, {"from": accounts[0]})
+        token.mint(accounts[i], 10 ** 22, {"from": accounts[0]})
         token.approve(voting_escrow, 10 ** 22, {"from": accounts[i]})
         voting_escrow.create_lock(10 ** 22, chain.time() + 86400 * 365 * 2, {"from": accounts[i]})
 

@@ -13,6 +13,51 @@ DAY = 86400
 WEEK = DAY * 7
 YEAR = DAY * 365
 
+def arbitrum_mainnet_config():
+    deployment_json="arbitrum_mainnet_deployments.json"
+    required_confirmaions=3
+    hundred_token="0x10010078a54396F62c96dF8532dc2B4847d47ED3"
+    reward_epoch_length=WEEK
+    gauge_types=[
+        ("Liquidity", 10 ** 18),
+    ]
+    pool_tokens={
+    }
+    admin=accounts.load("dev_kovan")
+
+    return admin, deployment_json, required_confirmaions, hundred_token, reward_epoch_length, gauge_types, pool_tokens
+
+
+def fantom_mainnet_config():
+    deployment_json="fantom_mainnet_deployments.json"
+    required_confirmaions=3
+    hundred_token="0x10010078a54396F62c96dF8532dc2B4847d47ED3"
+    reward_epoch_length=WEEK
+    gauge_types=[
+        ("Liquidity", 10 ** 18),
+    ]
+    pool_tokens={
+    }
+    admin=accounts.load("dev_kovan")
+
+    return admin, deployment_json, required_confirmaions, hundred_token, reward_epoch_length, gauge_types, pool_tokens
+
+
+def eth_mainnet_config():
+    deployment_json="eth_mainnet_deployments.json"
+    required_confirmaions=3
+    hundred_token="0x10010078a54396F62c96dF8532dc2B4847d47ED3"
+    reward_epoch_length=WEEK
+    gauge_types=[
+        ("Liquidity", 10 ** 18),
+    ]
+    pool_tokens={
+    }
+    admin=accounts.load("dev_kovan")
+
+    return admin, deployment_json, required_confirmaions, hundred_token, reward_epoch_length, gauge_types, pool_tokens
+
+
 def kovan_config():
     deployment_json="kovan_deployments.json"
     required_confirmaions=3
@@ -25,9 +70,8 @@ def kovan_config():
         "hETH": ("0xfcd8570ad81e6c77b8d252bebeba62ed980bd64d", 1)
     }
     admin=accounts.load("dev_kovan")
-    rewards=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
-    return admin, deployment_json, required_confirmaions, hundred_token, reward_epoch_length, gauge_types, pool_tokens, rewards
+    return admin, deployment_json, required_confirmaions, hundred_token, reward_epoch_length, gauge_types, pool_tokens
 
 
 if not rpc.is_active():

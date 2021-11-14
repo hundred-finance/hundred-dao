@@ -1,10 +1,11 @@
-# curve-dao-contracts
+# hundred-dao
 
-Vyper contracts used in the [Curve](https://www.curve.fi/) Governance DAO.
+Vyper contracts used in the [Hundred](https://hundred.finance) Governance DAO (forked and adapted from [Curve Dao contracts](https://github.com/curvefi/curve-dao-contracts)).
 
 ## Overview
 
-Curve DAO consists of multiple smart contracts connected by [Aragon](https://github.com/aragon/aragonOS). Interaction with Aragon occurs through a [modified implementation](https://github.com/curvefi/curve-aragon-voting) of the [Aragon Voting App](https://github.com/aragon/aragon-apps/tree/master/apps/voting). Aragon's standard one token, one vote method is replaced with a weighting system based on locking tokens. Curve DAO has a token (CRV) which is used for both governance and value accrual.
+Hundred DAO consists of multiple smart contracts enabling HND token distribution to ecosystem participants. voting power is weighted using locked HND
+`veHND` the same way as `veCRV`is.
 
 View the [documentation](https://curve.readthedocs.io/dao-overview.html) for a more in-depth explanation of how Curve DAO works.
 
@@ -23,8 +24,8 @@ View the [documentation](https://curve.readthedocs.io/dao-overview.html) for a m
 To get started, first create and initialize a Python [virtual environment](https://docs.python.org/3/library/venv.html). Next, clone the repo and install the developer dependencies:
 
 ```bash
-git clone https://github.com/curvefi/curve-dao-contracts.git
-cd curve-dao-contracts
+git clone https://github.com/hundred-finance/hundred-dao.git
+cd hundred-dao
 pip install -r requirements.txt
 ```
 
@@ -45,29 +46,7 @@ brownie test tests/integration
 
 ## Deployment
 
-See the [deployment documentation](scripts/deployment/README.md) for detailed information on how to deploy Curve DAO.
-
-## Audits and Security
-
-Curve DAO contracts have been audited by Trail of Bits and Quantstamp. These audit reports are made available on the [Curve website](https://dao.curve.fi/audits).
-
-There is also an active [bug bounty](https://www.curve.fi/bugbounty) for issues which can lead to substantial loss of money, critical bugs such as a broken live-ness condition, or irreversible loss of funds.
-
-## Resources
-
-You may find the following guides useful:
-
-1. [Curve and Curve DAO Resources](https://resources.curve.fi/)
-2. [How to earn and claim CRV](https://guides.curve.fi/how-to-earn-and-claim-crv/)
-3. [Voting and vote locking on Curve DAO](https://guides.curve.fi/voting-and-vote-locking-curve-dao/)
-
-## Community
-
-If you have any questions about this project, or wish to engage with us:
-
-- [Telegram](https://t.me/curvefi)
-- [Twitter](https://twitter.com/curvefinance)
-- [Discord](https://discord.gg/rgrfS7W)
+See the [deployment documentation](scripts/deployment/README.md) for detailed information on how to deploy Hundred DAO.
 
 ## License
 

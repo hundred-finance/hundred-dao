@@ -1,7 +1,7 @@
 # @version 0.2.12
 """
 @title Liquidity Gauge v4
-@author Curve Finance
+@author Hundred Finance (based on Curve Finance Liquidity Gauge v3)
 @license MIT
 """
 

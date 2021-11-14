@@ -17,27 +17,28 @@ event SetAdmin:
 admin: public(address)
 
 first_epoch_time: public(uint256)
+
 epoch_length: public(uint256)
 
 rewards: public(uint256[100000000000000000000000000000])
 
 
 @external
-def __init__(_epoch_length: uint256, _first_epoch_time: uint256):
+def __init__(_epoch_length: uint256):
     """
     @notice Contract constructor
     """
     self.admin = msg.sender
 
     self.epoch_length = _epoch_length
-    self.first_epoch_time = _first_epoch_time / _epoch_length * _epoch_length
+    self.first_epoch_time = block.timestamp / _epoch_length * _epoch_length - _epoch_length
 
 
 @internal
 @view
 def _epoch_at(_timestamp: uint256) -> uint256:
     """
-    @notice gives current reward epoch number (0 for first epoch)
+    @notice gives epoch number for a given time (0 for first epoch)
     @return uint256 epoch number
     """
     if _timestamp < self.first_epoch_time:
@@ -70,7 +71,7 @@ def _epoch_start_time() -> uint256:
 @view
 def epoch_at(_timestamp: uint256) -> uint256:
     """
-    @notice gives current reward epoch number (0 for first epoch)
+    @notice gives epoch number for a given time (0 for first epoch)
     @return uint256 epoch number
     """
     return self._epoch_at(_timestamp)
@@ -80,7 +81,7 @@ def epoch_at(_timestamp: uint256) -> uint256:
 @view
 def epoch_start_time(_epoch: uint256) -> uint256:
     """
-    @notice gives epoch time for a given timestamp
+    @notice gives epoch start time for a given epoch number
     @return uint256 epoch timestamp
     """
     return self.first_epoch_time + _epoch * self.epoch_length
@@ -90,8 +91,8 @@ def epoch_start_time(_epoch: uint256) -> uint256:
 @view
 def rate_at(_timestamp: uint256) -> uint256:
     """
-    @notice give rewards emission rate for current epoch
-    @return uint256 current epoch rate
+    @notice give rewards emission rate for timestamp
+    @return uint256 epoch rate
     """
     if _timestamp < self.first_epoch_time:
         return 0
@@ -101,10 +102,10 @@ def rate_at(_timestamp: uint256) -> uint256:
 
 @external
 @view
-def epoch() -> uint256:
+def current_epoch() -> uint256:
     """
-    @notice Get timestamp of the next mining epoch start
-    @return Timestamp of the next epoch
+    @notice gives current reward epoch number (0 for first epoch)
+    @return uint256 epoch number
     """
     return self._current_epoch()
 
@@ -123,8 +124,8 @@ def future_epoch_time() -> uint256:
 @view
 def future_epoch_rate() -> uint256:
     """
-    @notice Get timestamp of the next mining epoch start
-    @return Timestamp of the next epoch
+    @notice Get reward rate of the next mining epoch
+    @return reward rate
     """
     return self.rewards[self._current_epoch() + 1] / self.epoch_length
 
@@ -132,8 +133,7 @@ def future_epoch_rate() -> uint256:
 @external
 def set_admin(_admin: address):
     """
-    @notice Set the new admin.
-    @dev After all is set up, admin only can change the token name
+    @notice Set the new admin
     @param _admin New admin address
     """
     assert msg.sender == self.admin  # dev: admin only
@@ -142,23 +142,23 @@ def set_admin(_admin: address):
 
 
 @external
-def set_rewards_at(_epoch: uint256, _rewards: uint256):
+def set_rewards_at(_epoch: uint256, _reward: uint256):
     """
-    @notice set future epoch reward rate
+    @notice set future epoch reward
     """
     assert msg.sender == self.admin  # dev: admin only
     assert _epoch > self._current_epoch()  # dev: can only modify future rates
 
-    self.rewards[_epoch] = _rewards
+    self.rewards[_epoch] = _reward
 
 
 @external
 def set_rewards_starting_at(_epoch: uint256, _rewards: uint256[10]):
     """
-    @notice set future rewards starting at _epoch
+    @notice set future rewards starting at epoch _epoch
     """
     assert msg.sender == self.admin  # dev: admin only
-    assert _epoch > self._current_epoch() or block.timestamp < self.first_epoch_time  # dev: can only modify future rates
+    assert _epoch > self._current_epoch()  # dev: can only modify future rewards
 
     for index in range(10):
         self.rewards[_epoch + index] = _rewards[index]

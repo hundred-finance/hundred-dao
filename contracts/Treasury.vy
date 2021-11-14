@@ -1,7 +1,7 @@
 # @version 0.2.12
 """
 @title Token Treasury
-@author Curve Finance
+@author Hundred Finance
 @license MIT
 """
 
