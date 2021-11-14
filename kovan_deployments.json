@@ -1,0 +1,10 @@
+{
+    "VotingEscrow": "0xbeD8EFa1973F6E1fB3515bf94aa760174431b3F8",
+    "GaugeController": "0xFa0F5d0cA1031aC6A47CA8Db9cf9dcfd45B3659a",
+    "Treasury": "0x788Ac705a7B67562CdD1913b67EE091785FA4F68",
+    "RewardPolicyMaker": "0x0d9459A2d7252c4cd62cF13416Cd319c3e0C5bB4",
+    "Minter": "0x89fC1cc860dDF4fb91A7C52b12d5343bB03C332E",
+    "LiquidityGaugeV4": {
+        "hETH": "0x7A4fEa19F293273F880F0426E37b7597d6f9BB62"
+    }
+}
