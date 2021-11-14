@@ -149,5 +149,9 @@ def coin_a():
     yield ERC20("Coin A", "USDA", 18)
 
 @pytest.fixture(scope="module")
+def coin_b():
+    yield ERC20("Coin B", "USDB", 18)
+
+@pytest.fixture(scope="module")
 def mock_lp_token(ERC20LP, accounts):  # Not using the actual Curve contract
     yield ERC20LP.deploy("Curve LP token", "usdCrv", 18, 10 ** 9, {"from": accounts[0]})
