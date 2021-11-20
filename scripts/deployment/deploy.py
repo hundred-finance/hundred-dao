@@ -9,7 +9,37 @@ from brownie import (
     Minter,
     VotingEscrow,
     history,
+    Contract
 )
+
+def deploy_gauge(
+        admin, 
+        deployments_json,
+        lp_token,
+        lp_name,
+        weight=1,
+        confs=1
+):
+    prev_deployment = []
+    with open(deployments_json, 'r') as fp:
+        prev_deployment = json.load(fp)
+
+    reward_policy_maker = prev_deployment["RewardPolicyMaker"]
+    minter = prev_deployment["Minter"]
+    gauge_controller = Contract.from_explorer(prev_deployment["GaugeController"])
+
+    gauge = LiquidityGaugeV4.deploy(
+        lp_token, minter, admin, reward_policy_maker, 
+        {"from": admin, "required_confs": confs}
+    )
+
+    gauge_controller.add_gauge(gauge, 0, weight, {"from": admin, "required_confs": confs})
+    prev_deployment["LiquidityGaugeV4"][lp_name] = gauge.address
+
+    with open(deployments_json, 'w') as fp:
+        json.dump(prev_deployment, fp)
+
+    print(f"Deployment addresses saved to {deployments_json}")
 
 def deploy(
         admin, 
