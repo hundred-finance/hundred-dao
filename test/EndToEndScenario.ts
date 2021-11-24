@@ -53,10 +53,11 @@ describe("FeeConverter contract", function () {
     let owner: SignerWithAddress;
     let alice: SignerWithAddress;
     let bob: SignerWithAddress;
+    let eve: SignerWithAddress;
 
     beforeEach(async function () {
 
-        [owner, alice, bob] =
+        [owner, alice, bob, eve] =
             await ethers.getSigners();
 
         erc20Factory = <ERC20TOKEN__factory>await ethers.getContractFactory("ERC20TOKEN");
@@ -92,13 +93,14 @@ describe("FeeConverter contract", function () {
 
         await hndLpToken.mint(alice.address, ethers.utils.parseEther("10"));
         await hndLpToken.mint(bob.address, ethers.utils.parseEther("10"));
+        await hndLpToken.mint(eve.address, ethers.utils.parseEther("10"));
 
         await rewardPolicyMaker.set_rewards_at(3, ethers.utils.parseEther("100"));
 
     });
 
     describe("Locked voting amount", function () {
-        it("Should reflect on the amount of claimable HND per user", async function () {
+        it("Should reflect on the amount of claimable HND per gauge when users vote on gauge weights", async function () {
 
             await hnd.connect(alice).approve(votingEscrow.address, ethers.utils.parseEther("10000000"));
             await hnd.connect(bob).approve(votingEscrow.address, ethers.utils.parseEther("10000000"));
@@ -124,6 +126,30 @@ describe("FeeConverter contract", function () {
             expect(await hnd.balanceOf(alice.address)).equals(ethers.utils.parseEther("90.909090909091762508"));
             expect(await hnd.balanceOf(bob.address)).equals(ethers.utils.parseEther("9.090909090908029388"));
         });
+
+        it("Should boost user claimable HND within same gauge", async function () {
+
+
+            await hnd.connect(alice).approve(votingEscrow.address, ethers.utils.parseEther("10000000"));
+
+            await votingEscrow.connect(alice).create_lock(ethers.utils.parseEther("10000"), A_YEAR_FROM_NOW);
+
+            await hndLpToken.connect(alice).approve(gauge1.address, ethers.utils.parseEther("10000000"));
+            await hndLpToken.connect(eve).approve(gauge1.address, ethers.utils.parseEther("10000000"));
+
+            await gauge1.connect(alice)["deposit(uint256)"](ethers.utils.parseEther("10"));
+            await gauge1.connect(eve)["deposit(uint256)"](ethers.utils.parseEther("10"));
+
+            await ethers.provider.send("evm_increaseTime", [DAY * 30]);
+            await ethers.provider.send("evm_mine", []);
+
+            await minter.connect(alice).mint(gauge1.address);
+            await minter.connect(eve).mint(gauge1.address);
+
+            expect(await hnd.balanceOf(alice.address)).equals(ethers.utils.parseEther("35.714285714285640000"));
+            expect(await hnd.balanceOf(eve.address)).equals(ethers.utils.parseEther("14.285714285714256000"));
+        });
+
     });
 
 });
