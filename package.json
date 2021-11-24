@@ -1,5 +1,48 @@
 {
     "scripts": {
-      "preinstall": "npm i -g ganache-cli@6.12.1"
+        "preinstall": "npm i -g ganache-cli@6.12.1",
+        "clean": "hardhat clean && rimraf artifacts cache typechain",
+        "cleanse": "npm run clean && rimraf node_modules && rimraf coverage*",
+        "compile": "hardhat compile",
+        "test": "cross-env HARDHAT_COMPILE=true HARDHAT_DEPLOY_FIXTURE=true REPORT_GAS=true hardhat test",
+        "coverage": "cross-env HARDHAT_DEPLOY_FIXTURE=true hardhat coverage"    
+    },
+    "devDependencies": {
+      "@ethersproject/bignumber": "^5.0.14",
+      "@nomiclabs/hardhat-ethers": "^2.0.1",
+      "@nomiclabs/hardhat-etherscan": "^2.1.2",
+      "@nomiclabs/hardhat-waffle": "^2.0.1",
+      "@tenderly/hardhat-tenderly": "^1.0.6",
+      "@typechain/ethers-v5": "^6.0.5",
+      "@typechain/hardhat": "^1.0.1",
+      "@types/chai": "^4.2.14",
+      "@types/eth-sig-util": "^2.1.0",
+      "@types/mocha": "^8.2.0",
+      "@types/node": "^14.14.25",
+      "@typescript-eslint/eslint-plugin": "^4.15.0",
+      "@typescript-eslint/parser": "^4.15.0",
+      "chai": "^4.3.4",
+      "chalk": "^4.1.0",
+      "colorette": "^1.2.2",
+      "cross-env": "^7.0.3",
+      "dotenv": "^8.2.0",
+      "erc3156": "^0.4.8",
+      "eslint": "^7.22.0",
+      "eslint-config-prettier": "^8.1.0",
+      "eth-sig-util": "^3.0.1",
+      "ethereum-cryptography": "^0.1.3",
+      "ethereum-waffle": "^3.3.0",
+      "ethereumjs-util": "^7.0.9",
+      "ethers": "^5.4.4",
+      "fs-extra": "^9.1.0",
+      "hardhat": "^2.1.1",
+      "hardhat-deploy": "^0.7.0-beta.48",
+      "hardhat-gas-reporter": "^1.0.4",
+      "solidity-coverage": "^0.7.16",
+      "ts-generator": "^0.1.1",
+      "ts-node": "^9.1.1",
+      "typechain": "^4.0.3",
+      "typescript": "^4.2.3",
+      "@nomiclabs/hardhat-vyper": "^2.0.1"
     }
-  }
+}
