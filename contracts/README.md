@@ -15,4 +15,9 @@ All contract sources are within this directory.
 * [`Treasury`](Treasury.vy): holds rewards to be distributed through `Minter`
 * [`VotingEscrow`](VotingEscrow.vy): Voting contract for locking HND to participate in DAO governance
 
+Following diagram shows interactions and dependencies between the contracts as well as the user interfaces for 
+locking HND, voting on gauges and minting rewards
+
+![Contracts interaction diagram](diagram.png)
+
 
