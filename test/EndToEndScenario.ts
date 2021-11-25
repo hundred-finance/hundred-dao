@@ -47,8 +47,6 @@ describe("FeeConverter contract", function () {
     let gaugeController: GaugeController;
 
     let gaugeFactory: LiquidityGaugeV4__factory;
-    let gauge1: LiquidityGaugeV4;
-    let gauge2: LiquidityGaugeV4;
 
     let owner: SignerWithAddress;
     let alice: SignerWithAddress;
@@ -77,14 +75,8 @@ describe("FeeConverter contract", function () {
         votingEscrow = await votingEscrowFactory.deploy(hnd.address, "Voting locked HND", "veHND", "1.0");
         gaugeController = await gaugeControllerFactory.deploy(hnd.address, votingEscrow.address);
         minter = await minterFactory.deploy(treasury.address, gaugeController.address);
-        gauge1 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address);
-        gauge2 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address);
 
         await treasury.set_minter(minter.address);
-
-        await gaugeController["add_type(string,uint256)"]("Liquidity", ethers.utils.parseEther("10"));
-        await gaugeController["add_gauge(address,int128,uint256)"](gauge1.address, 0, 1);
-        await gaugeController["add_gauge(address,int128,uint256)"](gauge2.address, 0, 1);
 
         await hnd.mint(alice.address, ethers.utils.parseEther("10000"));
         await hnd.mint(bob.address, ethers.utils.parseEther("1000"));
@@ -102,6 +94,12 @@ describe("FeeConverter contract", function () {
     describe("Locked voting amount", function () {
         it("Should reflect on the amount of claimable HND per gauge when users vote on gauge weights", async function () {
 
+            let gauge1 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address);
+            let gauge2 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address);
+
+            await gaugeController["add_type(string,uint256)"]("Liquidity", ethers.utils.parseEther("10"));
+            await gaugeController["add_gauge(address,int128,uint256)"](gauge1.address, 0, 1);
+            await gaugeController["add_gauge(address,int128,uint256)"](gauge2.address, 0, 1);
             await hnd.connect(alice).approve(votingEscrow.address, ethers.utils.parseEther("10000000"));
             await hnd.connect(bob).approve(votingEscrow.address, ethers.utils.parseEther("10000000"));
 
@@ -129,25 +127,29 @@ describe("FeeConverter contract", function () {
 
         it("Should boost user claimable HND within same gauge", async function () {
 
+            let gauge = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address);
+
+            await gaugeController["add_type(string,uint256)"]("Liquidity", ethers.utils.parseEther("10"));
+            await gaugeController["add_gauge(address,int128,uint256)"](gauge.address, 0, 1);
 
             await hnd.connect(alice).approve(votingEscrow.address, ethers.utils.parseEther("10000000"));
 
             await votingEscrow.connect(alice).create_lock(ethers.utils.parseEther("10000"), A_YEAR_FROM_NOW);
 
-            await hndLpToken.connect(alice).approve(gauge1.address, ethers.utils.parseEther("10000000"));
-            await hndLpToken.connect(eve).approve(gauge1.address, ethers.utils.parseEther("10000000"));
+            await hndLpToken.connect(alice).approve(gauge.address, ethers.utils.parseEther("10000000"));
+            await hndLpToken.connect(eve).approve(gauge.address, ethers.utils.parseEther("10000000"));
 
-            await gauge1.connect(alice)["deposit(uint256)"](ethers.utils.parseEther("10"));
-            await gauge1.connect(eve)["deposit(uint256)"](ethers.utils.parseEther("10"));
+            await gauge.connect(alice)["deposit(uint256)"](ethers.utils.parseEther("10"));
+            await gauge.connect(eve)["deposit(uint256)"](ethers.utils.parseEther("10"));
 
             await ethers.provider.send("evm_increaseTime", [DAY * 30]);
             await ethers.provider.send("evm_mine", []);
 
-            await minter.connect(alice).mint(gauge1.address);
-            await minter.connect(eve).mint(gauge1.address);
+            await minter.connect(alice).mint(gauge.address);
+            await minter.connect(eve).mint(gauge.address);
 
-            expect(await hnd.balanceOf(alice.address)).equals(ethers.utils.parseEther("35.714285714285640000"));
-            expect(await hnd.balanceOf(eve.address)).equals(ethers.utils.parseEther("14.285714285714256000"));
+            expect(await hnd.balanceOf(alice.address)).equals(ethers.utils.parseEther("71.428571428571280000"));
+            expect(await hnd.balanceOf(eve.address)).equals(ethers.utils.parseEther("28.571428571428512000"));
         });
 
     });
