@@ -25,6 +25,12 @@ def set_minter(_minter: address):
 
 @external
 @nonpayable
+def set_admin(_admin: address):
+    assert msg.sender == self.admin # only admin can set minter
+    self.admin = _admin
+
+@external
+@nonpayable
 def mint(_to: address, _amount: uint256) -> bool:
     assert msg.sender == self.minter or msg.sender == self.admin  # only minter or admin can distribute tokens
     return ERC20(self.token).transfer(_to, _amount)
