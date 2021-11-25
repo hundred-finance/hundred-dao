@@ -19,7 +19,7 @@ import {
     ERC20TOKEN
 } from "../typechain";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
-import exp from "constants";
+import {BigNumber} from "ethers";
 
 describe("FeeConverter contract", function () {
 
@@ -150,6 +150,72 @@ describe("FeeConverter contract", function () {
 
             expect(await hnd.balanceOf(alice.address)).equals(ethers.utils.parseEther("71.428571428571280000"));
             expect(await hnd.balanceOf(eve.address)).equals(ethers.utils.parseEther("28.571428571428512000"));
+        });
+
+        it("gauge vote change should reflect on next epoch", async function () {
+            let gauge1 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address);
+            let gauge2 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address);
+
+            await gaugeController["add_type(string,uint256)"]("Liquidity", ethers.utils.parseEther("10"));
+            await gaugeController["add_gauge(address,int128,uint256)"](gauge1.address, 0, 1);
+            await gaugeController["add_gauge(address,int128,uint256)"](gauge2.address, 0, 1);
+
+            await hnd.connect(alice).approve(votingEscrow.address, ethers.utils.parseEther("10000000"));
+            await hnd.connect(bob).approve(votingEscrow.address, ethers.utils.parseEther("10000000"));
+
+            await votingEscrow.connect(alice).create_lock(ethers.utils.parseEther("10000"), A_YEAR_FROM_NOW);
+            await votingEscrow.connect(bob).create_lock(ethers.utils.parseEther("1000"), A_YEAR_FROM_NOW);
+
+            await gaugeController.connect(alice).vote_for_gauge_weights(gauge1.address, 1000);
+            await gaugeController.connect(bob).vote_for_gauge_weights(gauge2.address, 1000);
+
+            await hndLpToken.connect(alice).approve(gauge1.address, ethers.utils.parseEther("10000000"));
+            await hndLpToken.connect(bob).approve(gauge2.address, ethers.utils.parseEther("10000000"));
+
+            await gauge1.connect(alice)["deposit(uint256)"](ethers.utils.parseEther("10"));
+            await gauge2.connect(bob)["deposit(uint256)"](ethers.utils.parseEther("10"));
+
+            await rewardPolicyMaker.set_rewards_at(4, ethers.utils.parseEther("100"));
+            await rewardPolicyMaker.set_rewards_at(6, ethers.utils.parseEther("100"));
+
+            await ethers.provider.send("evm_increaseTime", [DAY * 7 * 3]);
+            await ethers.provider.send("evm_mine", []);
+
+            await minter.connect(alice).mint(gauge1.address);
+            await minter.connect(bob).mint(gauge2.address);
+
+            expect(await rewardPolicyMaker.current_epoch()).equals(BigNumber.from(4));
+            expect(await hnd.balanceOf(alice.address)).equals(ethers.utils.parseEther("167.892316017317593420"));
+            expect(await hnd.balanceOf(bob.address)).equals(ethers.utils.parseEther("16.789246632994672562"));
+
+            await hnd.connect(alice).transfer(owner.address, ethers.utils.parseEther("167.892316017317593420"));
+            await hnd.connect(bob).transfer(owner.address, ethers.utils.parseEther("16.789246632994672562"));
+
+            await gaugeController.connect(alice).vote_for_gauge_weights(gauge1.address, 0);
+
+            await ethers.provider.send("evm_increaseTime", [DAY * 3]);
+            await ethers.provider.send("evm_mine", []);
+
+            await minter.connect(alice).mint(gauge1.address);
+            await minter.connect(bob).mint(gauge2.address);
+
+            expect(await rewardPolicyMaker.current_epoch()).equals(BigNumber.from(5));
+            expect(await hnd.balanceOf(alice.address)).equals(ethers.utils.parseEther("13.925865800865931587"));
+            expect(await hnd.balanceOf(bob.address)).equals(ethers.utils.parseEther("1.392571548821386210"));
+
+            await hnd.connect(alice).transfer(owner.address, ethers.utils.parseEther("13.925865800865931587"));
+            await hnd.connect(bob).transfer(owner.address, ethers.utils.parseEther("1.392571548821386210"));
+
+            await ethers.provider.send("evm_increaseTime", [DAY * 14]);
+            await ethers.provider.send("evm_mine", []);
+
+            await minter.connect(alice).mint(gauge1.address);
+            await minter.connect(bob).mint(gauge2.address);
+
+            expect(await rewardPolicyMaker.current_epoch()).equals(BigNumber.from(7));
+            expect(await hnd.balanceOf(alice.address)).equals(ethers.utils.parseEther("0"));
+            expect(await hnd.balanceOf(bob.address)).equals(ethers.utils.parseEther("99.999999999999791896"));
+
         });
 
     });
