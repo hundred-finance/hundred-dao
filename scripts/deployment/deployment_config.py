@@ -13,7 +13,8 @@ DAY = 86400
 WEEK = DAY * 7
 YEAR = DAY * 365
 
-def arbitrum_mainnet_config():
+
+def arbitrum_config():
     deployment_json="arbitrum_mainnet_deployments.json"
     required_confirmaions=3
     hundred_token="0x10010078a54396F62c96dF8532dc2B4847d47ED3"
@@ -22,38 +23,12 @@ def arbitrum_mainnet_config():
         ("Liquidity", 10 ** 18),
     ]
     pool_tokens={
+        "hUSDC": ("0xfcd8570ad81e6c77b8d252bebeba62ed980bd64d", 1),
+        "hUSDT": ("0x607312a5c671d0c511998171e634de32156e69d0", 1),
+        "hMIM": ("0x376020c5b0ba3fd603d7722381faa06da8078d8a", 1),
+        "hFRAX": ("0xb1c4426c86082d91a6c097fc588e5d5d8dd1f5a8", 1)
     }
-    admin=accounts.load("dev_kovan")
-
-    return admin, deployment_json, required_confirmaions, hundred_token, reward_epoch_length, gauge_types, pool_tokens
-
-
-def fantom_mainnet_config():
-    deployment_json="fantom_mainnet_deployments.json"
-    required_confirmaions=3
-    hundred_token="0x10010078a54396F62c96dF8532dc2B4847d47ED3"
-    reward_epoch_length=WEEK
-    gauge_types=[
-        ("Liquidity", 10 ** 18),
-    ]
-    pool_tokens={
-    }
-    admin=accounts.load("dev_kovan")
-
-    return admin, deployment_json, required_confirmaions, hundred_token, reward_epoch_length, gauge_types, pool_tokens
-
-
-def eth_mainnet_config():
-    deployment_json="eth_mainnet_deployments.json"
-    required_confirmaions=3
-    hundred_token="0x10010078a54396F62c96dF8532dc2B4847d47ED3"
-    reward_epoch_length=WEEK
-    gauge_types=[
-        ("Liquidity", 10 ** 18),
-    ]
-    pool_tokens={
-    }
-    admin=accounts.load("dev_kovan")
+    admin=accounts.load("dev_arbitrum")
 
     return admin, deployment_json, required_confirmaions, hundred_token, reward_epoch_length, gauge_types, pool_tokens
 
