@@ -18,8 +18,9 @@ const config: HardhatUserConfig = {
     hardhat: {
       initialDate: "2021-11-20T00:00:00",
       forking: {
-        url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_MAINNET_API_KEY}`,
-        blockNumber: parseInt(<string>process.env.ETH_MAINNET_BLOCK_NUMBER),
+        url : `https://arb-mainnet.g.alchemy.com/v2/${process.env.ARBITRUM_MAINNET_API_KEY}`,
+        //url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_MAINNET_API_KEY}`,
+        //blockNumber: parseInt(<string>process.env.ETH_MAINNET_BLOCK_NUMBER),
       }
     },
     ropsten: {
@@ -39,6 +40,10 @@ const config: HardhatUserConfig = {
       chainId: 250,
       gasPrice: 200000000000,
       accounts: [`0x${process.env.FANTOM_MAINNET_PRIVATE_KEY}`],
+    },
+    arbitrum : {
+      url: `https://arb-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_ARBITRUM_API_KEY}`,
+      accounts: [`0x${process.env.ARBITRUM_MAINNET_PRIVATE_KEY}`]
     }
   },
   etherscan: {
