@@ -1,4 +1,4 @@
-import {deploy} from "../deploy";
+import {deploy} from "../common/deploy";
 
 const POOLS = [
     { id: "hUSDC", token: "0xfcd8570ad81e6c77b8d252bebeba62ed980bd64d", weight: 1 },

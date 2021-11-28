@@ -44,10 +44,6 @@ brownie test tests/unitary
 brownie test tests/integration
 ```
 
-## Deployment
-
-See the [deployment documentation](scripts/deployment/README.md) for detailed information on how to deploy Hundred DAO.
-
 ## License
 
 This project is licensed under the [MIT](LICENSE) license.
