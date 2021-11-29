@@ -2,7 +2,7 @@ import {deployNewGauge} from "../common/deploy";
 
 deployNewGauge(
     "TO-SET-NEW-ADMIN",
-    "arbitrum_mainnet",
+    "arbitrum",
     "lp-token-address",
     "lp-token-symbol"
 )

@@ -1,6 +1,6 @@
 import {acceptOwnership} from "../common/deploy";
 
-acceptOwnership("arbitrum_mainnet")
+acceptOwnership("arbitrum")
     .then(() => process.exit(0))
     .catch(error => {
         console.error(error);
