@@ -16,11 +16,11 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {
-      initialDate: "2021-11-20T00:00:00",
       forking: {
-        url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_MAINNET_API_KEY}`,
-        blockNumber: parseInt(<string>process.env.ETH_MAINNET_BLOCK_NUMBER),
-      }
+        url: `https://rpc.ftm.tools/`
+        //blockNumber: parseInt(<string>process.env.ETH_MAINNET_BLOCK_NUMBER),
+      },
+      accounts: [{privateKey: process.env.DEV_PRIVATE_KEY!, balance: "1000000000000000000"}]
     },
     kovan: {
       url: `https://eth-kovan.alchemyapi.io/v2/${process.env.ALCHEMY_KOVAN_API_KEY}`,
