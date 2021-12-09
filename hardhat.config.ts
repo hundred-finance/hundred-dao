@@ -34,6 +34,10 @@ const config: HardhatUserConfig = {
       url: `https://rpc.ftm.tools/`,
       accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
     },
+    harmony: {
+      url: `https://api.harmony.one`,
+      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
+    },
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY

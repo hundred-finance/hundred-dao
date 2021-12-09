@@ -1,0 +1,17 @@
+{
+    "Gauges": [
+        {
+            "id": "hUSDC",
+            "address": "0xa8236EaFBAF1C3D39396DE566cEEa6F320E3db00"
+        },
+        {
+            "id": "hUSDT",
+            "address": "0xEbd7f3349AbA8bB15b897e03D6c1a4Ba95B55e31"
+        }
+    ],
+    "VotingEscrow": "0xE4e43864ea18d5E5211352a4B810383460aB7fcC",
+    "Treasury": "0x243E33aa7f6787154a8E59d3C27a66db3F8818ee",
+    "RewardPolicyMaker": "0xEdBA32185BAF7fEf9A26ca567bC4A6cbe426e499",
+    "GaugeController": "0xa8cD5D59827514BCF343EC19F531ce1788Ea48f8",
+    "Minter": "0xb4300e088a3AE4e624EE5C71Bc1822F68BB5f2bc"
+}

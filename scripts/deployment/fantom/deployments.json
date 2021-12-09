@@ -1,0 +1,29 @@
+{
+    "Gauges": [
+        {
+            "id": "hUSDC",
+            "address": "0x110614276F7b9Ae8586a1C1D9Bc079771e2CE8cF"
+        },
+        {
+            "id": "hUSDT",
+            "address": "0xbF689f50cB446f171F08691367f7D9398b24D382"
+        },
+        {
+            "id": "hMIM",
+            "address": "0x26596af66A10Cb6c6fe890273eD37980D50f2448"
+        },
+        {
+            "id": "hFRAX",
+            "address": "0x2c7a9d9919f042C4C120199c69e126124d09BE7c"
+        },
+        {
+            "id": "hDAI",
+            "address": "0xB8481A3cE515EA8cAa112dba0D1ecfc03937fbcD"
+        }
+    ],
+    "VotingEscrow": "0x376020c5B0ba3Fd603d7722381fAA06DA8078d8a",
+    "Treasury": "0x29DDb4c4f9baAe366DbD40eff79d364e004425b0",
+    "RewardPolicyMaker": "0x772918d032cFd4Ff09Ea7Af623e56E2D8D96bB65",
+    "GaugeController": "0xb1c4426C86082D91a6c097fC588E5D5d8dD1f5a8",
+    "Minter": "0x42B458056f887Fd665ed6f160A59Afe932e1F559"
+}
