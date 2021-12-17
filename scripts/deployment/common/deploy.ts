@@ -9,7 +9,7 @@ import {
     GaugeController__factory,
     GaugeController,
     Minter__factory,
-    Minter, LiquidityGaugeV4__factory, LiquidityGaugeV4
+    Minter, LiquidityGaugeV4__factory, LiquidityGaugeV4, SmartWalletChecker__factory, SmartWalletChecker
 } from "../../../typechain";
 
 import * as GaugeControllerArtifact from "../../../artifacts/contracts/GaugeController.vy/GaugeController.json";
@@ -17,6 +17,7 @@ import * as VotingEscrowArtifact from "../../../artifacts/contracts/VotingEscrow
 import * as RewardPolicyMakerArtifact from "../../../artifacts/contracts/RewardPolicyMaker.vy/RewardPolicyMaker.json";
 import * as TreasuryArtifact from "../../../artifacts/contracts/Treasury.vy/Treasury.json";
 import * as LiquidityGaugeV4Artifact from "../../../artifacts/contracts/LiquidityGaugeV4.vy/LiquidityGaugeV4.json";
+import * as SmartWalletCheckerArtifact from "../../../artifacts/contracts/SmartWalletChecker.vy/SmartWalletChecker.json";
 
 import * as fs from "fs";
 import {Contract} from "ethers";
@@ -43,6 +44,8 @@ export async function deploy(hnd: string, pools: any[], deployName: string) {
     await votingEscrow.deployed();
 
     deployments.VotingEscrow = votingEscrow.address;
+
+    await deploySmartWalletChecker(deployer.address, deployName, deployments);
 
     const treasuryFactory: Treasury__factory =
         <Treasury__factory>await ethers.getContractFactory("Treasury");
@@ -111,6 +114,14 @@ export async function transferOwnership(newOwner: string, deployName: string) {
         await trx.wait();
 
         trx = await gaugeController.apply_transfer_ownership();
+        await trx.wait();
+    }
+
+    if (deployments.SmartWalletChecker) {
+        let checker: SmartWalletChecker =
+            <SmartWalletChecker>new Contract(deployments.SmartWalletChecker, patchAbiGasFields(SmartWalletCheckerArtifact.abi), deployer);
+
+        let trx = await checker.set_admin(newOwner);
         await trx.wait();
     }
 
@@ -186,6 +197,27 @@ export async function deployNewGauge(
     }
 }
 
+export async function deploySmartWalletChecker(admin: string, deployName: string, deployments: Deployment, linkToEscrow: boolean = true) {
+    const [deployer] = await ethers.getSigners();
+    if (deployments.VotingEscrow) {
+        const smartWalletChecker: SmartWalletChecker__factory =
+            <SmartWalletChecker__factory>await ethers.getContractFactory("SmartWalletChecker");
+
+        const checker: SmartWalletChecker = await smartWalletChecker.deploy(admin);
+        await checker.deployed();
+
+        deployments.SmartWalletChecker = checker.address;
+
+        if (linkToEscrow) {
+            let votingEscrow: VotingEscrow =
+                <VotingEscrow>new Contract(deployments.VotingEscrow, patchAbiGasFields(VotingEscrowArtifact.abi), deployer);
+
+            let trx = await votingEscrow.commit_smart_wallet_checker(checker.address);
+            await trx.wait();
+        }
+    }
+}
+
 function patchAbiGasFields(abi: any[]) {
     for(let i = 0; i < abi.length; i++) {
         abi[i].gas = undefined
@@ -195,9 +227,10 @@ function patchAbiGasFields(abi: any[]) {
 
 export interface Deployment {
     Gauges: Array<{id: string, address: string}>
-    VotingEscrow?: string,
-    GaugeController?: string,
-    Treasury?: string,
-    RewardPolicyMaker?: string,
+    VotingEscrow?: string
+    GaugeController?: string
+    Treasury?: string
+    RewardPolicyMaker?: string
+    SmartWalletChecker?: string
     Minter?: string
 }

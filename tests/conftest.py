@@ -132,6 +132,11 @@ def three_gauges(LiquidityGaugeV4, reward_policy_maker, accounts, mock_lp_token,
 
 
 @pytest.fixture(scope="module")
+def smart_wallet_checker(SmartWalletChecker, accounts):
+    yield SmartWalletChecker.deploy(accounts[0], {"from": accounts[0]})
+
+
+@pytest.fixture(scope="module")
 def start_time(chain):
     yield chain.time() + 1000 + 86400 * 365
 
