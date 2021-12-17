@@ -197,7 +197,10 @@ export async function deployNewGauge(
     }
 }
 
-export async function deploySmartWalletChecker(admin: string, deployName: string, deployments: Deployment, linkToEscrow: boolean = true) {
+export async function deploySmartWalletChecker(
+    admin: string, deployName: string, deployments: Deployment,
+    linkToEscrow: boolean = true, updateDeployment: boolean = false
+) {
     const [deployer] = await ethers.getSigners();
     if (deployments.VotingEscrow) {
         const smartWalletChecker: SmartWalletChecker__factory =
@@ -214,6 +217,10 @@ export async function deploySmartWalletChecker(admin: string, deployName: string
 
             let trx = await votingEscrow.commit_smart_wallet_checker(checker.address);
             await trx.wait();
+        }
+
+        if (updateDeployment) {
+            fs.writeFileSync(`./scripts/deployment/${deployName}/deployments.json`, JSON.stringify(deployments, null, 4));
         }
     }
 }
