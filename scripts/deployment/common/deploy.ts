@@ -184,7 +184,7 @@ export async function deployNewGauge(
             <LiquidityGaugeV4__factory>await ethers.getContractFactory("LiquidityGaugeV4");
 
         const gauge: LiquidityGaugeV4 = await gaugeV4Factory.deploy(
-            token, deployments.Minter, deployer.address, deployments.RewardPolicyMaker
+            token, deployments.Minter, admin, deployments.RewardPolicyMaker
         );
         await gauge.deployed();
 
@@ -194,6 +194,21 @@ export async function deployNewGauge(
         await trx.wait();
 
         fs.writeFileSync(`./scripts/deployment/${deployName}/deployments.json`, JSON.stringify(deployments, null, 4));
+    }
+}
+
+export async function registerGauge(
+    deployName: string, gaugeAddress: string, type: number = 0, weight: number = 1
+) {
+    const [deployer] = await ethers.getSigners();
+    let deployments: Deployment = JSON.parse(fs.readFileSync(`./scripts/deployment/${deployName}/deployments.json`).toString());
+
+    if (deployments.GaugeController && deployments.RewardPolicyMaker && deployments.Minter) {
+        let gaugeController: GaugeController =
+            <GaugeController>new Contract(deployments.GaugeController, patchAbiGasFields(GaugeControllerArtifact.abi), deployer);
+
+        let trx = await gaugeController["add_gauge(address,int128,uint256)"](gaugeAddress, type, weight);
+        await trx.wait();
     }
 }
 
