@@ -20,7 +20,7 @@ import * as LiquidityGaugeV4Artifact from "../../../artifacts/contracts/Liquidit
 import * as SmartWalletCheckerArtifact from "../../../artifacts/contracts/SmartWalletChecker.vy/SmartWalletChecker.json";
 
 import * as fs from "fs";
-import {Contract} from "ethers";
+import {BigNumber, BigNumberish, Contract} from "ethers";
 
 export async function deploy(hnd: string, pools: any[], deployName: string) {
 
@@ -238,6 +238,24 @@ export async function deploySmartWalletChecker(
             fs.writeFileSync(`./scripts/deployment/${deployName}/deployments.json`, JSON.stringify(deployments, null, 4));
         }
     }
+}
+
+export async function setRewardsStartingAt(deployName: string, startEpoch: number, rewards: [BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber, BigNumber]) {
+    const [deployer] = await ethers.getSigners();
+    let deployments: Deployment = JSON.parse(fs.readFileSync(`./scripts/deployment/${deployName}/deployments.json`).toString());
+
+    if (deployments.RewardPolicyMaker) {
+        let rewardPolicyMaker: RewardPolicyMaker =
+            <RewardPolicyMaker>new Contract(
+                deployments.RewardPolicyMaker,
+                patchAbiGasFields(RewardPolicyMakerArtifact.abi),
+                deployer
+            );
+
+        let trx = await rewardPolicyMaker.set_rewards_starting_at(startEpoch, rewards);
+        await trx.wait();
+    }
+
 }
 
 function patchAbiGasFields(abi: any[]) {
