@@ -11,6 +11,10 @@
         {
             "id": "hUSDT",
             "address": "0x29DDb4c4f9baAe366DbD40eff79d364e004425b0"
+        },
+        {
+            "id": "hUSDC",
+            "address": "0x89db3B59381bC06FE9BF74532Afd777e5F78Ef02"
         }
     ],
     "VotingEscrow": "0x243E33aa7f6787154a8E59d3C27a66db3F8818ee",

@@ -1,10 +1,10 @@
 import {deployNewGauge} from "../common/deploy";
 
 deployNewGauge(
-    "TO-SET-NEW-ADMIN",
+    "0xb16a11442878d6f1ef202ae63233a7c13e98fd7f",
     "moonriver",
-    "lp-token-address",
-    "lp-token-symbol"
+    "0xB426c1b7fABEa9EA6A273E8427040568a8C7DF13",
+    "hUSDC"
 )
     .then(() => process.exit(0))
     .catch(error => {
