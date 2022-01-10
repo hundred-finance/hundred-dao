@@ -35,7 +35,7 @@ const config: HardhatUserConfig = {
       accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
     },
     harmony: {
-      url: `https://api.harmony.one`,
+      url: `https://harmony-0-rpc.gateway.pokt.network`,
       accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
     },
     moonriver: {
