@@ -8,6 +8,12 @@ import * as VotingEscrowArtifact from "../../artifacts/contracts/VotingEscrow.vy
 import * as fs from "fs";
 import {Contract} from "ethers";
 
+const BlockLimits = [
+    {chain: "harmony", start: 21326637, end: 21572414, step: 1000},
+    {chain: "fantom", start: 24455139 , end: 27592101, step: 100000},
+    {chain: "arbitrum", start: 1144435, end: 4545990, step: 100000},
+]
+
 extractLocks("harmony")
     .then(() => process.exit(0))
     .catch(error => {
@@ -25,24 +31,36 @@ export async function extractLocks(deployName: string) {
             <VotingEscrow>new Contract(deployments.VotingEscrow, patchAbiGasFields(VotingEscrowArtifact.abi), deployer);
 
         let filter = votingEscrow.filters.Deposit(null, null, null, null, null)
-        let events = await votingEscrow.queryFilter(filter)
 
-        let locks = events
-            .filter(e => e.args.type.toNumber() === 1)
-            .map(event => {
-                return {
-                    user: event.args.provider,
-                    lock_start: event.args.ts.toString(),
-                    lock_end: event.args.locktime.toString(),
-                    hnd_amount: event.args.value.toString(),
-                    block_number: event.blockNumber.toString(),
-                }
-            })
+
+        let locks: any = []
+        const blockLimits = BlockLimits.find(b => b.chain === deployName);
+        if (blockLimits) {
+            let blockNumber = blockLimits.start;
+
+            while(blockNumber < blockLimits.end) {
+                let events = await votingEscrow.queryFilter(filter, blockNumber, blockNumber + blockLimits.step);
+                locks = [
+                    ...locks,
+                    ...(events
+                        .filter(e => e.args.type.toNumber() === 1)
+                        .map(event => {
+                            return {
+                                user: event.args.provider,
+                                lock_start: event.args.ts.toString(),
+                                lock_end: event.args.locktime.toString(),
+                                hnd_amount: event.args.value.toString(),
+                                block_number: event.blockNumber.toString(),
+                            }
+                        }))
+                ]
+                blockNumber += blockLimits.step
+            }
+        }
 
         console.log(`Found ${locks.length} Locks`);
 
-        fs.writeFileSync(`./scripts/airdrop/${deployName}-locks.json`, JSON.stringify(locks, null, 4));
-
+        fs.writeFileSync(`./scripts/users/snapshots/${deployName}-locks.json`, JSON.stringify(locks, null, 4));
     }
 }
 
