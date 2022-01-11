@@ -7,24 +7,22 @@ import * as VotingEscrowArtifact from "../../artifacts/contracts/VotingEscrow.vy
 
 import * as fs from "fs";
 import {Contract} from "ethers";
+import {BlockLimits} from "./blocks";
+import {Deployment, getChainName, patchAbiGasFields} from "./helpers";
 
-const BlockLimits = [
-    {chain: "harmony", start: 21326637, end: 21572414, step: 1000},
-    {chain: "fantom", start: 24455139 , end: 27592101, step: 100000},
-    {chain: "arbitrum", start: 1144435, end: 4545990, step: 100000},
-]
-
-extractLocks("harmony")
+extractLocks()
     .then(() => process.exit(0))
     .catch(error => {
         console.error(error);
         process.exit(1);
     });
 
-export async function extractLocks(deployName: string) {
+export async function extractLocks() {
 
     const [deployer] = await ethers.getSigners();
-    let deployments: Deployment = JSON.parse(fs.readFileSync(`./scripts/deployment/${deployName}/deployments.json`).toString());
+    const chainName = getChainName(await deployer.getChainId());
+
+    let deployments: Deployment = JSON.parse(fs.readFileSync(`./scripts/deployment/${chainName}/deployments.json`).toString());
 
     if (deployments.VotingEscrow) {
         let votingEscrow: VotingEscrow =
@@ -32,9 +30,8 @@ export async function extractLocks(deployName: string) {
 
         let filter = votingEscrow.filters.Deposit(null, null, null, null, null)
 
-
         let locks: any = []
-        const blockLimits = BlockLimits.find(b => b.chain === deployName);
+        const blockLimits = BlockLimits.find(b => b.chain === chainName);
         if (blockLimits) {
             let blockNumber = blockLimits.start;
 
@@ -60,23 +57,6 @@ export async function extractLocks(deployName: string) {
 
         console.log(`Found ${locks.length} Locks`);
 
-        fs.writeFileSync(`./scripts/users/snapshots/${deployName}-locks.json`, JSON.stringify(locks, null, 4));
+        fs.writeFileSync(`./scripts/users/snapshots/${chainName}-locks.json`, JSON.stringify(locks, null, 4));
     }
-}
-
-function patchAbiGasFields(abi: any[]) {
-    for(let i = 0; i < abi.length; i++) {
-        abi[i].gas = undefined
-    }
-    return abi
-}
-
-export interface Deployment {
-    Gauges: Array<{id: string, address: string}>
-    VotingEscrow?: string
-    GaugeController?: string
-    Treasury?: string
-    RewardPolicyMaker?: string
-    SmartWalletChecker?: string
-    Minter?: string
 }
