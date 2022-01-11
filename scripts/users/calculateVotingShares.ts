@@ -19,12 +19,12 @@ async function calculateVotingShares() {
         let balance = balances[i]
         let currentShare = votingShares.find(v => v.user === balance.user)
         if (currentShare) {
-            currentShare.ve_hnd_balance += +balance.balance
-            currentShare.ve_hnd_share = currentShare.ve_hnd_balance / totalVeHnd
+            currentShare.ve_hnd_balance = (+currentShare.ve_hnd_balance + +balance.balance).toFixed()
+            currentShare.ve_hnd_share = +currentShare.ve_hnd_balance / totalVeHnd
         } else if (+balance.balance > 0) {
             votingShares.push({
                 user: balance.user,
-                ve_hnd_balance: +balance.balance,
+                ve_hnd_balance: balance.balance,
                 ve_hnd_share: +balance.balance / totalVeHnd
             })
         }
@@ -34,7 +34,7 @@ async function calculateVotingShares() {
 
     fs.writeFileSync(`./scripts/users/balances.json`,
         JSON.stringify(
-            votingShares.sort((a, b) => b.ve_hnd_balance - a.ve_hnd_balance),
+            votingShares.sort((a, b) => +b.ve_hnd_balance - +a.ve_hnd_balance),
             null, 4
         )
     );
@@ -42,6 +42,6 @@ async function calculateVotingShares() {
 
 interface UserShare {
     user: string
-    ve_hnd_balance: number
+    ve_hnd_balance: string
     ve_hnd_share: number
 }
