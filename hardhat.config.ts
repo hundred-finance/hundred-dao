@@ -10,7 +10,9 @@ import 'dotenv/config';
 import {HardhatUserConfig} from "hardhat/config";
 
 const config: HardhatUserConfig = {
-  solidity: "0.5.0",
+  solidity: {
+    compilers: [{version: "0.5.0"}, {version: "0.8.0"}]
+  },
   vyper: {
     version: "0.2.12",
   },

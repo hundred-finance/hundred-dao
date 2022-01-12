@@ -6,7 +6,7 @@ import fs from "fs";
 import {BigNumber, Contract} from "ethers";
 import * as VotingEscrowArtifact from "../../artifacts/contracts/VotingEscrow.vy/VotingEscrow.json";
 import {BlockLimits} from "./blocks";
-import {Deployment, getChainName, patchAbiGasFields} from "./helpers";
+import {Deployment, getChainName, patchAbiGasFields} from "./utils/helpers";
 
 queryUserVeHndBalances()
     .then(() => process.exit(0))

@@ -1,6 +1,5 @@
 import fs from "fs";
 import Balances from "./balances.json";
-import {BigNumber} from "ethers";
 
 const AirdropAmount = 18750 * 1e18
 
@@ -16,7 +15,7 @@ async function calculateAirdropAmounts() {
 
     for (let i = 0; i < Balances.length; i++) {
         let amount = Math.round(Balances[i].ve_hnd_share * AirdropAmount)
-        if (amount >= 100000000000000000) {
+        if (amount >= (0.1 * 1e18)) {
             airdropAmounts.set(
                 Balances[i].user,
                 BigInt(Math.round(Balances[i].ve_hnd_share * AirdropAmount)).toString()
