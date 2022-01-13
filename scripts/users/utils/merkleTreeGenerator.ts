@@ -1,7 +1,7 @@
 import fs from "fs"; // Filesystem
 import keccak256 from "keccak256"; // Keccak256 hashing
 import MerkleTree from "merkletreejs"; // MerkleTree.js
-import { getAddress, parseUnits, solidityKeccak256 } from "ethers/lib/utils"; // Ethers utils
+import { getAddress, solidityKeccak256 } from "ethers/lib/utils"; // Ethers utils
 
 // Airdrop recipient addresses and scaled token values
 type AirdropRecipient = {
@@ -18,21 +18,18 @@ export default class Generator {
 
     /**
      * Setup generator
-     * @param {number} decimals of token
      * @param {Record<string, number>} airdrop address to token claim mapping
      * @param {string} outputPath path where to write the generated merkle tree
      */
-    constructor(decimals: number, airdrop: Record<string, string>, outputPath: string) {
+    constructor(airdrop: Record<string, string>, outputPath: string) {
         this.outputPath = outputPath;
 
         // For each airdrop entry
         for (const [address, tokens] of Object.entries(airdrop)) {
             // Push:
             this.recipients.push({
-                // Checksum address
                 address: getAddress(address),
-                // Scaled number of tokens claimable by recipient
-                value: parseUnits(tokens, decimals).toString()
+                value: tokens
             });
         }
     }
