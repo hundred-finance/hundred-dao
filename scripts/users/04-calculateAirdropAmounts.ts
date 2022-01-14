@@ -23,6 +23,8 @@ async function calculateAirdropAmounts() {
         }
     }
 
+    console.log(`Found ${airdropAmounts.size} users`)
+
     fs.writeFileSync(`./scripts/users/airdrop.json`,
         JSON.stringify(mapToObj(airdropAmounts), null, 4)
     );

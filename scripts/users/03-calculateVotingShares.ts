@@ -21,7 +21,7 @@ async function calculateVotingShares() {
         if (currentShare) {
             currentShare.ve_hnd_balance = (+currentShare.ve_hnd_balance + +balance.balance).toFixed()
             currentShare.ve_hnd_share = +currentShare.ve_hnd_balance / totalVeHnd
-        } else if (+balance.balance > 0) {
+        } else {
             votingShares.push({
                 user: balance.user,
                 ve_hnd_balance: balance.balance,
