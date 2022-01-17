@@ -1,3 +1,4 @@
+
 export function patchAbiGasFields(abi: any[]) {
     for(let i = 0; i < abi.length; i++) {
         abi[i].gas = undefined
@@ -33,4 +34,11 @@ export function getChainName(id: number) {
     }
 
     return "ethereum";
+}
+
+export function mapToObj(m: Map<string, string>) {
+    return Array.from(m).reduce((obj: any, [key, value]) => {
+        obj[key] = value;
+        return obj;
+    }, {});
 }
