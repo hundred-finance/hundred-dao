@@ -18,6 +18,9 @@ describe("MerkleVoting contract", function () {
     let bob: SignerWithAddress;
     let eve: SignerWithAddress;
 
+    let startTime: number;
+    let endTime: number;
+
     let merkleRoot = "0x16c9e2d7578479d67c9ecd1e1ba16af5aaa20300cc2c537d97553cd1904b3fa0"
     let eligibleUser = "0x5aD911DA81B204627DF872780981b0d90F25C33f";
     let voteWeight = "2010751138866072649728";
@@ -38,30 +41,14 @@ describe("MerkleVoting contract", function () {
         [owner, alice, bob, eve] =
             await ethers.getSigners();
 
+        const blockNumBefore = await ethers.provider.getBlockNumber();
+        const blockBefore = await ethers.provider.getBlock(blockNumBefore);
+
+        startTime = blockBefore.timestamp;
+        endTime = startTime + 3600;
+
         merkleVotingFactory = <MerkleVoting__factory>await ethers.getContractFactory("MerkleVoting");
-        merkleVoting = await merkleVotingFactory.deploy(merkleRoot);
-    });
-
-    describe("Administrating contract", function () {
-
-        it("Non admin should not be able to call pause", async function () {
-            expect(merkleVoting.connect(alice).pause())
-                .to.be.revertedWith("Ownable: caller is not the owner");
-        });
-
-        it("Non admin should not be able to call pause", async function () {
-            expect(merkleVoting.connect(alice).unPause())
-                .to.be.revertedWith("Ownable: caller is not the owner");
-        });
-
-        it("Admin can call pause and unpause on contract", async function () {
-            await merkleVoting.connect(owner).pause();
-            expect(await merkleVoting.paused()).to.be.equals(true);
-
-            await merkleVoting.connect(owner).unPause();
-            expect(await merkleVoting.paused()).to.be.equals(false);
-        });
-
+        merkleVoting = await merkleVotingFactory.deploy(merkleRoot, startTime, endTime);
     });
 
     describe("Voting", function () {
@@ -84,6 +71,13 @@ describe("MerkleVoting contract", function () {
             await merkleVoting.voteAgainst(eligibleUser, voteWeight, hexProof);
             expect(merkleVoting.voteAgainst(eligibleUser, voteWeight, hexProof))
                 .to.be.revertedWith("Already Voted");
+        });
+
+        it("Should fail to vote after vote end time", async function () {
+            await ethers.provider.send('evm_mine', [endTime + 3600]);
+
+            expect(merkleVoting.voteAgainst(eligibleUser, voteWeight, hexProof))
+                .to.be.revertedWith("Voting closed");
         });
 
         it("Should succeed to vote yes for eligible user with valid proof and invalid weight", async function () {
