@@ -12,3 +12,8 @@ networks:
         - 0xC447FcAF1dEf19A583F97b3620627BF69c05b5fB
 
 autofetch_sources: True
+
+compiler:
+  solc:
+    remappings:
+      - "@openzeppelin=OpenZeppelin/openzeppelin-contracts@4.4.2"

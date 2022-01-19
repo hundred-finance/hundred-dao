@@ -27,6 +27,7 @@ To get started, first create and initialize a Python [virtual environment](https
 git clone https://github.com/hundred-finance/hundred-dao.git
 cd hundred-dao
 pip install -r requirements.txt
+brownie pm install OpenZeppelin/openzeppelin-contracts@4.4.2
 ```
 
 ### Running the Tests
@@ -42,6 +43,11 @@ To run only the unit tests or integration tests:
 ```bash
 brownie test tests/unitary
 brownie test tests/integration
+```
+
+Some tests are written in javascript using `hardhat` and can be run as the following:
+```bash
+npm run test
 ```
 
 ## License
