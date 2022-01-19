@@ -1,0 +1,8 @@
+black
+eth-brownie
+flake8
+isort
+brownie-token-tester
+Jinja2
+pip-tools
+pre-commit

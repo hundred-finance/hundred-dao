@@ -14,8 +14,8 @@ View the [documentation](https://curve.readthedocs.io/dao-overview.html) for a m
 ### Dependencies
 
 - [python3](https://www.python.org/downloads/release/python-368/) version 3.6 or greater, python3-dev
-- [vyper](https://github.com/vyperlang/vyper) version [0.2.4](https://github.com/vyperlang/vyper/releases/tag/v0.2.4)
-- [brownie](https://github.com/iamdefinitelyahuman/brownie) - tested with version [1.14.6](https://github.com/eth-brownie/brownie/releases/tag/v1.14.6)
+- [vyper](https://github.com/vyperlang/vyper) version [0.2.13](https://github.com/vyperlang/vyper/releases/tag/v0.2.13)
+- [brownie](https://github.com/iamdefinitelyahuman/brownie) - tested with version [1.17.2](https://github.com/eth-brownie/brownie/releases/tag/v1.17.2)
 - [brownie-token-tester](https://github.com/iamdefinitelyahuman/brownie-token-tester) - tested with version [0.2.2](https://github.com/iamdefinitelyahuman/brownie-token-tester/releases/tag/v0.2.2)
 - [ganache-cli](https://github.com/trufflesuite/ganache-cli) - tested with version [6.12.1](https://github.com/trufflesuite/ganache-cli/releases/tag/v6.12.1)
 
@@ -28,6 +28,7 @@ git clone https://github.com/hundred-finance/hundred-dao.git
 cd hundred-dao
 pip install -r requirements.txt
 brownie pm install OpenZeppelin/openzeppelin-contracts@4.4.2
+brownie pm install OpenZeppelin/openzeppelin-contracts@4.2.0
 ```
 
 ### Running the Tests

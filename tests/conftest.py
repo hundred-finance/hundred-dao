@@ -1,7 +1,10 @@
+import brownie
 import pytest
 from brownie_tokens import ERC20
 
-YEAR = 365 * 86400
+DAY = 86400
+WEEK = DAY * 7
+YEAR = 365 * DAY
 INITIAL_RATE = 274_815_283
 YEAR_1_SUPPLY = INITIAL_RATE * 10 ** 18 // YEAR * YEAR
 INITIAL_SUPPLY = 1_303_030_303
@@ -23,6 +26,38 @@ def pack_values(values):
 def isolation_setup(fn_isolation):
     pass
 
+# constants
+
+@pytest.fixture(scope="session")
+def alice_lock_value():
+    return 1_000_000 * 10 ** 18
+
+
+@pytest.fixture
+def alice_unlock_time(chain):
+    # need to round down to weeks
+    return ((chain.time() + DAY * 365 * 4) // WEEK) * WEEK
+
+
+@pytest.fixture(scope="session")
+def bob_lock_value():
+    return 500_000 * 10 ** 18
+
+
+@pytest.fixture
+def bob_unlock_time(chain):
+    return ((chain.time() + DAY * 365 * 2) // WEEK) * WEEK
+
+
+@pytest.fixture
+def expire_time(alice_unlock_time, chain):
+    now = chain.time()
+    return ((now + (alice_unlock_time - now) // 2) // WEEK) * WEEK
+
+
+@pytest.fixture
+def cancel_time(expire_time):
+    return expire_time - WEEK
 
 # helper functions as fixtures
 
@@ -59,6 +94,16 @@ def bob(accounts):
 @pytest.fixture(scope="session")
 def charlie(accounts):
     yield accounts[2]
+
+
+@pytest.fixture(scope="session")
+def dave(accounts):
+    return accounts[3]
+
+
+@pytest.fixture(scope="session")
+def eve(accounts):
+    return accounts[4]
 
 
 @pytest.fixture(scope="session")
@@ -122,6 +167,21 @@ def gauge_v4(LiquidityGaugeV4, alice, mock_lp_token, minter, reward_policy_maker
 
 
 @pytest.fixture(scope="module")
+def veboost_delegation(VotingEscrowDelegation, alice, voting_escrow):
+    yield VotingEscrowDelegation.deploy("Voting Escrow Boost Delegation", "veBoost", "", voting_escrow,{"from": alice})
+
+
+@pytest.fixture(scope="module")
+def veboost_proxy(DelegationProxy, alice, veboost_delegation, voting_escrow):
+    yield DelegationProxy.deploy(veboost_delegation, alice, alice, voting_escrow,{"from": alice})
+
+
+@pytest.fixture(scope="module")
+def gauge_v5(LiquidityGaugeV5, alice, mock_lp_token, minter, reward_policy_maker, veboost_proxy):
+    yield LiquidityGaugeV5.deploy(mock_lp_token, minter, alice, reward_policy_maker, veboost_proxy,{"from": alice})
+
+
+@pytest.fixture(scope="module")
 def three_gauges(LiquidityGaugeV4, reward_policy_maker, accounts, mock_lp_token, minter):
     contracts = [
         LiquidityGaugeV4.deploy(mock_lp_token, minter, accounts[0], reward_policy_maker, {"from": accounts[0]})
@@ -160,3 +220,28 @@ def coin_b():
 @pytest.fixture(scope="module")
 def mock_lp_token(ERC20LP, accounts):  # Not using the actual Curve contract
     yield ERC20LP.deploy("Curve LP token", "usdCrv", 18, 10 ** 9, {"from": accounts[0]})
+
+
+@pytest.fixture(scope="session", autouse=True)
+def multicall(alice):
+    return brownie.multicall.deploy({"from": alice})
+# helper functions
+
+
+@pytest.fixture
+def lock_alice(alice, alice_lock_value, alice_unlock_time, token, voting_escrow):
+    token.mint(alice, alice_lock_value, {"from": alice})
+    token.approve(voting_escrow, alice_lock_value, {"from": alice})
+    voting_escrow.create_lock(alice_lock_value, alice_unlock_time, {"from": alice})
+
+
+@pytest.fixture
+def lock_bob(bob, bob_lock_value, bob_unlock_time, token, voting_escrow):
+    token.mint(bob, bob_lock_value, {"from": bob})
+    token.approve(voting_escrow, bob_lock_value, {"from": bob})
+    voting_escrow.create_lock(bob_lock_value, bob_unlock_time, {"from": bob})
+
+
+@pytest.fixture
+def boost_bob(alice, lock_alice, bob, expire_time, cancel_time, veboost_delegation):
+    veboost_delegation.create_boost(alice, bob, 5_000, cancel_time, expire_time, 0, {"from": alice})
