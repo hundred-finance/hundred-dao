@@ -9,8 +9,9 @@ All contract sources are within this directory.
 ## Contracts
 
 * [`GaugeController`](GaugeController.vy): Controls liquidity gauges and the issuance of HND through the liquidity gauges
-* [`LiquidityGaugeV4`](LiquidityGaugeV4.vy): Measures the amount of liquidity provided by each user
-* [`RewardPolicyMaker`](RewardPolicyMaker.vy): Defines reward distribution rates and epochs, used by `LiquidityGaugeV4`
+* [`LiquidityGaugeV3_1`](LiquidityGaugeV3_1.vy): Measures the amount of liquidity provided by each user
+* [`LiquidityGaugeV4_1`](LiquidityGaugeV4_1.vy): Measures the amount of liquidity provided by each user and support veBoost
+* [`RewardPolicyMaker`](RewardPolicyMaker.vy): Defines reward distribution rates and epochs, used by `LiquidityGaugeV3_1`
 * [`Minter`](Minter.vy): Token reward distribution contract
 * [`Treasury`](Treasury.vy): holds rewards to be distributed through `Minter`
 * [`VotingEscrow`](VotingEscrow.vy): Voting contract for locking HND to participate in DAO governance

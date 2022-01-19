@@ -15,10 +15,10 @@ class StateMachine:
     st_time = strategy("uint", max_value=365 * 86400)
     st_reward = strategy("uint64")
 
-    def __init__(self, accounts, gauge_v4, mock_lp_token, reward_contract, coin_reward, sigs):
+    def __init__(self, accounts, gauge_v3_1, mock_lp_token, reward_contract, coin_reward, sigs):
         self.accounts = accounts
         self.token = mock_lp_token
-        self.liquidity_gauge = gauge_v4
+        self.liquidity_gauge = gauge_v3_1
         self.coin_reward = coin_reward
         self.reward_contract = reward_contract
         self.sigs = sigs
@@ -131,7 +131,7 @@ class StateMachine:
 def test_state_machine(
     state_machine,
     accounts,
-    gauge_v4,
+    gauge_v3_1,
     mock_lp_token,
     reward_contract,
     coin_reward,
@@ -143,7 +143,7 @@ def test_state_machine(
 
     # approve liquidity_gauge from the funded accounts
     for acct in accounts[:5]:
-        mock_lp_token.approve(gauge_v4, 2 ** 256 - 1, {"from": acct})
+        mock_lp_token.approve(gauge_v3_1, 2 ** 256 - 1, {"from": acct})
 
     sigs = [
         reward_contract.stake.signature[2:],
@@ -158,7 +158,7 @@ def test_state_machine(
     state_machine(
         StateMachine,
         accounts[:5],
-        gauge_v4,
+        gauge_v3_1,
         mock_lp_token,
         reward_contract,
         coin_reward,

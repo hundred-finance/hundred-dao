@@ -6,13 +6,13 @@ MAX_UINT256 = 2 ** 256 - 1
 WEEK = 7 * 86400
 
 
-def test_gauge_integral(accounts, chain, mock_lp_token, reward_policy_maker, gauge_v4, gauge_controller):
+def test_gauge_integral(accounts, chain, mock_lp_token, reward_policy_maker, gauge_v3_1, gauge_controller):
     alice, bob = accounts[:2]
 
     # Wire up Gauge to the controller to have proper rates and stuff
     gauge_controller.add_type(b"Liquidity", {"from": alice})
     gauge_controller.change_type_weight(0, 10 ** 18, {"from": alice})
-    gauge_controller.add_gauge(gauge_v4.address, 0, 10 ** 18, {"from": alice})
+    gauge_controller.add_gauge(gauge_v3_1.address, 0, 10 ** 18, {"from": alice})
 
     alice_staked = 0
     bob_staked = 0
@@ -39,8 +39,8 @@ def test_gauge_integral(accounts, chain, mock_lp_token, reward_policy_maker, gau
             integral += rate_x_time * checkpoint_balance // checkpoint_supply
         checkpoint_rate = rate1
         checkpoint = t1
-        checkpoint_supply = gauge_v4.totalSupply()
-        checkpoint_balance = gauge_v4.balanceOf(alice)
+        checkpoint_supply = gauge_v3_1.totalSupply()
+        checkpoint_balance = gauge_v3_1.balanceOf(alice)
 
     # Now let's have a loop where Bob always deposit or withdraws,
     # and Alice does so more rarely
@@ -54,53 +54,53 @@ def test_gauge_integral(accounts, chain, mock_lp_token, reward_policy_maker, gau
         is_withdraw = (i > 0) * (random() < 0.5)
         print("Bob", "withdraws" if is_withdraw else "deposits")
         if is_withdraw:
-            amount = randrange(1, gauge_v4.balanceOf(bob) + 1)
-            gauge_v4.withdraw(amount, {"from": bob})
+            amount = randrange(1, gauge_v3_1.balanceOf(bob) + 1)
+            gauge_v3_1.withdraw(amount, {"from": bob})
             update_integral()
             bob_staked -= amount
         else:
             amount = randrange(1, mock_lp_token.balanceOf(bob) // 10 + 1)
-            mock_lp_token.approve(gauge_v4.address, amount, {"from": bob})
-            gauge_v4.deposit(amount, {"from": bob})
+            mock_lp_token.approve(gauge_v3_1.address, amount, {"from": bob})
+            gauge_v3_1.deposit(amount, {"from": bob})
             update_integral()
             bob_staked += amount
 
         if is_alice:
             # For Alice
-            is_withdraw_alice = (gauge_v4.balanceOf(alice) > 0) * (random() < 0.5)
+            is_withdraw_alice = (gauge_v3_1.balanceOf(alice) > 0) * (random() < 0.5)
             print("Alice", "withdraws" if is_withdraw_alice else "deposits")
 
             if is_withdraw_alice:
-                amount_alice = randrange(1, gauge_v4.balanceOf(alice) // 10 + 1)
-                gauge_v4.withdraw(amount_alice, {"from": alice})
+                amount_alice = randrange(1, gauge_v3_1.balanceOf(alice) // 10 + 1)
+                gauge_v3_1.withdraw(amount_alice, {"from": alice})
                 update_integral()
                 alice_staked -= amount_alice
             else:
                 amount_alice = randrange(1, mock_lp_token.balanceOf(alice) + 1)
-                mock_lp_token.approve(gauge_v4.address, amount_alice, {"from": alice})
-                gauge_v4.deposit(amount_alice, {"from": alice})
+                mock_lp_token.approve(gauge_v3_1.address, amount_alice, {"from": alice})
+                gauge_v3_1.deposit(amount_alice, {"from": alice})
                 update_integral()
                 alice_staked += amount_alice
 
         # Checking that updating the checkpoint in the same second does nothing
         # Also everyone can update: that should make no difference, too
         if random() < 0.5:
-            gauge_v4.user_checkpoint(alice, {"from": alice})
+            gauge_v3_1.user_checkpoint(alice, {"from": alice})
         if random() < 0.5:
-            gauge_v4.user_checkpoint(bob, {"from": bob})
+            gauge_v3_1.user_checkpoint(bob, {"from": bob})
 
-        assert gauge_v4.balanceOf(alice) == alice_staked
-        assert gauge_v4.balanceOf(bob) == bob_staked
-        assert gauge_v4.totalSupply() == alice_staked + bob_staked
+        assert gauge_v3_1.balanceOf(alice) == alice_staked
+        assert gauge_v3_1.balanceOf(bob) == bob_staked
+        assert gauge_v3_1.totalSupply() == alice_staked + bob_staked
 
         dt = randrange(1, YEAR // 20)
         chain.sleep(dt)
         chain.mine()
 
-        gauge_v4.user_checkpoint(alice, {"from": alice})
+        gauge_v3_1.user_checkpoint(alice, {"from": alice})
         update_integral()
-        print(i, dt / 86400, integral, gauge_v4.integrate_fraction(alice))
-        assert approx(gauge_v4.integrate_fraction(alice), integral, 1e-15)
+        print(i, dt / 86400, integral, gauge_v3_1.integrate_fraction(alice))
+        assert approx(gauge_v3_1.integrate_fraction(alice), integral, 1e-15)
 
 
 def test_mining_with_votelock(
@@ -109,7 +109,7 @@ def test_mining_with_votelock(
     history,
     mock_lp_token,
     token,
-    gauge_v4,
+    gauge_v3_1,
     gauge_controller,
     voting_escrow,
 ):
@@ -119,7 +119,7 @@ def test_mining_with_votelock(
     # Wire up Gauge to the controller to have proper rates and stuff
     gauge_controller.add_type(b"Liquidity", {"from": alice})
     gauge_controller.change_type_weight(0, 10 ** 18, {"from": alice})
-    gauge_controller.add_gauge(gauge_v4.address, 0, 10 ** 18, {"from": alice})
+    gauge_controller.add_gauge(gauge_v3_1.address, 0, 10 ** 18, {"from": alice})
 
     # Prepare tokens
     token.mint(alice, 10 ** 24)
@@ -127,23 +127,23 @@ def test_mining_with_votelock(
     token.approve(voting_escrow, MAX_UINT256, {"from": alice})
     token.approve(voting_escrow, MAX_UINT256, {"from": bob})
     mock_lp_token.transfer(bob, mock_lp_token.balanceOf(alice) // 2, {"from": alice})
-    mock_lp_token.approve(gauge_v4.address, MAX_UINT256, {"from": alice})
-    mock_lp_token.approve(gauge_v4.address, MAX_UINT256, {"from": bob})
+    mock_lp_token.approve(gauge_v3_1.address, MAX_UINT256, {"from": alice})
+    mock_lp_token.approve(gauge_v3_1.address, MAX_UINT256, {"from": bob})
 
     # Alice deposits to escrow. She now has a BOOST
     t = chain[-1].timestamp
     voting_escrow.create_lock(10 ** 20, t + 2 * WEEK, {"from": alice})
 
     # Alice and Bob deposit some liquidity
-    gauge_v4.deposit(10 ** 21, {"from": alice})
-    gauge_v4.deposit(10 ** 21, {"from": bob})
+    gauge_v3_1.deposit(10 ** 21, {"from": alice})
+    gauge_v3_1.deposit(10 ** 21, {"from": bob})
 
     # Time travel and checkpoint
     chain.sleep(4 * WEEK)
     alice.transfer(alice, 1)
     while True:
-        gauge_v4.user_checkpoint(alice, {"from": alice})
-        gauge_v4.user_checkpoint(bob, {"from": bob})
+        gauge_v3_1.user_checkpoint(alice, {"from": alice})
+        gauge_v3_1.user_checkpoint(bob, {"from": bob})
         if chain[-1].timestamp != chain[-2].timestamp:
             chain.undo(2)
         else:
@@ -154,8 +154,8 @@ def test_mining_with_votelock(
     assert voting_escrow.balanceOf(bob) == 0
 
     # Alice earned 2.5 times more CRV because she vote-locked her CRV
-    rewards_alice = gauge_v4.integrate_fraction(alice)
-    rewards_bob = gauge_v4.integrate_fraction(bob)
+    rewards_alice = gauge_v3_1.integrate_fraction(alice)
+    rewards_bob = gauge_v3_1.integrate_fraction(bob)
     assert approx(rewards_alice / rewards_bob, 2.5, 1e-5)
 
     # Time travel / checkpoint: no one has CRV vote-locked
@@ -163,8 +163,8 @@ def test_mining_with_votelock(
     alice.transfer(alice, 1)
     voting_escrow.withdraw({"from": alice})
     while True:
-        gauge_v4.user_checkpoint(alice, {"from": alice})
-        gauge_v4.user_checkpoint(bob, {"from": bob})
+        gauge_v3_1.user_checkpoint(alice, {"from": alice})
+        gauge_v3_1.user_checkpoint(bob, {"from": bob})
         if chain[-1].timestamp != chain[-2].timestamp:
             chain.undo(2)
         else:
@@ -173,8 +173,8 @@ def test_mining_with_votelock(
     old_rewards_bob = rewards_bob
 
     # Alice earned the same as Bob now
-    rewards_alice = gauge_v4.integrate_fraction(alice)
-    rewards_bob = gauge_v4.integrate_fraction(bob)
+    rewards_alice = gauge_v3_1.integrate_fraction(alice)
+    rewards_bob = gauge_v3_1.integrate_fraction(bob)
     d_alice = rewards_alice - old_rewards_alice
     d_bob = rewards_bob - old_rewards_bob
     assert d_alice == d_bob
@@ -195,8 +195,8 @@ def test_mining_with_votelock(
     voting_escrow.withdraw({"from": alice})
     voting_escrow.withdraw({"from": bob})
     while True:
-        gauge_v4.user_checkpoint(alice, {"from": alice})
-        gauge_v4.user_checkpoint(bob, {"from": bob})
+        gauge_v3_1.user_checkpoint(alice, {"from": alice})
+        gauge_v3_1.user_checkpoint(bob, {"from": bob})
         if chain[-1].timestamp != chain[-2].timestamp:
             chain.undo(2)
         else:
@@ -205,8 +205,8 @@ def test_mining_with_votelock(
     old_rewards_bob = rewards_bob
 
     # Alice earned the same as Bob now
-    rewards_alice = gauge_v4.integrate_fraction(alice)
-    rewards_bob = gauge_v4.integrate_fraction(bob)
+    rewards_alice = gauge_v3_1.integrate_fraction(alice)
+    rewards_bob = gauge_v3_1.integrate_fraction(bob)
     d_alice = rewards_alice - old_rewards_alice
     d_bob = rewards_bob - old_rewards_bob
     assert d_alice == d_bob

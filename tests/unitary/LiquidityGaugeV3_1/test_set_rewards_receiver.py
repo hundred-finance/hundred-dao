@@ -41,30 +41,30 @@ def reward_contract(alice, coin_a, coin_b):
 
 @pytest.fixture(scope="module", autouse=True)
 def initial_setup(
-    alice, bob, chain, gauge_v4, reward_contract, coin_reward, coin_a, coin_b, mock_lp_token
+    alice, bob, chain, gauge_v3_1, reward_contract, coin_reward, coin_a, coin_b, mock_lp_token
 ):
 
     sigs = f"0x{'00' * 4}{'00' * 4}{reward_contract.claim_tokens.signature[2:]}{'00' * 20}"
 
-    gauge_v4.set_rewards(
+    gauge_v3_1.set_rewards(
         reward_contract, sigs, [coin_a, coin_reward, coin_b] + [ZERO_ADDRESS] * 5, {"from": alice}
     )
 
     # Deposit
     mock_lp_token.transfer(bob, LP_AMOUNT, {"from": alice})
-    mock_lp_token.approve(gauge_v4, LP_AMOUNT, {"from": bob})
-    gauge_v4.deposit(LP_AMOUNT, {"from": bob})
+    mock_lp_token.approve(gauge_v3_1, LP_AMOUNT, {"from": bob})
+    gauge_v3_1.deposit(LP_AMOUNT, {"from": bob})
 
     chain.sleep(WEEK)
 
 
-def test_claim_one_lp(alice, bob, chain, gauge_v4, coin_a, coin_b):
+def test_claim_one_lp(alice, bob, chain, gauge_v3_1, coin_a, coin_b):
     chain.sleep(WEEK)
 
-    gauge_v4.set_rewards_receiver(alice, {"from": bob})
+    gauge_v3_1.set_rewards_receiver(alice, {"from": bob})
 
-    gauge_v4.withdraw(LP_AMOUNT, {"from": bob})
-    gauge_v4.claim_rewards({"from": bob})
+    gauge_v3_1.withdraw(LP_AMOUNT, {"from": bob})
+    gauge_v3_1.claim_rewards({"from": bob})
 
     for coin in (coin_a, coin_b):
         reward = coin.balanceOf(alice)

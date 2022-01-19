@@ -54,11 +54,11 @@ def setup(accounts, gauge_controller, mock_lp_token, token, voting_escrow):
 
 
 @pytest.fixture(scope="module")
-def gauges(LiquidityGaugeV4, accounts, gauge_controller, mock_lp_token, minter, reward_policy_maker):
+def gauges(LiquidityGaugeV3_1, accounts, gauge_controller, mock_lp_token, minter, reward_policy_maker):
     # deploy `GAUGE_COUNT` liquidity gauges and return them as a list
     gauges = []
     for i in range(GAUGE_COUNT):
-        contract = LiquidityGaugeV4.deploy(mock_lp_token, minter, accounts[0], reward_policy_maker, {"from": accounts[0]})
+        contract = LiquidityGaugeV3_1.deploy(mock_lp_token, minter, accounts[0], reward_policy_maker, {"from": accounts[0]})
         gauge_controller.add_gauge(contract, i % TYPE_COUNT, {"from": accounts[0]})
         gauges.append(contract)
 

@@ -9,14 +9,14 @@ import {
     GaugeController__factory,
     GaugeController,
     Minter__factory,
-    Minter, LiquidityGaugeV4__factory, LiquidityGaugeV4, SmartWalletChecker__factory, SmartWalletChecker
+    Minter, LiquidityGaugeV31__factory, LiquidityGaugeV31, SmartWalletChecker__factory, SmartWalletChecker
 } from "../../../typechain";
 
 import * as GaugeControllerArtifact from "../../../artifacts/contracts/GaugeController.vy/GaugeController.json";
 import * as VotingEscrowArtifact from "../../../artifacts/contracts/VotingEscrow.vy/VotingEscrow.json";
 import * as RewardPolicyMakerArtifact from "../../../artifacts/contracts/RewardPolicyMaker.vy/RewardPolicyMaker.json";
 import * as TreasuryArtifact from "../../../artifacts/contracts/Treasury.vy/Treasury.json";
-import * as LiquidityGaugeV4Artifact from "../../../artifacts/contracts/LiquidityGaugeV4.vy/LiquidityGaugeV4.json";
+import * as LiquidityGaugeV31Artifact from "../../../artifacts/contracts/LiquidityGaugeV3_1.vy/LiquidityGaugeV3_1.json";
 import * as SmartWalletCheckerArtifact from "../../../artifacts/contracts/SmartWalletChecker.vy/SmartWalletChecker.json";
 
 import * as fs from "fs";
@@ -83,13 +83,13 @@ export async function deploy(hnd: string, pools: any[], deployName: string) {
     let addGaugeTypeTrx = await gaugeController["add_type(string,uint256)"]("Stables", ethers.utils.parseEther("10"));
     await addGaugeTypeTrx.wait();
 
-    const gaugeV4Factory: LiquidityGaugeV4__factory =
-        <LiquidityGaugeV4__factory>await ethers.getContractFactory("LiquidityGaugeV4");
+    const gaugeV4Factory: LiquidityGaugeV31__factory =
+        <LiquidityGaugeV31__factory>await ethers.getContractFactory("LiquidityGaugeV31");
 
     for (let i = 0; i < pools.length; i++) {
         const pool = pools[i];
 
-        const gauge: LiquidityGaugeV4 = await gaugeV4Factory.deploy(
+        const gauge: LiquidityGaugeV31 = await gaugeV4Factory.deploy(
             pool.token, minter.address, deployer.address, rewardPolicyMaker.address
         );
         await gauge.deployed();
@@ -151,8 +151,8 @@ export async function transferOwnership(newOwner: string, deployName: string) {
     }
 
     for(let i = 0; i < deployments.Gauges.length; i++) {
-        let gauge: LiquidityGaugeV4 =
-            <LiquidityGaugeV4>new Contract(deployments.Gauges[i].address, patchAbiGasFields(LiquidityGaugeV4Artifact.abi), deployer);
+        let gauge: LiquidityGaugeV31 =
+            <LiquidityGaugeV31>new Contract(deployments.Gauges[i].address, patchAbiGasFields(LiquidityGaugeV31Artifact.abi), deployer);
         let trx = await gauge.commit_transfer_ownership(newOwner);
         await trx.wait();
     }
@@ -163,8 +163,8 @@ export async function acceptOwnership(deployName: string) {
     let deployments: Deployment = JSON.parse(fs.readFileSync(`./scripts/deployment/${deployName}/deployments.json`).toString());
 
     for(let i = 0; i < deployments.Gauges.length; i++) {
-        let gauge: LiquidityGaugeV4 =
-            <LiquidityGaugeV4>new Contract(deployments.Gauges[i].address, patchAbiGasFields(LiquidityGaugeV4Artifact.abi), deployer);
+        let gauge: LiquidityGaugeV31 =
+            <LiquidityGaugeV31>new Contract(deployments.Gauges[i].address, patchAbiGasFields(LiquidityGaugeV31Artifact.abi), deployer);
         let trx = await gauge.accept_transfer_ownership();
         await trx.wait();
     }
@@ -180,10 +180,10 @@ export async function deployNewGauge(
         let gaugeController: GaugeController =
             <GaugeController>new Contract(deployments.GaugeController, patchAbiGasFields(GaugeControllerArtifact.abi), deployer);
 
-        const gaugeV4Factory: LiquidityGaugeV4__factory =
-            <LiquidityGaugeV4__factory>await ethers.getContractFactory("LiquidityGaugeV4");
+        const gaugeV4Factory: LiquidityGaugeV31__factory =
+            <LiquidityGaugeV31__factory>await ethers.getContractFactory("LiquidityGaugeV31");
 
-        const gauge: LiquidityGaugeV4 = await gaugeV4Factory.deploy(
+        const gauge: LiquidityGaugeV31 = await gaugeV4Factory.deploy(
             token, deployments.Minter, admin, deployments.RewardPolicyMaker
         );
         await gauge.deployed();

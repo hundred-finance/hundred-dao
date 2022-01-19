@@ -1,6 +1,5 @@
 import { expect } from "chai";
 import { ethers } from 'hardhat';
-const hre = require("hardhat");
 
 import {
     VotingEscrow__factory,
@@ -13,8 +12,7 @@ import {
     RewardPolicyMaker,
     Treasury__factory,
     Treasury,
-    LiquidityGaugeV4__factory,
-    LiquidityGaugeV4,
+    LiquidityGaugeV31__factory,
     ERC20TOKEN__factory,
     ERC20TOKEN
 } from "../typechain";
@@ -46,7 +44,7 @@ describe("FeeConverter contract", function () {
     let gaugeControllerFactory: GaugeController__factory;
     let gaugeController: GaugeController;
 
-    let gaugeFactory: LiquidityGaugeV4__factory;
+    let gaugeFactory: LiquidityGaugeV31__factory;
 
     let owner: SignerWithAddress;
     let alice: SignerWithAddress;
@@ -64,7 +62,7 @@ describe("FeeConverter contract", function () {
         votingEscrowFactory = <VotingEscrow__factory>await ethers.getContractFactory("VotingEscrow");
         gaugeControllerFactory = <GaugeController__factory>await ethers.getContractFactory("GaugeController");
         minterFactory = <Minter__factory>await ethers.getContractFactory("Minter");
-        gaugeFactory = <LiquidityGaugeV4__factory>await ethers.getContractFactory("LiquidityGaugeV4");
+        gaugeFactory = <LiquidityGaugeV31__factory>await ethers.getContractFactory("LiquidityGaugeV3_1");
 
         hnd = await erc20Factory.deploy("Hundred Finance", "HND", 18, 0);
         hndLpToken = await erc20Factory.deploy("Hundred Finance Lp token", "hETH", 18, 0);

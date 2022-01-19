@@ -21,10 +21,10 @@ class StateMachine:
     st_value = strategy("uint64")
     st_time = strategy("uint", max_value=86400 * 365)
 
-    def __init__(self, accounts, gauge_v4, mock_lp_token):
+    def __init__(self, accounts, gauge_v3_1, mock_lp_token):
         self.accounts = accounts
         self.token = mock_lp_token
-        self.gauge_v4 = gauge_v4
+        self.gauge_v3_1 = gauge_v3_1
 
     def setup(self):
         self.balances = {i: 0 for i in self.accounts}
@@ -38,7 +38,7 @@ class StateMachine:
         """
         balance = self.token.balanceOf(st_account)
 
-        self.gauge_v4.deposit(st_value, {"from": st_account})
+        self.gauge_v3_1.deposit(st_value, {"from": st_account})
         self.balances[st_account] += st_value
 
         assert self.token.balanceOf(st_account) == balance - st_value
@@ -50,12 +50,12 @@ class StateMachine:
         if self.balances[st_account] < st_value:
             # fail path - insufficient balance
             with brownie.reverts():
-                self.gauge_v4.withdraw(st_value, {"from": st_account})
+                self.gauge_v3_1.withdraw(st_value, {"from": st_account})
             return
 
         # success path
         balance = self.token.balanceOf(st_account)
-        self.gauge_v4.withdraw(st_value, {"from": st_account})
+        self.gauge_v3_1.withdraw(st_value, {"from": st_account})
         self.balances[st_account] -= st_value
 
         assert self.token.balanceOf(st_account) == balance + st_value
@@ -70,20 +70,20 @@ class StateMachine:
         """
         Create a new user checkpoint.
         """
-        self.gauge_v4.user_checkpoint(st_account, {"from": st_account})
+        self.gauge_v3_1.user_checkpoint(st_account, {"from": st_account})
 
     def invariant_balances(self):
         """
         Validate expected balances against actual balances.
         """
         for account, balance in self.balances.items():
-            assert self.gauge_v4.balanceOf(account) == balance
+            assert self.gauge_v3_1.balanceOf(account) == balance
 
     def invariant_total_supply(self):
         """
         Validate expected total supply against actual total supply.
         """
-        assert self.gauge_v4.totalSupply() == sum(self.balances.values())
+        assert self.gauge_v3_1.totalSupply() == sum(self.balances.values())
 
     def teardown(self):
         """
@@ -91,21 +91,21 @@ class StateMachine:
         """
         for account, balance in ((k, v) for k, v in self.balances.items() if v):
             initial = self.token.balanceOf(account)
-            self.gauge_v4.withdraw(balance, {"from": account})
+            self.gauge_v3_1.withdraw(balance, {"from": account})
 
             assert self.token.balanceOf(account) == initial + balance
 
 
-def test_state_machine(state_machine, accounts, gauge_v4, mock_lp_token, no_call_coverage):
+def test_state_machine(state_machine, accounts, gauge_v3_1, mock_lp_token, no_call_coverage):
     # fund accounts to be used in the test
     for acct in accounts[1:5]:
         mock_lp_token.transfer(acct, 10 ** 21, {"from": accounts[0]})
 
-    # approve gauge_v4 from the funded accounts
+    # approve gauge_v3_1 from the funded accounts
     for acct in accounts[:5]:
-        mock_lp_token.approve(gauge_v4, 2 ** 256 - 1, {"from": acct})
+        mock_lp_token.approve(gauge_v3_1, 2 ** 256 - 1, {"from": acct})
 
     # because this is a simple state machine, we use more steps than normal
     settings = {"stateful_step_count": 25, "max_examples": 30}
 
-    state_machine(StateMachine, accounts[:5], gauge_v4, mock_lp_token, settings=settings)
+    state_machine(StateMachine, accounts[:5], gauge_v3_1, mock_lp_token, settings=settings)

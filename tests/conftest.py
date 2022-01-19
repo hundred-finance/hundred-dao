@@ -162,8 +162,8 @@ def reward_contract(CurveRewards, mock_lp_token, accounts, coin_reward):
 
 
 @pytest.fixture(scope="module")
-def gauge_v4(LiquidityGaugeV4, alice, mock_lp_token, minter, reward_policy_maker):
-    yield LiquidityGaugeV4.deploy(mock_lp_token, minter, alice, reward_policy_maker,{"from": alice})
+def gauge_v3_1(LiquidityGaugeV3_1, alice, mock_lp_token, minter, reward_policy_maker):
+    yield LiquidityGaugeV3_1.deploy(mock_lp_token, minter, alice, reward_policy_maker,{"from": alice})
 
 
 @pytest.fixture(scope="module")
@@ -177,14 +177,14 @@ def veboost_proxy(DelegationProxy, alice, veboost_delegation, voting_escrow):
 
 
 @pytest.fixture(scope="module")
-def gauge_v5(LiquidityGaugeV5, alice, mock_lp_token, minter, reward_policy_maker, veboost_proxy):
-    yield LiquidityGaugeV5.deploy(mock_lp_token, minter, alice, reward_policy_maker, veboost_proxy,{"from": alice})
+def gauge_v4_1(LiquidityGaugeV4_1, alice, mock_lp_token, minter, reward_policy_maker, veboost_proxy):
+    yield LiquidityGaugeV4_1.deploy(mock_lp_token, minter, alice, reward_policy_maker, veboost_proxy,{"from": alice})
 
 
 @pytest.fixture(scope="module")
-def three_gauges(LiquidityGaugeV4, reward_policy_maker, accounts, mock_lp_token, minter):
+def three_gauges(LiquidityGaugeV3_1, reward_policy_maker, accounts, mock_lp_token, minter):
     contracts = [
-        LiquidityGaugeV4.deploy(mock_lp_token, minter, accounts[0], reward_policy_maker, {"from": accounts[0]})
+        LiquidityGaugeV3_1.deploy(mock_lp_token, minter, accounts[0], reward_policy_maker, {"from": accounts[0]})
         for _ in range(3)
     ]
 
