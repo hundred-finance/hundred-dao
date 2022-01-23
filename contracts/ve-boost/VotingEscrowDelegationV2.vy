@@ -15,7 +15,7 @@ interface ERC721Receiver:
 
 interface VotingEscrow:
     def balanceOf(_account: address) -> int256: view
-    def locked__end(_addr: address) -> uint256: view
+    def nearest_locked__end(_addr: address) -> uint256: view
 
 
 event Approval:
@@ -615,7 +615,7 @@ def create_boost(
     assert _cancel_time <= expire_time  # dev: cancel time is after expiry
 
     assert expire_time >= block.timestamp + WEEK  # dev: boost duration must be atleast WEEK
-    assert expire_time <= VotingEscrow(self.voting_escrow).locked__end(_delegator)  # dev: boost expiration is past voting escrow lock expiry
+    assert expire_time <= VotingEscrow(self.voting_escrow).nearest_locked__end(_delegator)  # dev: boost expiration is past voting escrow lock expiry
     assert _id < 2 ** 96  # dev: id out of bounds
 
     # [delegator address 160][cancel_time uint40][id uint56]
@@ -680,7 +680,7 @@ def extend_boost(_token_id: uint256, _percentage: int256, _expire_time: uint256,
 
     assert _cancel_time <= expire_time  # dev: cancel time is after expiry
     assert expire_time >= block.timestamp + WEEK  # dev: boost duration must be atleast one day
-    assert expire_time <= VotingEscrow(self.voting_escrow).locked__end(delegator) # dev: boost expiration is past voting escrow lock expiry
+    assert expire_time <= VotingEscrow(self.voting_escrow).nearest_locked__end(delegator) # dev: boost expiration is past voting escrow lock expiry
 
     point: Point = self._deconstruct_bias_slope(token.data)
 
@@ -920,59 +920,6 @@ def token_cancel_time(_token_id: uint256) -> uint256:
     @param _token_id The token id to query
     """
     return self.boost_tokens[_token_id].dinfo % 2 ** 128
-
-
-@view
-@external
-def calc_boost_bias_slope(
-    _delegator: address,
-    _percentage: int256,
-    _expire_time: int256,
-    _extend_token_id: uint256 = 0
-) -> (int256, int256):
-    """
-    @notice Calculate the bias and slope for a boost.
-    @param _delegator The account to delegate boost from
-    @param _percentage The percentage of the _delegator's delegable
-        veCRV to delegate.
-    @param _expire_time The time at which the boost value of the token
-        will reach 0, and subsequently become negative
-    @param _extend_token_id OPTIONAL token id, which if set will first nullify
-        the boost of the token, before calculating the bias and slope. Useful
-        for calculating the new bias and slope when extending a token, or
-        determining the bias and slope of a subsequent token after cancelling
-        an existing one. Will have no effect if _delegator is not the delegator
-        of the token.
-    """
-    time: int256 = convert(block.timestamp, int256)
-    assert _percentage > 0  # dev: percentage must be greater than 0
-    assert _percentage <= MAX_PCT  # dev: percentage must be less than or equal to 100%
-    assert _expire_time > time + WEEK  # dev: Invalid min expiry time
-
-    lock_expiry: int256 = convert(VotingEscrow(self.voting_escrow).locked__end(_delegator), int256)
-    assert _expire_time <= lock_expiry
-
-    ddata: uint256 = self.boost[_delegator].delegated
-
-    if _extend_token_id != 0 and convert(shift(_extend_token_id, -96), address) == _delegator:
-        # decrease the delegated bias and slope by the token's bias and slope
-        # only if it is the delegator's and it is within the bounds of existence
-        ddata -= self.boost_tokens[_extend_token_id].data
-
-    dpoint: Point = self._deconstruct_bias_slope(ddata)
-
-    delegated_boost: int256 = dpoint.slope * time + dpoint.bias
-    assert delegated_boost >= 0  # dev: outstanding negative boosts
-
-    y: int256 = _percentage * (VotingEscrow(self.voting_escrow).balanceOf(_delegator) - delegated_boost) / MAX_PCT
-    assert y > 0  # dev: no boost
-
-    slope: int256 = -y / (_expire_time - time)
-    assert slope < 0  # dev: invalid slope
-
-    bias: int256 = y - slope * time
-
-    return bias, slope
 
 
 @pure

@@ -9,38 +9,38 @@ MONTH = 86400 * 30
 
 
 @pytest.fixture(scope="module", autouse=True)
-def minter_setup(accounts, mock_lp_token, token, gauge_controller, gauge_v3_1):
+def minter_setup(accounts, mock_lp_token, gauge_controller, gauge_v4_1):
 
     # set type
     gauge_controller.add_type(b"Liquidity", 10 ** 18, {"from": accounts[0]})
 
     # add gauge
-    gauge_controller.add_gauge(gauge_v3_1, 0, 10 ** 19, {"from": accounts[0]})
+    gauge_controller.add_gauge(gauge_v4_1, 0, 10 ** 19, {"from": accounts[0]})
 
     # transfer tokens
     for acct in accounts[1:4]:
         mock_lp_token.transfer(acct, 1e18, {"from": accounts[0]})
-        mock_lp_token.approve(gauge_v3_1, 1e18, {"from": acct})
+        mock_lp_token.approve(gauge_v4_1, 1e18, {"from": acct})
 
 
 @given(st_duration=strategy("uint[3]", min_value=WEEK, max_value=MONTH, unique=True))
 @settings(max_examples=30)
-def test_duration(accounts, chain, gauge_v3_1, minter, token, st_duration):
+def test_duration(accounts, chain, gauge_v4_1, minter, token, st_duration):
     accts = accounts[1:]
     chain.sleep(7 * 86400)
 
     deposit_time = []
     for i in range(3):
-        gauge_v3_1.deposit(10 ** 18, {"from": accts[i]})
+        gauge_v4_1.deposit(10 ** 18, {"from": accts[i]})
         deposit_time.append(chain[-1].timestamp)
 
     durations = []
     balances = []
     for i in range(3):
         chain.sleep(st_duration[i])
-        gauge_v3_1.withdraw(10 ** 18, {"from": accts[i]})
+        gauge_v4_1.withdraw(10 ** 18, {"from": accts[i]})
         durations.append(chain[-1].timestamp - deposit_time[i])
-        minter.mint(gauge_v3_1, {"from": accts[i]})
+        minter.mint(gauge_v4_1, {"from": accts[i]})
         balances.append(token.balanceOf(accts[i]))
 
     total_minted = sum(balances)
@@ -56,21 +56,21 @@ def test_duration(accounts, chain, gauge_v3_1, minter, token, st_duration):
 
 @given(st_amounts=strategy("uint[3]", min_value=10 ** 17, max_value=10 ** 18, unique=True))
 @settings(max_examples=30)
-def test_amounts(accounts, chain, gauge_v3_1, minter, token, st_amounts):
+def test_amounts(accounts, chain, gauge_v4_1, minter, token, st_amounts):
     accts = accounts[1:]
 
     deposit_time = []
     for i in range(3):
-        gauge_v3_1.deposit(st_amounts[i], {"from": accts[i]})
+        gauge_v4_1.deposit(st_amounts[i], {"from": accts[i]})
         deposit_time.append(chain[-1].timestamp)
 
     chain.sleep(MONTH)
     balances = []
     for i in range(3):
-        gauge_v3_1.withdraw(st_amounts[i], {"from": accts[i]})
+        gauge_v4_1.withdraw(st_amounts[i], {"from": accts[i]})
 
     for i in range(3):
-        minter.mint(gauge_v3_1, {"from": accts[i]})
+        minter.mint(gauge_v4_1, {"from": accts[i]})
         balances.append(token.balanceOf(accts[i]))
 
     total_deposited = sum(st_amounts)

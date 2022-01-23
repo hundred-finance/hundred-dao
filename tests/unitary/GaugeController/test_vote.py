@@ -56,14 +56,14 @@ def test_vote_multiple(accounts, gauge_controller, three_gauges):
 
 
 def test_vote_no_balance(accounts, gauge_controller, three_gauges):
-    with brownie.reverts("Your token lock expires too soon"):
         gauge_controller.vote_for_gauge_weights(three_gauges[0], 10000, {"from": accounts[1]})
+        assert gauge_controller.vote_user_power(accounts[0]) == 0
 
 
 def test_vote_expired(accounts, chain, gauge_controller, three_gauges):
     chain.sleep(YEAR * 2)
-    with brownie.reverts("Your token lock expires too soon"):
-        gauge_controller.vote_for_gauge_weights(three_gauges[0], 10000, {"from": accounts[0]})
+    gauge_controller.vote_for_gauge_weights(three_gauges[0], 10000, {"from": accounts[0]})
+    assert gauge_controller.vote_user_power(accounts[0]) == 0
 
 
 def test_invalid_gauge_id(accounts, gauge_controller, three_gauges):

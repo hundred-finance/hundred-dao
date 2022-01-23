@@ -8,13 +8,15 @@ All contract sources are within this directory.
 
 ## Contracts
 
-* [`GaugeController`](GaugeController.vy): Controls liquidity gauges and the issuance of HND through the liquidity gauges
-* [`LiquidityGaugeV3_1`](LiquidityGaugeV3_1.vy): Measures the amount of liquidity provided by each user
+* [`GaugeController`](GaugeControllerV2.vy): Controls liquidity gauges and the issuance of HND through the liquidity gauges
 * [`LiquidityGaugeV4_1`](LiquidityGaugeV4_1.vy): Measures the amount of liquidity provided by each user and support veBoost
 * [`RewardPolicyMaker`](RewardPolicyMaker.vy): Defines reward distribution rates and epochs, used by `LiquidityGaugeV3_1`
 * [`Minter`](Minter.vy): Token reward distribution contract
 * [`Treasury`](Treasury.vy): holds rewards to be distributed through `Minter`
 * [`VotingEscrow`](VotingEscrow.vy): Voting contract for locking HND to participate in DAO governance
+* [`MirroredVotingEscrow`](MirroredVotingEscrow.vy): Aggregates veHND balance from different chains
+* [`VotingEscrowDelegation`](ve-boost/VotingEscrowDelegationV2.vy): veBoost contract, enables delegation of unused boost to another wallet
+* [`DelegationProxy`](ve-boost/DelegationProxy.vy): voting escrow proxy, to control switch for veBoost usage
 
 Following diagram shows interactions and dependencies between the contracts as well as the user interfaces for 
 locking HND, voting on gauges and minting rewards

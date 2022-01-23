@@ -125,10 +125,14 @@ def voting_escrow(VotingEscrow, accounts, token):
         token, "Voting-escrowed CRV", "veCRV", "veCRV_0.99", {"from": accounts[0]}
     )
 
+@pytest.fixture(scope="module")
+def mirrored_voting_escrow(MirroredVotingEscrow, accounts, voting_escrow):
+    yield MirroredVotingEscrow.deploy(accounts[0], voting_escrow, {"from": accounts[0]})
+
 
 @pytest.fixture(scope="module")
-def gauge_controller(GaugeController, accounts, token, voting_escrow):
-    yield GaugeController.deploy(token, voting_escrow, {"from": accounts[0]})
+def gauge_controller(GaugeControllerV2, accounts, token, mirrored_voting_escrow):
+    yield GaugeControllerV2.deploy(token, mirrored_voting_escrow, {"from": accounts[0]})
 
 @pytest.fixture(scope="module")
 def minter(Minter, Treasury, token, accounts, gauge_controller):
@@ -142,7 +146,7 @@ def minter(Minter, Treasury, token, accounts, gauge_controller):
 
 
 @pytest.fixture(scope="module")
-def reward_policy_maker(RewardPolicyMaker, accounts, alice, chain):
+def reward_policy_maker(RewardPolicyMaker, accounts):
     reward = 100 * 10 ** 18
     contract = RewardPolicyMaker.deploy(604800, {"from": accounts[0]})
     contract.set_rewards_starting_at(contract.current_epoch() + 1, [reward, reward, reward, reward, reward, reward, reward, reward, reward, reward])
@@ -162,18 +166,13 @@ def reward_contract(CurveRewards, mock_lp_token, accounts, coin_reward):
 
 
 @pytest.fixture(scope="module")
-def gauge_v3_1(LiquidityGaugeV3_1, alice, mock_lp_token, minter, reward_policy_maker):
-    yield LiquidityGaugeV3_1.deploy(mock_lp_token, minter, alice, reward_policy_maker,{"from": alice})
+def veboost_delegation(VotingEscrowDelegationV2, alice, mirrored_voting_escrow):
+    yield VotingEscrowDelegationV2.deploy("Voting Escrow Boost Delegation", "veBoost", "", mirrored_voting_escrow,{"from": alice})
 
 
 @pytest.fixture(scope="module")
-def veboost_delegation(VotingEscrowDelegation, alice, voting_escrow):
-    yield VotingEscrowDelegation.deploy("Voting Escrow Boost Delegation", "veBoost", "", voting_escrow,{"from": alice})
-
-
-@pytest.fixture(scope="module")
-def veboost_proxy(DelegationProxy, alice, veboost_delegation, voting_escrow):
-    yield DelegationProxy.deploy(veboost_delegation, alice, alice, voting_escrow,{"from": alice})
+def veboost_proxy(DelegationProxy, alice, veboost_delegation, mirrored_voting_escrow):
+    yield DelegationProxy.deploy(veboost_delegation, alice, alice, mirrored_voting_escrow,{"from": alice})
 
 
 @pytest.fixture(scope="module")
@@ -182,9 +181,9 @@ def gauge_v4_1(LiquidityGaugeV4_1, alice, mock_lp_token, minter, reward_policy_m
 
 
 @pytest.fixture(scope="module")
-def three_gauges(LiquidityGaugeV3_1, reward_policy_maker, accounts, mock_lp_token, minter):
+def three_gauges(LiquidityGaugeV4_1, reward_policy_maker, accounts, mock_lp_token, minter, veboost_proxy):
     contracts = [
-        LiquidityGaugeV3_1.deploy(mock_lp_token, minter, accounts[0], reward_policy_maker, {"from": accounts[0]})
+        LiquidityGaugeV4_1.deploy(mock_lp_token, minter, accounts[0], reward_policy_maker, veboost_proxy, {"from": accounts[0]})
         for _ in range(3)
     ]
 

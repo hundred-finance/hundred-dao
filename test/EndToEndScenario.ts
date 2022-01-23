@@ -3,18 +3,22 @@ import { ethers } from 'hardhat';
 
 import {
     VotingEscrow__factory,
-    GaugeController__factory,
+    GaugeControllerV2__factory,
     VotingEscrow,
-    GaugeController,
+    MirroredVotingEscrow__factory,
+    MirroredVotingEscrow,
+    GaugeControllerV2,
     Minter__factory,
     Minter,
     RewardPolicyMaker__factory,
     RewardPolicyMaker,
     Treasury__factory,
     Treasury,
-    LiquidityGaugeV31__factory,
+    LiquidityGaugeV41__factory,
+    VotingEscrowDelegationV2__factory,
+    DelegationProxy,
     ERC20TOKEN__factory,
-    ERC20TOKEN
+    ERC20TOKEN, VotingEscrowDelegationV2, DelegationProxy__factory
 } from "../typechain";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 import {BigNumber} from "ethers";
@@ -41,10 +45,19 @@ describe("FeeConverter contract", function () {
     let votingEscrowFactory: VotingEscrow__factory;
     let votingEscrow: VotingEscrow;
 
-    let gaugeControllerFactory: GaugeController__factory;
-    let gaugeController: GaugeController;
+    let mirroredVotingEscrowFactory: MirroredVotingEscrow__factory;
+    let mirroredVotingEscrow: MirroredVotingEscrow;
 
-    let gaugeFactory: LiquidityGaugeV31__factory;
+    let gaugeControllerFactory: GaugeControllerV2__factory;
+    let gaugeController: GaugeControllerV2;
+
+    let delegationProxyFactory: DelegationProxy__factory;
+    let delegationProxy: DelegationProxy;
+
+    let votingEscrowDelegationFactory: VotingEscrowDelegationV2__factory;
+    let votingEscrowDelegation: VotingEscrowDelegationV2;
+
+    let gaugeFactory: LiquidityGaugeV41__factory;
 
     let owner: SignerWithAddress;
     let alice: SignerWithAddress;
@@ -60,9 +73,12 @@ describe("FeeConverter contract", function () {
         rewardPolicyMakerFactory = <RewardPolicyMaker__factory>await ethers.getContractFactory("RewardPolicyMaker");
         treasuryFactory = <Treasury__factory>await ethers.getContractFactory("Treasury");
         votingEscrowFactory = <VotingEscrow__factory>await ethers.getContractFactory("VotingEscrow");
-        gaugeControllerFactory = <GaugeController__factory>await ethers.getContractFactory("GaugeController");
+        mirroredVotingEscrowFactory = <MirroredVotingEscrow__factory>await ethers.getContractFactory("MirroredVotingEscrow");
+        delegationProxyFactory = <DelegationProxy__factory>await ethers.getContractFactory("DelegationProxy");
+        votingEscrowDelegationFactory = <VotingEscrowDelegationV2__factory>await ethers.getContractFactory("VotingEscrowDelegationV2");
+        gaugeControllerFactory = <GaugeControllerV2__factory>await ethers.getContractFactory("GaugeControllerV2");
         minterFactory = <Minter__factory>await ethers.getContractFactory("Minter");
-        gaugeFactory = <LiquidityGaugeV31__factory>await ethers.getContractFactory("LiquidityGaugeV3_1");
+        gaugeFactory = <LiquidityGaugeV41__factory>await ethers.getContractFactory("LiquidityGaugeV4_1");
 
         hnd = await erc20Factory.deploy("Hundred Finance", "HND", 18, 0);
         hndLpToken = await erc20Factory.deploy("Hundred Finance Lp token", "hETH", 18, 0);
@@ -71,8 +87,11 @@ describe("FeeConverter contract", function () {
 
         treasury = await treasuryFactory.deploy(hnd.address);
         votingEscrow = await votingEscrowFactory.deploy(hnd.address, "Voting locked HND", "veHND", "1.0");
-        gaugeController = await gaugeControllerFactory.deploy(hnd.address, votingEscrow.address);
+        mirroredVotingEscrow = await mirroredVotingEscrowFactory.deploy(owner.address, votingEscrow.address);
+        gaugeController = await gaugeControllerFactory.deploy(hnd.address, mirroredVotingEscrow.address);
         minter = await minterFactory.deploy(treasury.address, gaugeController.address);
+        votingEscrowDelegation = await votingEscrowDelegationFactory.deploy("veBoost", "veBoost", "", votingEscrow.address);
+        delegationProxy = await delegationProxyFactory.deploy(votingEscrowDelegation.address, owner.address, owner.address, votingEscrow.address);
 
         await treasury.set_minter(minter.address);
 
@@ -92,8 +111,8 @@ describe("FeeConverter contract", function () {
     describe("Locked voting amount", function () {
         it("Should reflect on the amount of claimable HND per gauge when users vote on gauge weights", async function () {
 
-            let gauge1 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address);
-            let gauge2 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address);
+            let gauge1 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address);
+            let gauge2 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address);
 
             await gaugeController["add_type(string,uint256)"]("Liquidity", ethers.utils.parseEther("10"));
             await gaugeController["add_gauge(address,int128,uint256)"](gauge1.address, 0, 1);
@@ -125,7 +144,7 @@ describe("FeeConverter contract", function () {
 
         it("Should boost user claimable HND within same gauge", async function () {
 
-            let gauge = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address);
+            let gauge = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address);
 
             await gaugeController["add_type(string,uint256)"]("Liquidity", ethers.utils.parseEther("10"));
             await gaugeController["add_gauge(address,int128,uint256)"](gauge.address, 0, 1);
@@ -151,8 +170,8 @@ describe("FeeConverter contract", function () {
         });
 
         it("gauge vote change should reflect on next epoch", async function () {
-            let gauge1 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address);
-            let gauge2 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address);
+            let gauge1 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address);
+            let gauge2 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address);
 
             await gaugeController["add_type(string,uint256)"]("Liquidity", ethers.utils.parseEther("10"));
             await gaugeController["add_gauge(address,int128,uint256)"](gauge1.address, 0, 1);
@@ -183,11 +202,14 @@ describe("FeeConverter contract", function () {
             await minter.connect(bob).mint(gauge2.address);
 
             expect(await rewardPolicyMaker.current_epoch()).equals(BigNumber.from(4));
-            expect(await hnd.balanceOf(alice.address)).equals(ethers.utils.parseEther("167.892316017317593420"));
-            expect(await hnd.balanceOf(bob.address)).equals(ethers.utils.parseEther("16.789246632994672562"));
 
-            await hnd.connect(alice).transfer(owner.address, ethers.utils.parseEther("167.892316017317593420"));
-            await hnd.connect(bob).transfer(owner.address, ethers.utils.parseEther("16.789246632994672562"));
+            let aliceBalance = await hnd.balanceOf(alice.address);
+            let bobBalance = await hnd.balanceOf(bob.address);
+
+            expect(parseFloat(aliceBalance.toString()) / parseFloat(bobBalance.toString())).approximately(10, 0.0001);
+
+            await hnd.connect(alice).transfer(owner.address, aliceBalance);
+            await hnd.connect(bob).transfer(owner.address, bobBalance);
 
             await gaugeController.connect(alice).vote_for_gauge_weights(gauge1.address, 0);
 
@@ -198,11 +220,13 @@ describe("FeeConverter contract", function () {
             await minter.connect(bob).mint(gauge2.address);
 
             expect(await rewardPolicyMaker.current_epoch()).equals(BigNumber.from(5));
-            expect(await hnd.balanceOf(alice.address)).equals(ethers.utils.parseEther("13.925865800865931587"));
-            expect(await hnd.balanceOf(bob.address)).equals(ethers.utils.parseEther("1.392571548821386210"));
+            aliceBalance = await hnd.balanceOf(alice.address);
+            bobBalance = await hnd.balanceOf(bob.address);
 
-            await hnd.connect(alice).transfer(owner.address, ethers.utils.parseEther("13.925865800865931587"));
-            await hnd.connect(bob).transfer(owner.address, ethers.utils.parseEther("1.392571548821386210"));
+            expect(parseFloat(aliceBalance.toString()) / parseFloat(bobBalance.toString())).approximately(10, 0.001);
+
+            await hnd.connect(alice).transfer(owner.address, aliceBalance);
+            await hnd.connect(bob).transfer(owner.address, bobBalance);
 
             await ethers.provider.send("evm_increaseTime", [DAY * 14]);
             await ethers.provider.send("evm_mine", []);
@@ -211,8 +235,11 @@ describe("FeeConverter contract", function () {
             await minter.connect(bob).mint(gauge2.address);
 
             expect(await rewardPolicyMaker.current_epoch()).equals(BigNumber.from(7));
-            expect(await hnd.balanceOf(alice.address)).equals(ethers.utils.parseEther("0"));
-            expect(await hnd.balanceOf(bob.address)).equals(ethers.utils.parseEther("99.999999999999791896"));
+            aliceBalance = await hnd.balanceOf(alice.address);
+            bobBalance = await hnd.balanceOf(bob.address);
+
+            expect(aliceBalance).equals(ethers.utils.parseEther("0"));
+            expect(parseFloat(bobBalance.toString()) / 1e18).approximately(100, 0.0000001);
 
         });
 
