@@ -3,7 +3,7 @@ import {
     MerkleClaimERC20__factory,
 } from "../../typechain";
 import {getChainName} from "./utils/helpers";
-import MerkleTree from "./merkleTree.json";
+import MerkleTree from "./merkleTree-snapshot-2.json";
 
 const WFTM = "0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83";
 

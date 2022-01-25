@@ -1,5 +1,5 @@
 import fs from "fs";
-import Balances from "./balances.json";
+import Balances from "./balances-snapshot-2.json";
 import {mapToObj} from "./utils/helpers";
 
 const AirdropAmount = 18750 * 1e18
@@ -26,7 +26,7 @@ async function calculateAirdropAmounts() {
 
     console.log(`Found ${airdropAmounts.size} users`)
 
-    fs.writeFileSync(`./scripts/users/airdrop.json`,
+    fs.writeFileSync(`./scripts/users/airdrop-snapshot-2.json`,
         JSON.stringify(mapToObj(airdropAmounts), null, 4)
     );
 }

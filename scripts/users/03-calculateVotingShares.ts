@@ -1,7 +1,8 @@
 import fs from "fs";
-import FantomBalances from "./balances/fantom.json";
-import HarmonyBalances from "./balances/harmony.json";
-import ArbitrumBalances from "./balances/arbitrum.json";
+import FantomBalances from "./balances/fantom-snapshot-2.json";
+// import HarmonyBalances from "./balances/harmony-snapshot-2.json";
+import ArbitrumBalances from "./balances/arbitrum-snapshot-2.json";
+import MoonRiverBalances from "./balances/moonriver-snapshot-2.json";
 
 calculateVotingShares()
     .then(() => process.exit(0))
@@ -12,7 +13,7 @@ calculateVotingShares()
 
 async function calculateVotingShares() {
     let votingShares: Array<UserShare> = []
-    let balances = [...FantomBalances, ...HarmonyBalances, ...ArbitrumBalances]
+    let balances = [...FantomBalances, ...ArbitrumBalances, ...MoonRiverBalances]
     let totalVeHnd = balances.map(b => parseInt(b.balance)).reduce((a, b) => a + b)
 
     for (let i = 0 ; i < balances.length; i++) {
@@ -32,7 +33,7 @@ async function calculateVotingShares() {
 
     console.log(`Found ${votingShares.length} users`)
 
-    fs.writeFileSync(`./scripts/users/balances.json`,
+    fs.writeFileSync(`./scripts/users/balances-snapshot-2.json`,
         JSON.stringify(
             votingShares.sort((a, b) => +b.ve_hnd_balance - +a.ve_hnd_balance),
             null, 4

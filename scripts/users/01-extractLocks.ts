@@ -7,7 +7,7 @@ import * as VotingEscrowArtifact from "../../artifacts/contracts/VotingEscrow.vy
 
 import * as fs from "fs";
 import {Contract} from "ethers";
-import {BlockLimits} from "./blocks";
+import {BlockLimits} from "./blocks-snapshot-2";
 import {Deployment, getChainName, patchAbiGasFields} from "./utils/helpers";
 
 extractLocks()
@@ -57,6 +57,6 @@ export async function extractLocks() {
 
         console.log(`Found ${locks.length} Locks`);
 
-        fs.writeFileSync(`./scripts/users/snapshots/${chainName}-locks.json`, JSON.stringify(locks, null, 4));
+        fs.writeFileSync(`./scripts/users/snapshots/${chainName}-snapshot-2.json`, JSON.stringify(locks, null, 4));
     }
 }

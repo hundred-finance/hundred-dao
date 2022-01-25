@@ -1,5 +1,5 @@
 import {MerkleTree} from "merkletreejs";
-import Airdrop from "./airdrop.json";
+import Airdrop from "./airdrop-snapshot-1.json";
 import {ethers} from "ethers";
 import keccak256 from "keccak256";
 
