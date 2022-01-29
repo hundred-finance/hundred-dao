@@ -1,14 +1,14 @@
 import { ethers } from 'hardhat';
 import {
     VotingEscrow,
-} from "../../typechain";
+} from "../../../typechain";
 
-import * as VotingEscrowArtifact from "../../artifacts/contracts/VotingEscrow.vy/VotingEscrow.json";
+import * as VotingEscrowArtifact from "../../../artifacts/contracts/VotingEscrow.vy/VotingEscrow.json";
 
 import * as fs from "fs";
 import {Contract} from "ethers";
 import {BlockLimits} from "./blocks-snapshot-2";
-import {Deployment, getChainName, patchAbiGasFields} from "./utils/helpers";
+import {Deployment, getChainName, patchAbiGasFields} from "../utils/helpers";
 
 extractLocks()
     .then(() => process.exit(0))

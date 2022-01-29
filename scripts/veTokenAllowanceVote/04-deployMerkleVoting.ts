@@ -2,7 +2,7 @@ import {ethers} from "hardhat";
 import {
     MerkleVoting__factory,
 } from "../../typechain";
-import {getChainName} from "../users/utils/helpers";
+import {getChainName} from "../airdrops/utils/helpers";
 
 const START_TIMESTAMP = 0
 const END_TIMESTAMP = 0

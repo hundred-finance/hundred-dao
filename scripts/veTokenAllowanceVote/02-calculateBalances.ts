@@ -6,8 +6,8 @@ import fs from "fs";
 import {BigNumber, Contract} from "ethers";
 import * as VotingEscrowArtifact from "../../artifacts/contracts/VotingEscrow.vy/VotingEscrow.json";
 import {BlockLimits} from "./blocks";
-import {Deployment, getChainName, patchAbiGasFields} from "../users/utils/helpers";
-import {mapToObj} from "../users/utils/helpers";
+import {Deployment, getChainName, patchAbiGasFields} from "../airdrops/utils/helpers";
+import {mapToObj} from "../airdrops/utils/helpers";
 
 queryUserVeHndBalances()
     .then(() => process.exit(0))

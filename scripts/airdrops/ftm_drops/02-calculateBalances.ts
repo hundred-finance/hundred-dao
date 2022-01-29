@@ -1,12 +1,12 @@
 import { ethers } from 'hardhat';
 import {
     VotingEscrow,
-} from "../../typechain";
+} from "../../../typechain";
 import fs from "fs";
 import {BigNumber, Contract} from "ethers";
-import * as VotingEscrowArtifact from "../../artifacts/contracts/VotingEscrow.vy/VotingEscrow.json";
+import * as VotingEscrowArtifact from "../../../artifacts/contracts/VotingEscrow.vy/VotingEscrow.json";
 import {BlockLimits} from "./blocks-snapshot-2";
-import {Deployment, getChainName, patchAbiGasFields} from "./utils/helpers";
+import {Deployment, getChainName, patchAbiGasFields} from "../utils/helpers";
 
 queryUserVeHndBalances()
     .then(() => process.exit(0))

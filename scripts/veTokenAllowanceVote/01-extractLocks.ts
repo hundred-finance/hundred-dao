@@ -8,7 +8,7 @@ import * as VotingEscrowArtifact from "../../artifacts/contracts/VotingEscrow.vy
 import * as fs from "fs";
 import {Contract} from "ethers";
 import {BlockLimits} from "./blocks";
-import {Deployment, getChainName, patchAbiGasFields} from "../users/utils/helpers";
+import {Deployment, getChainName, patchAbiGasFields} from "../airdrops/utils/helpers";
 
 extractLocks()
     .then(() => process.exit(0))

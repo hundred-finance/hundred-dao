@@ -109,7 +109,7 @@ describe("FeeConverter contract", function () {
     });
 
     describe("Locked voting amount", function () {
-        it("Should reflect on the amount of claimable HND per gauge when users vote on gauge weights", async function () {
+        it("Should reflect on the amount of claimable HND per gauge when airdrops vote on gauge weights", async function () {
 
             let gauge1 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address);
             let gauge2 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address);

@@ -1,6 +1,6 @@
 import fs from "fs";
 import Balances from "./balances-snapshot-2.json";
-import {mapToObj} from "./utils/helpers";
+import {mapToObj} from "../utils/helpers";
 
 const AirdropAmount = 18750 * 1e18
 

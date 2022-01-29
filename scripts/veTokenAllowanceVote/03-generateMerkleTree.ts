@@ -1,7 +1,7 @@
-import Generator from "../users/utils/merkleTreeGenerator";
+import Generator from "../airdrops/utils/merkleTreeGenerator";
 
 import {ethers} from "hardhat";
-import {getChainName} from "../users/utils/helpers";
+import {getChainName} from "../airdrops/utils/helpers";
 
 (async () => {
     const [deployer] = await ethers.getSigners();
