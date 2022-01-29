@@ -36,7 +36,7 @@ export function getChainName(id: number) {
     return "ethereum";
 }
 
-export function mapToObj(m: Map<string, string>) {
+export function mapToObj(m: Map<any, any>) {
     return Array.from(m).reduce((obj: any, [key, value]) => {
         obj[key] = value;
         return obj;
