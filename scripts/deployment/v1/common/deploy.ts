@@ -10,14 +10,14 @@ import {
     GaugeController,
     Minter__factory,
     Minter, LiquidityGaugeV31__factory, LiquidityGaugeV31, SmartWalletChecker__factory, SmartWalletChecker
-} from "../../../typechain";
+} from "../../../../typechain";
 
-import * as GaugeControllerArtifact from "../../../artifacts/contracts/GaugeController.vy/GaugeController.json";
-import * as VotingEscrowArtifact from "../../../artifacts/contracts/VotingEscrow.vy/VotingEscrow.json";
-import * as RewardPolicyMakerArtifact from "../../../artifacts/contracts/RewardPolicyMaker.vy/RewardPolicyMaker.json";
-import * as TreasuryArtifact from "../../../artifacts/contracts/Treasury.vy/Treasury.json";
-import * as LiquidityGaugeV31Artifact from "../../../artifacts/contracts/LiquidityGaugeV3_1.vy/LiquidityGaugeV3_1.json";
-import * as SmartWalletCheckerArtifact from "../../../artifacts/contracts/SmartWalletChecker.vy/SmartWalletChecker.json";
+import * as GaugeControllerArtifact from "../../../../artifacts/contracts/GaugeController.vy/GaugeController.json";
+import * as VotingEscrowArtifact from "../../../../artifacts/contracts/VotingEscrow.vy/VotingEscrow.json";
+import * as RewardPolicyMakerArtifact from "../../../../artifacts/contracts/RewardPolicyMaker.vy/RewardPolicyMaker.json";
+import * as TreasuryArtifact from "../../../../artifacts/contracts/Treasury.vy/Treasury.json";
+import * as LiquidityGaugeV31Artifact from "../../../../artifacts/contracts/LiquidityGaugeV3_1.vy/LiquidityGaugeV3_1.json";
+import * as SmartWalletCheckerArtifact from "../../../../artifacts/contracts/SmartWalletChecker.vy/SmartWalletChecker.json";
 
 import * as fs from "fs";
 import {BigNumber, BigNumberish, Contract} from "ethers";
