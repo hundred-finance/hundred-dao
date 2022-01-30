@@ -562,7 +562,7 @@ def vote_for_gauge_weights(_gauge_addr: address, _user_weight: uint256):
     self._vote_for_gauge_weights(msg.sender, 0, _gauge_addr, _user_weight)
     
     _chain_count: uint256 = VotingEscrow(self.voting_escrow).mirrored_chains_count()
-    for i in range(500):
+    for i in range(499):
         if i >= _chain_count:
             break
         

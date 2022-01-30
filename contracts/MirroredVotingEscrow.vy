@@ -166,22 +166,26 @@ def _checkpoint(addr: address, _chain: uint256, old_locked: LockedBalance, new_l
         self.mirrored_user_point_epoch[addr][_chain] = user_epoch
         u_new.ts = block.timestamp
         u_new.blk = block.number
-        self.mirrored_user_point_history[addr][user_epoch][_chain] = u_new
+        self.mirrored_user_point_history[addr][_chain][user_epoch] = u_new
 
 
 @external
 def mirror_lock(_user: address, _chain: uint256, _value: uint256, _unlock_time: uint256):
     assert self.whitelisted_mirrors[msg.sender] == True # dev: only whitelisted address can mirror locks
 
-    old_locked: LockedBalance = self.mirrored_locks[msg.sender][_chain]
+    old_locked: LockedBalance = self.mirrored_locks[_user][_chain]
     new_locked: LockedBalance = old_locked
     
-    new_locked.amount += convert(_value, int128)
-    if _unlock_time != 0:
-        new_locked.end = _unlock_time
+    new_locked.amount = convert(_value, int128)
+    new_locked.end = _unlock_time
+
+    self.mirrored_locks[_user][_chain] = new_locked
 
     chain_already_mirrored: bool = False
-    for i in range(500):
+    for i in range(499):
+        if i >= self.mirrored_chains_count:
+            break
+
         if self.mirrored_chains[i] == _chain:
             chain_already_mirrored = True
             break
@@ -216,7 +220,7 @@ def user_last_checkpoint_ts(_user: address) -> uint256:
     _epoch: uint256 = VotingEscrow(self.voting_escrow).user_point_epoch(_user)
     _ts: uint256 = VotingEscrow(self.voting_escrow).user_point_history__ts(_user, _epoch)
 
-    for i in range(500):
+    for i in range(499):
         if i >= self.mirrored_chains_count:
             break
 
@@ -288,9 +292,9 @@ def totalSupply(_t: uint256 = block.timestamp) -> uint256:
 @view
 def _mirrored_balance_of(addr: address, _t: uint256) -> uint256:
     _chain_count: uint256 = self.mirrored_chains_count
-    _mirroed_balance: uint256 = 0
+    _mirrored_balance: uint256 = 0
 
-    for i in range(500):
+    for i in range(499):
         if i >= _chain_count:
             break
 
@@ -302,9 +306,9 @@ def _mirrored_balance_of(addr: address, _t: uint256) -> uint256:
             _last_point.bias -= _last_point.slope * convert(_t - _last_point.ts, int128)
             if _last_point.bias < 0:
                 _last_point.bias = 0
-            _mirroed_balance += convert(_last_point.bias, uint256)
+            _mirrored_balance += convert(_last_point.bias, uint256)
 
-    return _mirroed_balance
+    return _mirrored_balance
 
 
 @external
@@ -337,7 +341,7 @@ def locked__end(_addr: address, _chain: uint256 = 0) -> uint256:
 def nearest_locked__end(_addr: address) -> uint256:
     _lock_end: uint256 = VotingEscrow(self.voting_escrow).locked__end(_addr)
     _chain_count: uint256 = self.mirrored_chains_count
-    for i in range(500):
+    for i in range(499):
         if i >= _chain_count:
             break
         

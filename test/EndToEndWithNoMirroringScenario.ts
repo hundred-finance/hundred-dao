@@ -23,7 +23,7 @@ import {
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 import {BigNumber} from "ethers";
 
-describe("FeeConverter contract", function () {
+describe("End to End with no mirroring", function () {
 
     const DAY = 86400;
     const A_YEAR_FROM_NOW = 1668902400
@@ -90,8 +90,8 @@ describe("FeeConverter contract", function () {
         mirroredVotingEscrow = await mirroredVotingEscrowFactory.deploy(owner.address, votingEscrow.address);
         gaugeController = await gaugeControllerFactory.deploy(hnd.address, mirroredVotingEscrow.address);
         minter = await minterFactory.deploy(treasury.address, gaugeController.address);
-        votingEscrowDelegation = await votingEscrowDelegationFactory.deploy("veBoost", "veBoost", "", votingEscrow.address);
-        delegationProxy = await delegationProxyFactory.deploy(votingEscrowDelegation.address, owner.address, owner.address, votingEscrow.address);
+        votingEscrowDelegation = await votingEscrowDelegationFactory.deploy("veBoost", "veBoost", "", mirroredVotingEscrow.address);
+        delegationProxy = await delegationProxyFactory.deploy(votingEscrowDelegation.address, owner.address, owner.address, mirroredVotingEscrow.address);
 
         await treasury.set_minter(minter.address);
 
@@ -109,7 +109,7 @@ describe("FeeConverter contract", function () {
     });
 
     describe("Locked voting amount", function () {
-        it("Should reflect on the amount of claimable HND per gauge when airdrops vote on gauge weights", async function () {
+        it("Should reflect on the amount of claimable HND per gauge when users vote on gauge weights", async function () {
 
             let gauge1 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address);
             let gauge2 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address);
