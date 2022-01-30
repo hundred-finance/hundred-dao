@@ -47,7 +47,7 @@ describe("MerkleClaimMultipleER20 contract", function () {
         claimToken2 = await erc20Factory.deploy("CLAIM2", "CLM2", 18, 0);
         merkleClaim = await merkleClaimFactory.deploy();
 
-        await merkleClaim.setNewDrop(merkleRoot, [claimToken1.address, claimToken2.address]);
+        await merkleClaim.addDrop(merkleRoot, [claimToken1.address, claimToken2.address]);
 
         await claimToken1.mint(merkleClaim.address, ethers.utils.parseEther("10000"));
         await claimToken2.mint(merkleClaim.address, ethers.utils.parseEther("10000"));
@@ -98,12 +98,14 @@ describe("MerkleClaimMultipleER20 contract", function () {
             await merkleClaim.claim(eligibleUser, airdrop[eligibleUser], hexProof, 0);
             expect(await claimToken1.balanceOf(eligibleUser)).to.be.equals(airdrop[eligibleUser][0]);
             expect(await claimToken2.balanceOf(eligibleUser)).to.be.equals(airdrop[eligibleUser][1]);
+            expect(await merkleClaim.hasClaimed(eligibleUser, 0)).to.be.equals(true);
         });
 
         it("Should fail for eligible user if drop is closed", async function () {
             await merkleClaim.connect(owner).closeDrop(0);
             expect(merkleClaim.claim(eligibleUser, airdrop[eligibleUser], hexProof, 0))
                 .to.be.revertedWith("Drop is closed");
+            expect(await merkleClaim.hasClaimed(eligibleUser, 0)).to.be.equals(false);
         });
 
         it("Should fail for non eligible user with valid proof", async function () {

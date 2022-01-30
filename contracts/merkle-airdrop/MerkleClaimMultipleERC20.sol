@@ -14,6 +14,19 @@ contract MerkleClaimMultipleERC20 is ExternalMulticall, Ownable, Pausable {
 
     constructor() {}
 
+    struct DropMetadata {
+        bool isClosed;
+        bytes32 merkleRoot;
+        IERC20[] tokens;
+        mapping(address => bool) hasClaimed;
+    }
+
+    event Claim(uint indexed dropId, address indexed to, address token, uint256 amount);
+
+    event DropAdded(uint indexed dropId);
+
+    event DropClosed(uint indexed dropId);
+
     function claim(address _to, uint256[] calldata _amounts, bytes32[] calldata _proof, uint _dropId) external whenNotPaused {
         require(_dropId < drops.length, "Invalid drop id");
 
@@ -37,17 +50,25 @@ contract MerkleClaimMultipleERC20 is ExternalMulticall, Ownable, Pausable {
         }
     }
 
-    function setNewDrop(bytes32 _merkleRoot, IERC20[] calldata _tokens) external onlyOwner {
+    function hasClaimed(address _to, uint _dropId) external view returns (bool) {
+        return drops[_dropId].hasClaimed[_to];
+    }
+
+    function addDrop(bytes32 _merkleRoot, IERC20[] calldata _tokens) external onlyOwner {
         uint256 index_ = drops.length;
         drops.push();
 
         DropMetadata storage newDrop_ = drops[index_];
         newDrop_.merkleRoot = _merkleRoot;
         newDrop_.tokens = _tokens;
+
+        emit DropAdded(index_);
     }
 
     function closeDrop(uint _dropId) external onlyOwner {
         drops[_dropId].isClosed = true;
+
+        emit DropClosed(_dropId);
     }
 
     function sweepUnclaimedFunds(IERC20 _token) external onlyOwner {
@@ -64,14 +85,5 @@ contract MerkleClaimMultipleERC20 is ExternalMulticall, Ownable, Pausable {
     function unPause() external onlyOwner whenPaused {
         _unpause();
     }
-
-    struct DropMetadata {
-        bool isClosed;
-        bytes32 merkleRoot;
-        IERC20[] tokens;
-        mapping(address => bool) hasClaimed;
-    }
-
-    event Claim(uint indexed dropId, address indexed to, address token, uint256 amount);
 
 }
