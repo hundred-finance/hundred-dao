@@ -31,12 +31,12 @@ export async function deployMerkleClaim() {
     }
 
     const merkleClaimFactory: MerkleClaimMultipleERC20__factory =
-        <MerkleClaimMultipleERC20__factory>await ethers.getContractFactory("MerkleClaimERC20");
+        <MerkleClaimMultipleERC20__factory>await ethers.getContractFactory("MerkleClaimMultipleERC20");
 
     let merkleClaim = await merkleClaimFactory.deploy();
     await merkleClaim.deployed();
 
-    let trx = await merkleClaim.setNewDrop(merkleRoot, [WFTM, HND]);
+    let trx = await merkleClaim.addDrop(merkleRoot, [WFTM, HND]);
     await trx.wait();
 
     trx = await merkleClaim.transferOwnership(HUNDRED_SAFE);
