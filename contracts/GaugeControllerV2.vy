@@ -495,9 +495,6 @@ def _vote_for_gauge_weights(_user: address, _chain: uint256, _gauge_addr: addres
     if lock_end <= next_time:
         return
 
-    assert (_user_weight >= 0) and (_user_weight <= 10000), "You used all your voting power"
-    assert block.timestamp >= self.last_user_vote[_user][_gauge_addr] + WEIGHT_VOTE_DELAY, "Cannot vote so often"
-
     gauge_type: int128 = self.gauge_types_[_gauge_addr] - 1
     assert gauge_type >= 0, "Gauge not added"
     # Prepare slopes and biases in memory
@@ -559,6 +556,9 @@ def vote_for_gauge_weights(_gauge_addr: address, _user_weight: uint256):
     @param _gauge_addr Gauge which `msg.sender` votes for
     @param _user_weight Weight for a gauge in bps (units of 0.01%). Minimal is 0.01%. Ignored if 0
     """
+    assert (_user_weight >= 0) and (_user_weight <= 10000), "You used all your voting power"
+    assert block.timestamp >= self.last_user_vote[msg.sender][_gauge_addr] + WEIGHT_VOTE_DELAY, "Cannot vote so often"
+
     self._vote_for_gauge_weights(msg.sender, 0, _gauge_addr, _user_weight)
     
     _chain_count: uint256 = VotingEscrow(self.voting_escrow).mirrored_chains_count()
