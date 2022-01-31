@@ -24,11 +24,13 @@ import {
 
 import * as GaugeControllerV2Artifact from "../../../../artifacts/contracts/GaugeControllerV2.vy/GaugeControllerV2.json";
 import * as VotingEscrowArtifact from "../../../../artifacts/contracts/VotingEscrow.vy/VotingEscrow.json";
+import * as MirroredVotingEscrowArtifact from "../../../../artifacts/contracts/MirroredVotingEscrow.vy/MirroredVotingEscrow.json";
 import * as RewardPolicyMakerArtifact from "../../../../artifacts/contracts/RewardPolicyMaker.vy/RewardPolicyMaker.json";
 import * as TreasuryArtifact from "../../../../artifacts/contracts/Treasury.vy/Treasury.json";
 import * as LiquidityGaugeV41Artifact from "../../../../artifacts/contracts/LiquidityGaugeV4_1.vy/LiquidityGaugeV4_1.json";
 import * as SmartWalletCheckerArtifact from "../../../../artifacts/contracts/SmartWalletChecker.vy/SmartWalletChecker.json";
 import * as DelegationProxyArtifact from "../../../../artifacts/contracts/ve-boost/DelegationProxy.vy/DelegationProxy.json";
+import * as VotingEscrowDelegationV2Artifact from "../../../../artifacts/contracts/ve-boost/VotingEscrowDelegationV2.vy/VotingEscrowDelegationV2.json";
 
 import * as fs from "fs";
 import {Contract} from "ethers";
@@ -170,6 +172,14 @@ export async function transferOwnership(newOwner: string, deployName: string) {
         await trx.wait();
     }
 
+    if (deployments.MirroredVotingEscrow) {
+        let votingEscrow: MirroredVotingEscrow =
+            <MirroredVotingEscrow>new Contract(deployments.MirroredVotingEscrow, patchAbiGasFields(MirroredVotingEscrowArtifact.abi), deployer);
+
+        let trx = await votingEscrow.set_admin(newOwner);
+        await trx.wait();
+    }
+
     if (deployments.RewardPolicyMaker) {
         let rewardPolicyMaker: RewardPolicyMaker =
             <RewardPolicyMaker>new Contract(deployments.RewardPolicyMaker, patchAbiGasFields(RewardPolicyMakerArtifact.abi), deployer);
@@ -181,6 +191,23 @@ export async function transferOwnership(newOwner: string, deployName: string) {
     if (deployments.Treasury) {
         let treasury: Treasury = <Treasury>new Contract(deployments.Treasury, patchAbiGasFields(TreasuryArtifact.abi), deployer);
         let trx = await treasury.set_admin(newOwner);
+        await trx.wait();
+    }
+
+    if (deployments.DelegationProxy) {
+        let contract: DelegationProxy =
+            <DelegationProxy>new Contract(deployments.DelegationProxy, patchAbiGasFields(DelegationProxyArtifact.abi), deployer);
+        let trx = await contract.commit_set_admins(newOwner, newOwner);
+        await trx.wait();
+
+        trx = await contract.apply_set_admins();
+        await trx.wait();
+    }
+
+    if (deployments.VotingEscrowDelegationV2) {
+        let contract: VotingEscrowDelegationV2 =
+            <VotingEscrowDelegationV2>new Contract(deployments.VotingEscrowDelegationV2, patchAbiGasFields(VotingEscrowDelegationV2Artifact.abi), deployer);
+        let trx = await contract.commit_transfer_ownership(newOwner);
         await trx.wait();
     }
 

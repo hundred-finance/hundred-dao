@@ -44,6 +44,14 @@ const config: HardhatUserConfig = {
       url: `https://rpc.moonriver.moonbeam.network`,
       accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
     },
+    optimism: {
+      url: `https://mainnet.optimism.io`,
+      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
+    },
+    gnosis: {
+      url: `https://rpc.gnosischain.com`,
+      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
+    },
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY
