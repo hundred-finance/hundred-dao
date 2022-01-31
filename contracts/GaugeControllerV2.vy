@@ -87,7 +87,7 @@ gauges: public(address[1000000000])
 gauge_types_: HashMap[address, int128]
 
 vote_user_slopes: public(HashMap[address, HashMap[address, HashMap[uint256, VotedSlope]]])  # user -> gauge_addr -> chain -> VotedSlope
-vote_user_power: public(HashMap[address, uint256])  # Total vote power used by user
+vote_user_power: public(HashMap[address, HashMap[uint256, uint256]])  # Total vote power used by user and chain
 last_user_vote: public(HashMap[address, HashMap[address, uint256]])  # Last user vote's timestamp for each gauge address
 
 # Past and scheduled points for gauge weight, sum of weights per type, total weight
@@ -512,9 +512,9 @@ def _vote_for_gauge_weights(_user: address, _chain: uint256, _gauge_addr: addres
     new_bias: uint256 = new_slope.slope * new_dt
 
     # Check and update powers (weights) used
-    power_used: uint256 = self.vote_user_power[_user]
+    power_used: uint256 = self.vote_user_power[_user][_chain]
     power_used = power_used + new_slope.power - old_slope.power
-    self.vote_user_power[_user] = power_used
+    self.vote_user_power[_user][_chain] = power_used
     assert (power_used >= 0) and (power_used <= 10000), 'Used too much power'
 
     ## Remove old and schedule new slope changes
@@ -570,6 +570,29 @@ def vote_for_gauge_weights(_gauge_addr: address, _user_weight: uint256):
         self._vote_for_gauge_weights(msg.sender, _chain, _gauge_addr, _user_weight)
 
     log VoteForGauge(block.timestamp, msg.sender, _gauge_addr, _user_weight)
+
+
+@external
+@view
+def user_vote_power(addr: address) -> uint256:
+    _local_chain_power: uint256 = self.vote_user_power[addr][0]
+    if _local_chain_power > 0:
+        return _local_chain_power
+
+    _chain_count: uint256 = VotingEscrow(self.voting_escrow).mirrored_chains_count()
+    _used_power: uint256 = 0
+    for i in range(499):
+        if i >= _chain_count:
+            break
+
+        _chain: uint256 = VotingEscrow(self.voting_escrow).mirrored_chains(i)
+        if _used_power == 0:
+            _used_power = self.vote_user_power[addr][_chain]
+
+        if _used_power > 0:
+            break
+
+    return _used_power
 
 
 @external

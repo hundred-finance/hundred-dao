@@ -216,6 +216,7 @@ def user_point_history__ts(_addr: address, _idx: uint256, _chain: uint256 = 0) -
 
 
 @external
+@view
 def user_last_checkpoint_ts(_user: address) -> uint256:
     _epoch: uint256 = VotingEscrow(self.voting_escrow).user_point_epoch(_user)
     _ts: uint256 = VotingEscrow(self.voting_escrow).user_point_history__ts(_user, _epoch)

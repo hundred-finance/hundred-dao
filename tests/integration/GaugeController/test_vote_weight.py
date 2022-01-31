@@ -65,7 +65,7 @@ def test_gauge_weight_vote(
 
     # Vote power assertions - everyone used all voting power
     for acct in accounts[:3]:
-        assert gauge_controller.vote_user_power(acct) == 10000
+        assert gauge_controller.user_vote_power(acct) == 10000
 
     # Calculate slope data, build model functions
     slope_data = []
