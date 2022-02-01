@@ -87,7 +87,7 @@ describe("End to End with Multi Chain Mirroring", function () {
 
         treasury = await treasuryFactory.deploy(hnd.address);
         votingEscrow = await votingEscrowFactory.deploy(hnd.address, "Voting locked HND", "veHND", "1.0");
-        mirroredVotingEscrow = await mirroredVotingEscrowFactory.deploy(owner.address, votingEscrow.address);
+        mirroredVotingEscrow = await mirroredVotingEscrowFactory.deploy(owner.address, votingEscrow.address, "Mirroed Voting locked HND", "mveHND", "1.0");
         gaugeController = await gaugeControllerFactory.deploy(hnd.address, mirroredVotingEscrow.address);
         minter = await minterFactory.deploy(treasury.address, gaugeController.address);
         votingEscrowDelegation = await votingEscrowDelegationFactory.deploy("veBoost", "veBoost", "", mirroredVotingEscrow.address);

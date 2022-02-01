@@ -1,0 +1,16 @@
+{
+    "Gauges": [
+        {
+            "id": "hETH",
+            "address": "0xaEFF8f05b8DeFD2ddbFF4Fb654147d5d7B32731A"
+        }
+    ],
+    "MirroredVotingEscrow": "0xaF0E9990c0A4129b3C73187a9f9588A18E9D8233",
+    "Treasury": "0x7cc391B17a4e76F0eb96B5Caef22d184708fb3B8",
+    "RewardPolicyMaker": "0x6aDd45C2759fba789031370a8544A33C33E2335d",
+    "GaugeControllerV2": "0x7c40d0F85d40f8d9410566eD0554204a7e6f52DE",
+    "Minter": "0xF5cb87456e4cCE301051c336eBf8050BCd7A7442",
+    "VotingEscrowDelegationV2": "0xBB70A4727c8Fb242c6621d2e57c7d85219403aA6",
+    "DelegationProxy": "0xea22c0f90768f3343c8ef13542D348498560ee53",
+    "VotingEscrow": "0xbeD8EFa1973F6E1fB3515bf94aa760174431b3F8"
+}

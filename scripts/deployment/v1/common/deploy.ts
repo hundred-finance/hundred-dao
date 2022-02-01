@@ -84,7 +84,7 @@ export async function deploy(hnd: string, pools: any[], deployName: string) {
     await addGaugeTypeTrx.wait();
 
     const gaugeV4Factory: LiquidityGaugeV31__factory =
-        <LiquidityGaugeV31__factory>await ethers.getContractFactory("LiquidityGaugeV31");
+        <LiquidityGaugeV31__factory>await ethers.getContractFactory("LiquidityGaugeV3_1");
 
     for (let i = 0; i < pools.length; i++) {
         const pool = pools[i];
@@ -181,7 +181,7 @@ export async function deployNewGauge(
             <GaugeController>new Contract(deployments.GaugeController, patchAbiGasFields(GaugeControllerArtifact.abi), deployer);
 
         const gaugeV4Factory: LiquidityGaugeV31__factory =
-            <LiquidityGaugeV31__factory>await ethers.getContractFactory("LiquidityGaugeV31");
+            <LiquidityGaugeV31__factory>await ethers.getContractFactory("LiquidityGaugeV3_1");
 
         const gauge: LiquidityGaugeV31 = await gaugeV4Factory.deploy(
             token, deployments.Minter, admin, deployments.RewardPolicyMaker

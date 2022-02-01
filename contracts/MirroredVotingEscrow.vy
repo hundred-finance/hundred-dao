@@ -12,6 +12,7 @@ interface VotingEscrow:
     def locked__end(_addr: address) -> uint256: view
     def totalSupply(_t: uint256) -> uint256: view
     def balanceOf(_addr: address, _t: uint256) -> uint256: view
+    def decimals() -> uint256: view
 
 struct Point:
     bias: int128
@@ -42,13 +43,24 @@ mirrored_epoch: public(uint256)
 mirrored_point_history: public(Point[100000000000000000000000000000])  # epoch -> unsigned point
 mirrored_slope_changes: public(HashMap[uint256, int128])  # time -> signed slope change
 
+name: public(String[64])
+symbol: public(String[32])
+version: public(String[32])
+decimals: public(uint256)
+
 WEEK: constant(uint256) = 7 * 86400  # all future times are rounded by week
 MAXTIME: constant(uint256) = 4 * 365 * 86400  # 4 years
 MULTIPLIER: constant(uint256) = 10 ** 18
 
 @external
-def __init__(_admin: address, _voting_escrow: address):
+def __init__(_admin: address, _voting_escrow: address, _name: String[64], _symbol: String[32], _version: String[32]):
     self.admin = _admin
+
+    self.name = _name
+    self.symbol = _symbol
+    self.version = _version
+    self.decimals = VotingEscrow(_voting_escrow).decimals()
+
     self.voting_escrow = _voting_escrow
 
 

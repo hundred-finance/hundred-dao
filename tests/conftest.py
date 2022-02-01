@@ -122,12 +122,12 @@ def token(ERC20TOKEN, accounts):
 @pytest.fixture(scope="module")
 def voting_escrow(VotingEscrow, accounts, token):
     yield VotingEscrow.deploy(
-        token, "Voting-escrowed CRV", "veCRV", "veCRV_0.99", {"from": accounts[0]}
+        token, "Voting-escrowed HND", "veHND", "veHND_0.99", {"from": accounts[0]}
     )
 
 @pytest.fixture(scope="module")
 def mirrored_voting_escrow(MirroredVotingEscrow, accounts, voting_escrow):
-    yield MirroredVotingEscrow.deploy(accounts[0], voting_escrow, {"from": accounts[0]})
+    yield MirroredVotingEscrow.deploy(accounts[0], voting_escrow, "Mirrored Voting-escrowed HND", "mveHND", "mveHND_0.99", {"from": accounts[0]})
 
 
 @pytest.fixture(scope="module")
