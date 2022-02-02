@@ -80,7 +80,14 @@ export async function deploy(hnd: string, pools: any[], network: string, veHND: 
     deployments.MirroredVotingEscrow = mirroredVotingEscrow.address;
     console.log("Deployed mveHND: ", mirroredVotingEscrow.address);
 
-    await deploySmartWalletChecker(deployer.address, network, deployments);
+    if (!veHND) {
+        await deploySmartWalletChecker(deployer.address, network, deployments);
+    } else {
+        let votingEscrow: VotingEscrow =
+            <VotingEscrow>new Contract(deployments.VotingEscrow, patchAbiGasFields(VotingEscrowArtifact.abi), deployer);
+
+        deployments.SmartWalletChecker = await votingEscrow.smart_wallet_checker();
+    }
 
     const treasuryFactory: Treasury__factory =
         <Treasury__factory>await ethers.getContractFactory("Treasury");

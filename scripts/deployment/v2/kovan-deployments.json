@@ -1,16 +1,29 @@
 {
     "Gauges": [
         {
-            "id": "hETH",
-            "address": "0xaEFF8f05b8DeFD2ddbFF4Fb654147d5d7B32731A"
+            "id": "hDAI",
+            "address": "0xf9F07e390A043E86b8212d33C7750868A9274681"
+        },
+        {
+            "id": "hUST",
+            "address": "0x02F026aB85EE50429d88d77ECe760cDa646B08b5"
+        },
+        {
+            "id": "hUSDC",
+            "address": "0x194b488cdAB2b368C9497fEb5E9693C73b6ed646"
+        },
+        {
+            "id": "hBUSD",
+            "address": "0xAb45986C130B965091cd3A99260b1Bd5c966a01A"
         }
     ],
-    "MirroredVotingEscrow": "0xaF0E9990c0A4129b3C73187a9f9588A18E9D8233",
-    "Treasury": "0x7cc391B17a4e76F0eb96B5Caef22d184708fb3B8",
-    "RewardPolicyMaker": "0x6aDd45C2759fba789031370a8544A33C33E2335d",
-    "GaugeControllerV2": "0x7c40d0F85d40f8d9410566eD0554204a7e6f52DE",
-    "Minter": "0xF5cb87456e4cCE301051c336eBf8050BCd7A7442",
-    "VotingEscrowDelegationV2": "0xBB70A4727c8Fb242c6621d2e57c7d85219403aA6",
-    "DelegationProxy": "0xea22c0f90768f3343c8ef13542D348498560ee53",
-    "VotingEscrow": "0xbeD8EFa1973F6E1fB3515bf94aa760174431b3F8"
+    "VotingEscrow": "0xbeD8EFa1973F6E1fB3515bf94aa760174431b3F8",
+    "MirroredVotingEscrow": "0x44F288e2405D9D62Eb43F5E3f1eD8147bF502A9a",
+    "Treasury": "0x7508Ccdc535913eE954A7a08C28ee5e935D1445C",
+    "RewardPolicyMaker": "0x2D4aD4dBf59c8ABE97575fb80236990767C71989",
+    "GaugeControllerV2": "0xd6Cafd6d475A790634a548d7f43a6e420247BA61",
+    "Minter": "0x9fF0A743b7a4f3d9ed186CC1020b9162C11E0595",
+    "VotingEscrowDelegationV2": "0x3B8BBFE4de147122f8dC269e7Ba6D546FA30783a",
+    "DelegationProxy": "0xf535F19C5acb356b66EC2106f7F04692A0BbcC92",
+    "SmartWalletChecker": "0x0000000000000000000000000000000000000000"
 }
