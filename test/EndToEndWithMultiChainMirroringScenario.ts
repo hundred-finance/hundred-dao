@@ -2,9 +2,9 @@ import { expect } from "chai";
 import { ethers } from 'hardhat';
 
 import {
-    VotingEscrow__factory,
+    VotingEscrowV2__factory,
     GaugeControllerV2__factory,
-    VotingEscrow,
+    VotingEscrowV2,
     MirroredVotingEscrow__factory,
     MirroredVotingEscrow,
     GaugeControllerV2,
@@ -42,8 +42,8 @@ describe("End to End with One Chain Mirroring", function () {
     let rewardPolicyMakerFactory: RewardPolicyMaker__factory;
     let rewardPolicyMaker: RewardPolicyMaker;
 
-    let votingEscrowFactory: VotingEscrow__factory;
-    let votingEscrow: VotingEscrow;
+    let votingEscrowFactory: VotingEscrowV2__factory;
+    let votingEscrow: VotingEscrowV2;
 
     let mirroredVotingEscrowFactory: MirroredVotingEscrow__factory;
     let mirroredVotingEscrow: MirroredVotingEscrow;
@@ -72,7 +72,7 @@ describe("End to End with One Chain Mirroring", function () {
         erc20Factory = <ERC20TOKEN__factory>await ethers.getContractFactory("ERC20TOKEN");
         rewardPolicyMakerFactory = <RewardPolicyMaker__factory>await ethers.getContractFactory("RewardPolicyMaker");
         treasuryFactory = <Treasury__factory>await ethers.getContractFactory("Treasury");
-        votingEscrowFactory = <VotingEscrow__factory>await ethers.getContractFactory("VotingEscrow");
+        votingEscrowFactory = <VotingEscrowV2__factory>await ethers.getContractFactory("VotingEscrowV2");
         mirroredVotingEscrowFactory = <MirroredVotingEscrow__factory>await ethers.getContractFactory("MirroredVotingEscrow");
         delegationProxyFactory = <DelegationProxy__factory>await ethers.getContractFactory("DelegationProxy");
         votingEscrowDelegationFactory = <VotingEscrowDelegationV2__factory>await ethers.getContractFactory("VotingEscrowDelegationV2");

@@ -1,7 +1,7 @@
 import { ethers } from 'hardhat';
 import {
-    VotingEscrow__factory,
-    VotingEscrow,
+    VotingEscrowV2__factory,
+    VotingEscrowV2,
     MirroredVotingEscrow__factory,
     MirroredVotingEscrow,
     Treasury__factory,
@@ -23,7 +23,7 @@ import {
 } from "../../../typechain";
 
 import * as GaugeControllerV2Artifact from "../../../artifacts/contracts/GaugeControllerV2.vy/GaugeControllerV2.json";
-import * as VotingEscrowArtifact from "../../../artifacts/contracts/VotingEscrow.vy/VotingEscrow.json";
+import * as VotingEscrowV2Artifact from "../../../artifacts/contracts/VotingEscrowV2.vy/VotingEscrowV2.json";
 import * as MirroredVotingEscrowArtifact from "../../../artifacts/contracts/MirroredVotingEscrow.vy/MirroredVotingEscrow.json";
 import * as RewardPolicyMakerArtifact from "../../../artifacts/contracts/RewardPolicyMaker.vy/RewardPolicyMaker.json";
 import * as TreasuryArtifact from "../../../artifacts/contracts/Treasury.vy/Treasury.json";
@@ -47,8 +47,8 @@ export async function deploy(hnd: string, pools: any[], network: string, veHND: 
     console.log("Account balance:", (await deployer.getBalance()).toString());
 
     if (!veHND) {
-        const votingEscrowFactory: VotingEscrow__factory =
-            <VotingEscrow__factory>await ethers.getContractFactory("VotingEscrow");
+        const votingEscrowFactory: VotingEscrowV2__factory =
+            <VotingEscrowV2__factory>await ethers.getContractFactory("VotingEscrowV2");
 
         const votingEscrow = await votingEscrowFactory.deploy(
             hnd,
@@ -58,11 +58,11 @@ export async function deploy(hnd: string, pools: any[], network: string, veHND: 
         );
         await votingEscrow.deployed();
 
-        deployments.VotingEscrow = votingEscrow.address;
+        deployments.VotingEscrowV2 = votingEscrow.address;
         console.log("Deployed veHND: ", votingEscrow.address);
         veHND = votingEscrow.address;
     } else {
-        deployments.VotingEscrow = veHND;
+        deployments.VotingEscrowV2 = veHND;
     }
 
     const mirroredVotingEscrowFactory: MirroredVotingEscrow__factory =
@@ -82,11 +82,13 @@ export async function deploy(hnd: string, pools: any[], network: string, veHND: 
 
     if (!veHND) {
         await deploySmartWalletChecker(deployer.address, network, deployments);
+        await deployLockCreatorChecker(deployer.address, network, deployments);
     } else {
-        let votingEscrow: VotingEscrow =
-            <VotingEscrow>new Contract(deployments.VotingEscrow, patchAbiGasFields(VotingEscrowArtifact.abi), deployer);
+        let votingEscrow: VotingEscrowV2 =
+            <VotingEscrowV2>new Contract(deployments.VotingEscrowV2, patchAbiGasFields(VotingEscrowV2Artifact.abi), deployer);
 
         deployments.SmartWalletChecker = await votingEscrow.smart_wallet_checker();
+        deployments.LockCreatorChecker = await votingEscrow.lock_creator_checker();
     }
 
     const treasuryFactory: Treasury__factory =
@@ -190,9 +192,9 @@ export async function transferOwnership(newOwner: string, network: string) {
         await trx.wait();
     }
 
-    if (deployments.VotingEscrow) {
-        let votingEscrow: VotingEscrow =
-            <VotingEscrow>new Contract(deployments.VotingEscrow, patchAbiGasFields(VotingEscrowArtifact.abi), deployer);
+    if (deployments.VotingEscrowV2) {
+        let votingEscrow: VotingEscrowV2 =
+            <VotingEscrowV2>new Contract(deployments.VotingEscrowV2, patchAbiGasFields(VotingEscrowV2Artifact.abi), deployer);
 
         let trx = await votingEscrow.commit_transfer_ownership(newOwner);
         await trx.wait();
@@ -302,7 +304,7 @@ async function deploySmartWalletChecker(
 ) {
     const [deployer] = await ethers.getSigners();
 
-    if (deployments.VotingEscrow) {
+    if (deployments.VotingEscrowV2) {
         const smartWalletChecker: SmartWalletChecker__factory =
             <SmartWalletChecker__factory>await ethers.getContractFactory("SmartWalletChecker");
 
@@ -313,10 +315,47 @@ async function deploySmartWalletChecker(
         console.log("Deployed smart wallet checker: ", checker.address);
 
         if (linkToEscrow) {
-            let votingEscrow: VotingEscrow =
-                <VotingEscrow>new Contract(deployments.VotingEscrow, patchAbiGasFields(VotingEscrowArtifact.abi), deployer);
+            let votingEscrow: VotingEscrowV2 =
+                <VotingEscrowV2>new Contract(deployments.VotingEscrowV2, patchAbiGasFields(VotingEscrowV2Artifact.abi), deployer);
 
             let trx = await votingEscrow.commit_smart_wallet_checker(checker.address);
+            await trx.wait();
+
+            trx = await votingEscrow.apply_smart_wallet_checker();
+            await trx.wait();
+        }
+
+        if (updateDeployment) {
+            const location = path.join(__dirname, `./${network}-deployments.json`);
+            fs.writeFileSync(location, JSON.stringify(deployments, null, 4));
+        }
+    }
+}
+
+async function deployLockCreatorChecker(
+    admin: string, network: string, deployments: Deployment,
+    linkToEscrow: boolean = true, updateDeployment: boolean = false
+) {
+    const [deployer] = await ethers.getSigners();
+
+    if (deployments.VotingEscrowV2) {
+        const smartWalletChecker: SmartWalletChecker__factory =
+            <SmartWalletChecker__factory>await ethers.getContractFactory("SmartWalletChecker");
+
+        const checker: SmartWalletChecker = await smartWalletChecker.deploy(admin);
+        await checker.deployed();
+
+        deployments.LockCreatorChecker = checker.address;
+        console.log("Deployed lock creator checker: ", checker.address);
+
+        if (linkToEscrow) {
+            let votingEscrow: VotingEscrowV2 =
+                <VotingEscrowV2>new Contract(deployments.VotingEscrowV2, patchAbiGasFields(VotingEscrowV2Artifact.abi), deployer);
+
+            let trx = await votingEscrow.commit_lock_creator(checker.address);
+            await trx.wait();
+
+            trx = await votingEscrow.apply_lock_creator();
             await trx.wait();
         }
 
@@ -336,12 +375,13 @@ function patchAbiGasFields(abi: any[]) {
 
 export interface Deployment {
     Gauges: Array<{id: string, address: string}>
-    VotingEscrow?: string
+    VotingEscrowV2?: string
     MirroredVotingEscrow?: string
     GaugeControllerV2?: string
     Treasury?: string
     RewardPolicyMaker?: string
     SmartWalletChecker?: string
+    LockCreatorChecker?: string
     Minter?: string
     DelegationProxy?: string
     VotingEscrowDelegationV2?: string
