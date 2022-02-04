@@ -210,6 +210,14 @@ def mirror_lock(_user: address, _chain: uint256, _value: uint256, _unlock_time: 
 
 
 @external
+def checkpoint():
+    """
+    @notice Record global data to checkpoint
+    """
+    self._checkpoint(ZERO_ADDRESS, 0, empty(LockedBalance), empty(LockedBalance))
+
+
+@external
 @view
 def user_point_epoch(_user: address, _chain: uint256 = 0) -> uint256:
     if _chain == 0:
@@ -360,7 +368,7 @@ def nearest_locked__end(_addr: address) -> uint256:
         
         _chain: uint256 = self.mirrored_chains[i]
         _chain_lock_end: uint256 = self.mirrored_locks[_addr][_chain].end
-        if _chain_lock_end < _lock_end or _lock_end == 0:
+        if _chain_lock_end != 0 and (_chain_lock_end < _lock_end or _lock_end == 0):
             _lock_end = _chain_lock_end
     
     return _lock_end
