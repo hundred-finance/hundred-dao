@@ -29,6 +29,13 @@ struct MirroredChain:
     escrow_count: uint256
     escrow_ids: uint256[100]
 
+event MirrorLock:
+    provider: indexed(address)
+    chain_id: uint256
+    escrow_id: uint256
+    value: uint256
+    locktime: indexed(uint256)
+
 admin: public(address)
 
 whitelisted_mirrors: public(HashMap[address, bool])
@@ -219,6 +226,8 @@ def mirror_lock(_user: address, _chain: uint256, _escrow_id: uint256, _value: ui
         self.mirrored_chains_count += 1
     
     self._checkpoint(_user, _chain, _escrow_id, old_locked, new_locked)
+
+    log MirrorLock(_user, _chain, _escrow_id, _value, _unlock_time)
 
 
 @external
