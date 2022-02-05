@@ -215,6 +215,20 @@ def mirror_lock(_user: address, _chain: uint256, _escrow_id: uint256, _value: ui
 
         if self.mirrored_chains[i].chain_id == _chain:
             chain_already_mirrored = True
+
+            escrow_already_mirrored: bool = False
+            for j in range(99):
+                if j >= self.mirrored_chains[i].escrow_count:
+                    break
+
+                if self.mirrored_chains[i].escrow_ids[j] == _escrow_id:
+                    escrow_already_mirrored = True
+                    break
+
+            if not escrow_already_mirrored:
+                self.mirrored_chains[i].escrow_ids[self.mirrored_chains[i].escrow_count] = _escrow_id
+                self.mirrored_chains[i].escrow_count += 1
+
             break
     
     if not chain_already_mirrored:
