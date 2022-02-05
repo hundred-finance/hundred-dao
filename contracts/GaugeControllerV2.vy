@@ -26,7 +26,6 @@ struct VotedSlope:
 struct MirroredChain:
     chain_id: uint256
     escrow_count: uint256
-    escrow_ids: uint256[100]
 
 
 interface MirroredVotingEscrow:
@@ -576,7 +575,7 @@ def vote_for_gauge_weights(_gauge_addr: address, _user_weight: uint256):
         for j in range(99):
             if j >= _chain.escrow_count:
                 break
-            self._vote_for_gauge_weights(msg.sender, _chain.chain_id, _chain.escrow_ids[j], _gauge_addr, _user_weight)
+            self._vote_for_gauge_weights(msg.sender, _chain.chain_id, j, _gauge_addr, _user_weight)
 
     log VoteForGauge(block.timestamp, msg.sender, _gauge_addr, _user_weight)
 
@@ -605,7 +604,7 @@ def user_vote_power(addr: address) -> uint256:
             if j >= _chain.escrow_count:
                 break
 
-            _used_power = self.vote_user_power[addr][_chain.chain_id][_chain.escrow_ids[j]]
+            _used_power = self.vote_user_power[addr][_chain.chain_id][j]
 
             if _used_power > 0:
                 break
@@ -638,7 +637,7 @@ def vote_user_power_for_gauge(addr: address, gauge: address) -> uint256:
                 break
 
             if _used_power == 0:
-                _used_power = self.vote_user_slopes[addr][gauge][_chain.chain_id][_chain.escrow_ids[j]].power
+                _used_power = self.vote_user_slopes[addr][gauge][_chain.chain_id][j].power
 
             if _used_power > 0:
                 break

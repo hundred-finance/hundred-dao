@@ -27,7 +27,6 @@ struct LockedBalance:
 struct MirroredChain:
     chain_id: uint256
     escrow_count: uint256
-    escrow_ids: uint256[100]
 
 event MirrorLock:
     provider: indexed(address)
@@ -215,27 +214,14 @@ def mirror_lock(_user: address, _chain: uint256, _escrow_id: uint256, _value: ui
 
         if self.mirrored_chains[i].chain_id == _chain:
             chain_already_mirrored = True
-
-            escrow_already_mirrored: bool = False
-            for j in range(99):
-                if j >= self.mirrored_chains[i].escrow_count:
-                    break
-
-                if self.mirrored_chains[i].escrow_ids[j] == _escrow_id:
-                    escrow_already_mirrored = True
-                    break
-
-            if not escrow_already_mirrored:
-                self.mirrored_chains[i].escrow_ids[self.mirrored_chains[i].escrow_count] = _escrow_id
-                self.mirrored_chains[i].escrow_count += 1
+            self.mirrored_chains[i].escrow_count = max(self.mirrored_chains[i].escrow_count, _escrow_id + 1)
 
             break
     
     if not chain_already_mirrored:
         self.mirrored_chains[self.mirrored_chains_count] = empty(MirroredChain)
         self.mirrored_chains[self.mirrored_chains_count].chain_id = _chain
-        self.mirrored_chains[self.mirrored_chains_count].escrow_ids[0] = _escrow_id
-        self.mirrored_chains[self.mirrored_chains_count].escrow_count = 1
+        self.mirrored_chains[self.mirrored_chains_count].escrow_count = _escrow_id + 1
 
         self.mirrored_chains_count += 1
     
@@ -296,8 +282,8 @@ def user_last_checkpoint_ts(_user: address) -> uint256:
             if j >= _chain.escrow_count:
                 break
 
-            _escrow_epoch: uint256 = self.mirrored_user_point_epoch[_user][_chain.chain_id][_chain.escrow_ids[j]]
-            _escrow_ts: uint256 = self.mirrored_user_point_history[_user][_chain.chain_id][_chain.escrow_ids[j]][_escrow_epoch].ts
+            _escrow_epoch: uint256 = self.mirrored_user_point_epoch[_user][_chain.chain_id][j]
+            _escrow_ts: uint256 = self.mirrored_user_point_history[_user][_chain.chain_id][j][_escrow_epoch].ts
 
             if _escrow_ts < _ts or _ts == 0:
                 _ts = _escrow_ts
@@ -381,9 +367,9 @@ def _mirrored_balance_of(addr: address, _t: uint256) -> uint256:
             if j >= _chain.escrow_count:
                 break
 
-            _escrow_epoch: uint256 = self.mirrored_user_point_epoch[addr][_chain.chain_id][_chain.escrow_ids[j]]
+            _escrow_epoch: uint256 = self.mirrored_user_point_epoch[addr][_chain.chain_id][j]
             if _escrow_epoch > 0:
-                _last_point: Point = self.mirrored_user_point_history[addr][_chain.chain_id][_chain.escrow_ids[j]][_escrow_epoch]
+                _last_point: Point = self.mirrored_user_point_history[addr][_chain.chain_id][j][_escrow_epoch]
                 _last_point.bias -= _last_point.slope * convert(_t - _last_point.ts, int128)
                 if _last_point.bias < 0:
                     _last_point.bias = 0
@@ -446,7 +432,7 @@ def nearest_locked__end(_addr: address) -> uint256:
             if j >= _chain.escrow_count:
                 break
 
-            _escrow_lock_end: uint256 = self.mirrored_locks[_addr][_chain.chain_id][_chain.escrow_ids[j]].end
+            _escrow_lock_end: uint256 = self.mirrored_locks[_addr][_chain.chain_id][j].end
             if _escrow_lock_end != 0 and (_escrow_lock_end < _lock_end or _lock_end == 0):
                 _lock_end = _escrow_lock_end
     
