@@ -23,12 +23,18 @@ struct VotedSlope:
     power: uint256
     end: uint256
 
+struct MirroredChain:
+    chain_id: uint256
+    escrow_count: uint256
+    escrow_ids: uint256[100]
+
 
 interface MirroredVotingEscrow:
-    def get_last_user_slope(_addr: address, _chain: uint256) -> int128: view
-    def locked__end(_addr: address, _chain: uint256) -> uint256: view
+    def get_last_user_slope(_addr: address, _chain: uint256, _escrow_id: uint256) -> int128: view
+    def locked__end(_addr: address, _chain: uint256, _escrow_id: uint256) -> uint256: view
     def mirrored_chains_count() -> uint256: view
-    def mirrored_chains(_idx: uint256) -> uint256: view
+    def mirrored_chains(_idx: uint256) -> MirroredChain: view
+    def voting_escrow_count() -> uint256: view
 
 
 event CommitOwnership:
@@ -70,8 +76,7 @@ MULTIPLIER: constant(uint256) = 10 ** 18
 admin: public(address)  # Can and will be a smart contract
 future_admin: public(address)  # Can and will be a smart contract
 
-token: public(address)  # CRV token
-voting_escrow: public(address)  # Voting escrow
+voting_escrow: public(address)  # Mirrored Voting escrow
 
 # Gauge parameters
 # All numbers are "fixed point" on the basis of 1e18
@@ -86,8 +91,8 @@ gauges: public(address[1000000000])
 # of zero as meaning the gauge has not been set
 gauge_types_: HashMap[address, int128]
 
-vote_user_slopes: public(HashMap[address, HashMap[address, HashMap[uint256, VotedSlope]]])  # user -> gauge_addr -> chain -> VotedSlope
-vote_user_power: public(HashMap[address, HashMap[uint256, uint256]])  # Total vote power used by user and chain
+vote_user_slopes: public(HashMap[address, HashMap[address, HashMap[uint256, HashMap[uint256, VotedSlope]]]])  # user -> gauge_addr -> chain -> escrow_id -> VotedSlope
+vote_user_power: public(HashMap[address, HashMap[uint256, HashMap[uint256, uint256]]])  # Total vote power used by user and chain
 last_user_vote: public(HashMap[address, HashMap[address, uint256]])  # Last user vote's timestamp for each gauge address
 
 # Past and scheduled points for gauge weight, sum of weights per type, total weight
@@ -112,18 +117,15 @@ time_type_weight: public(uint256[1000000000])  # type_id -> last scheduled time 
 
 
 @external
-def __init__(_token: address, _voting_escrow: address):
+def __init__(_mirrored_voting_escrow: address):
     """
     @notice Contract constructor
-    @param _token `ERC20CRV` contract address
-    @param _voting_escrow `MirroredVotingEscrow` contract address
+    @param _mirrored_voting_escrow `MirroredVotingEscrow` contract address
     """
-    assert _token != ZERO_ADDRESS
-    assert _voting_escrow != ZERO_ADDRESS
+    assert _mirrored_voting_escrow != ZERO_ADDRESS
 
     self.admin = msg.sender
-    self.token = _token
-    self.voting_escrow = _voting_escrow
+    self.voting_escrow = _mirrored_voting_escrow
     self.time_total = block.timestamp / WEEK * WEEK
 
 
@@ -484,10 +486,10 @@ def change_gauge_weight(addr: address, weight: uint256):
 
 
 @internal
-def _vote_for_gauge_weights(_user: address, _chain: uint256, _gauge_addr: address, _user_weight: uint256):
+def _vote_for_gauge_weights(_user: address, _chain: uint256, _escrow_id: uint256, _gauge_addr: address, _user_weight: uint256):
     escrow: address = self.voting_escrow
-    slope: uint256 = convert(MirroredVotingEscrow(escrow).get_last_user_slope(_user, _chain), uint256)
-    lock_end: uint256 = MirroredVotingEscrow(escrow).locked__end(_user, _chain)
+    slope: uint256 = convert(MirroredVotingEscrow(escrow).get_last_user_slope(_user, _chain, _escrow_id), uint256)
+    lock_end: uint256 = MirroredVotingEscrow(escrow).locked__end(_user, _chain, _escrow_id)
     _n_gauges: int128 = self.n_gauges
     next_time: uint256 = (block.timestamp + WEEK) / WEEK * WEEK
     
@@ -498,7 +500,7 @@ def _vote_for_gauge_weights(_user: address, _chain: uint256, _gauge_addr: addres
     gauge_type: int128 = self.gauge_types_[_gauge_addr] - 1
     assert gauge_type >= 0, "Gauge not added"
     # Prepare slopes and biases in memory
-    old_slope: VotedSlope = self.vote_user_slopes[_user][_gauge_addr][_chain]
+    old_slope: VotedSlope = self.vote_user_slopes[_user][_gauge_addr][_chain][_escrow_id]
     old_dt: uint256 = 0
     if old_slope.end > next_time:
         old_dt = old_slope.end - next_time
@@ -512,9 +514,9 @@ def _vote_for_gauge_weights(_user: address, _chain: uint256, _gauge_addr: addres
     new_bias: uint256 = new_slope.slope * new_dt
 
     # Check and update powers (weights) used
-    power_used: uint256 = self.vote_user_power[_user][_chain]
+    power_used: uint256 = self.vote_user_power[_user][_chain][_escrow_id]
     power_used = power_used + new_slope.power - old_slope.power
-    self.vote_user_power[_user][_chain] = power_used
+    self.vote_user_power[_user][_chain][_escrow_id] = power_used
     assert (power_used >= 0) and (power_used <= 10000), 'Used too much power'
 
     ## Remove old and schedule new slope changes
@@ -543,7 +545,7 @@ def _vote_for_gauge_weights(_user: address, _chain: uint256, _gauge_addr: addres
 
     self._get_total()
 
-    self.vote_user_slopes[_user][_gauge_addr][_chain] = new_slope
+    self.vote_user_slopes[_user][_gauge_addr][_chain][_escrow_id] = new_slope
 
     # Record last action time
     self.last_user_vote[_user][_gauge_addr] = block.timestamp
@@ -559,15 +561,22 @@ def vote_for_gauge_weights(_gauge_addr: address, _user_weight: uint256):
     assert (_user_weight >= 0) and (_user_weight <= 10000), "You used all your voting power"
     assert block.timestamp >= self.last_user_vote[msg.sender][_gauge_addr] + WEIGHT_VOTE_DELAY, "Cannot vote so often"
 
-    self._vote_for_gauge_weights(msg.sender, 0, _gauge_addr, _user_weight)
+    _escrow_count: uint256 = MirroredVotingEscrow(self.voting_escrow).voting_escrow_count()
+    for i in range(99):
+        if i >= _escrow_count:
+            break
+        self._vote_for_gauge_weights(msg.sender, 0, i, _gauge_addr, _user_weight)
     
     _chain_count: uint256 = MirroredVotingEscrow(self.voting_escrow).mirrored_chains_count()
-    for i in range(499):
+    for i in range(99):
         if i >= _chain_count:
             break
         
-        _chain: uint256 = MirroredVotingEscrow(self.voting_escrow).mirrored_chains(i)
-        self._vote_for_gauge_weights(msg.sender, _chain, _gauge_addr, _user_weight)
+        _chain: MirroredChain = MirroredVotingEscrow(self.voting_escrow).mirrored_chains(i)
+        for j in range(99):
+            if j >= _chain.escrow_count:
+                break
+            self._vote_for_gauge_weights(msg.sender, _chain.chain_id, _chain.escrow_ids[j], _gauge_addr, _user_weight)
 
     log VoteForGauge(block.timestamp, msg.sender, _gauge_addr, _user_weight)
 
@@ -575,22 +584,31 @@ def vote_for_gauge_weights(_gauge_addr: address, _user_weight: uint256):
 @external
 @view
 def user_vote_power(addr: address) -> uint256:
-    _local_chain_power: uint256 = self.vote_user_power[addr][0]
-    if _local_chain_power > 0:
-        return _local_chain_power
+    _used_power: uint256 = 0
+
+    _escrow_count: uint256 = MirroredVotingEscrow(self.voting_escrow).voting_escrow_count()
+    for i in range(99):
+        if i >= _escrow_count:
+            break
+
+        _used_power = self.vote_user_power[addr][0][i]
+        if _used_power > 0:
+            return _used_power
 
     _chain_count: uint256 = MirroredVotingEscrow(self.voting_escrow).mirrored_chains_count()
-    _used_power: uint256 = 0
-    for i in range(499):
+    for i in range(99):
         if i >= _chain_count:
             break
 
-        _chain: uint256 = MirroredVotingEscrow(self.voting_escrow).mirrored_chains(i)
-        if _used_power == 0:
-            _used_power = self.vote_user_power[addr][_chain]
+        _chain: MirroredChain = MirroredVotingEscrow(self.voting_escrow).mirrored_chains(i)
+        for j in range(99):
+            if j >= _chain.escrow_count:
+                break
 
-        if _used_power > 0:
-            break
+            _used_power = self.vote_user_power[addr][_chain.chain_id][_chain.escrow_ids[j]]
+
+            if _used_power > 0:
+                break
 
     return _used_power
 
@@ -598,21 +616,32 @@ def user_vote_power(addr: address) -> uint256:
 @external
 @view
 def vote_user_power_for_gauge(addr: address, gauge: address) -> uint256:
-    _used_power: uint256 = self.vote_user_slopes[addr][gauge][0].power
-    if _used_power > 0:
-        return _used_power
+    _used_power: uint256 = 0
+
+    _escrow_count: uint256 = MirroredVotingEscrow(self.voting_escrow).voting_escrow_count()
+    for i in range(99):
+        if i >= _escrow_count:
+            break
+
+        _used_power = self.vote_user_slopes[addr][gauge][0][i].power
+        if _used_power > 0:
+            return _used_power
 
     _chain_count: uint256 = MirroredVotingEscrow(self.voting_escrow).mirrored_chains_count()
-    for i in range(499):
+    for i in range(99):
         if i >= _chain_count:
             break
 
-        _chain: uint256 = MirroredVotingEscrow(self.voting_escrow).mirrored_chains(i)
-        if _used_power == 0:
-            _used_power = self.vote_user_slopes[addr][gauge][_chain].power
+        _chain: MirroredChain = MirroredVotingEscrow(self.voting_escrow).mirrored_chains(i)
+        for j in range(99):
+            if j >= _chain.escrow_count:
+                break
 
-        if _used_power > 0:
-            break
+            if _used_power == 0:
+                _used_power = self.vote_user_slopes[addr][gauge][_chain.chain_id][_chain.escrow_ids[j]].power
+
+            if _used_power > 0:
+                break
 
     return _used_power
 

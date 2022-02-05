@@ -131,8 +131,8 @@ def mirrored_voting_escrow(MirroredVotingEscrow, accounts, voting_escrow):
 
 
 @pytest.fixture(scope="module")
-def gauge_controller(GaugeControllerV2, accounts, token, mirrored_voting_escrow):
-    yield GaugeControllerV2.deploy(token, mirrored_voting_escrow, {"from": accounts[0]})
+def gauge_controller(GaugeControllerV2, accounts, mirrored_voting_escrow):
+    yield GaugeControllerV2.deploy(mirrored_voting_escrow, {"from": accounts[0]})
 
 @pytest.fixture(scope="module")
 def minter(Minter, Treasury, token, accounts, gauge_controller):

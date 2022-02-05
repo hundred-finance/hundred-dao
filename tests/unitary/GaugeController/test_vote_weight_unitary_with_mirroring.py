@@ -13,7 +13,7 @@ def gauge_vote_setup(accounts, chain, gauge_controller, three_gauges, voting_esc
 
     token.mint(accounts[0], 5 * 10 ** 23)
     token.approve(voting_escrow, 5 * 10 ** 23, {"from": accounts[0]})
-    mirrored_voting_escrow.mirror_lock(accounts[0], 250, 5 * 10 ** 23, chain.time() + YEAR, {"from": accounts[0]})
+    mirrored_voting_escrow.mirror_lock(accounts[0], 250, 0, 5 * 10 ** 23, chain.time() + YEAR, {"from": accounts[0]})
     voting_escrow.create_lock(5 * 10 ** 23, chain.time() + YEAR, {"from": accounts[0]})
 
 

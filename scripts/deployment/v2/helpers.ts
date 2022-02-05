@@ -112,7 +112,7 @@ export async function deploy(hnd: string, pools: any[], network: string, veHND: 
     const gaugeControllerFactory: GaugeControllerV2__factory =
         <GaugeControllerV2__factory>await ethers.getContractFactory("GaugeControllerV2");
 
-    const gaugeController: GaugeControllerV2 = await gaugeControllerFactory.deploy(hnd, mirroredVotingEscrow.address);
+    const gaugeController: GaugeControllerV2 = await gaugeControllerFactory.deploy(mirroredVotingEscrow.address);
     await gaugeController.deployed();
 
     deployments.GaugeControllerV2 = gaugeController.address;

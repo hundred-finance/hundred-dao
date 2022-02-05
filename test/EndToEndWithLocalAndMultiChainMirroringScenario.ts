@@ -88,7 +88,7 @@ describe("End to End with One Chain Mirroring", function () {
         treasury = await treasuryFactory.deploy(hnd.address);
         votingEscrow = await votingEscrowFactory.deploy(hnd.address, "Voting locked HND", "veHND", "1.0");
         mirroredVotingEscrow = await mirroredVotingEscrowFactory.deploy(owner.address, votingEscrow.address, "Mirroed Voting locked HND", "mveHND", "1.0");
-        gaugeController = await gaugeControllerFactory.deploy(hnd.address, mirroredVotingEscrow.address);
+        gaugeController = await gaugeControllerFactory.deploy(mirroredVotingEscrow.address);
         minter = await minterFactory.deploy(treasury.address, gaugeController.address);
         votingEscrowDelegation = await votingEscrowDelegationFactory.deploy("veBoost", "veBoost", "", mirroredVotingEscrow.address);
         delegationProxy = await delegationProxyFactory.deploy(votingEscrowDelegation.address, owner.address, owner.address, mirroredVotingEscrow.address);
@@ -122,9 +122,9 @@ describe("End to End with One Chain Mirroring", function () {
             await hnd.connect(alice).approve(votingEscrow.address, ethers.utils.parseEther("10000000"));
 
             await votingEscrow.connect(alice).create_lock(ethers.utils.parseEther("5000"), A_YEAR_FROM_NOW);
-            await mirroredVotingEscrow.connect(owner).mirror_lock(alice.address, 1, ethers.utils.parseEther("5000"), A_YEAR_FROM_NOW);
+            await mirroredVotingEscrow.connect(owner).mirror_lock(alice.address, 1, 0, ethers.utils.parseEther("5000"), A_YEAR_FROM_NOW);
 
-            await mirroredVotingEscrow.connect(owner).mirror_lock(bob.address, 250, ethers.utils.parseEther("1000"), A_YEAR_FROM_NOW);
+            await mirroredVotingEscrow.connect(owner).mirror_lock(bob.address, 250, 0, ethers.utils.parseEther("1000"), A_YEAR_FROM_NOW);
 
             await gaugeController.connect(alice).vote_for_gauge_weights(gauge1.address, 1000);
             await gaugeController.connect(bob).vote_for_gauge_weights(gauge2.address, 1000);
@@ -158,8 +158,8 @@ describe("End to End with One Chain Mirroring", function () {
             await hnd.connect(alice).approve(votingEscrow.address, ethers.utils.parseEther("10000000"));
 
             await votingEscrow.connect(alice).create_lock(ethers.utils.parseEther("5000"), A_YEAR_FROM_NOW);
-            await mirroredVotingEscrow.connect(owner).mirror_lock(alice.address, 1, ethers.utils.parseEther("3000"), A_YEAR_FROM_NOW);
-            await mirroredVotingEscrow.connect(owner).mirror_lock(alice.address, 250, ethers.utils.parseEther("2000"), A_YEAR_FROM_NOW);
+            await mirroredVotingEscrow.connect(owner).mirror_lock(alice.address, 1, 0, ethers.utils.parseEther("3000"), A_YEAR_FROM_NOW);
+            await mirroredVotingEscrow.connect(owner).mirror_lock(alice.address, 250, 0, ethers.utils.parseEther("2000"), A_YEAR_FROM_NOW);
 
             await hndLpToken.connect(alice).approve(gauge.address, ethers.utils.parseEther("10000000"));
             await hndLpToken.connect(eve).approve(gauge.address, ethers.utils.parseEther("10000000"));
@@ -188,8 +188,8 @@ describe("End to End with One Chain Mirroring", function () {
             await hnd.connect(alice).approve(votingEscrow.address, ethers.utils.parseEther("10000000"));
 
             await votingEscrow.connect(alice).create_lock(ethers.utils.parseEther("5000"), A_YEAR_FROM_NOW);
-            await mirroredVotingEscrow.connect(owner).mirror_lock(alice.address, 1, ethers.utils.parseEther("5000"), A_YEAR_FROM_NOW);
-            await mirroredVotingEscrow.connect(owner).mirror_lock(bob.address, 250, ethers.utils.parseEther("1000"), A_YEAR_FROM_NOW);
+            await mirroredVotingEscrow.connect(owner).mirror_lock(alice.address, 1, 0, ethers.utils.parseEther("5000"), A_YEAR_FROM_NOW);
+            await mirroredVotingEscrow.connect(owner).mirror_lock(bob.address, 250, 0, ethers.utils.parseEther("1000"), A_YEAR_FROM_NOW);
 
             await gaugeController.connect(alice).vote_for_gauge_weights(gauge1.address, 1000);
             await gaugeController.connect(bob).vote_for_gauge_weights(gauge2.address, 1000);

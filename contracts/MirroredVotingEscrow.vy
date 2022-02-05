@@ -24,20 +24,27 @@ struct LockedBalance:
     amount: int128
     end: uint256
 
+struct MirroredChain:
+    chain_id: uint256
+    escrow_count: uint256
+    escrow_ids: uint256[100]
 
 admin: public(address)
 
-voting_escrow: public(address)
-
 whitelisted_mirrors: public(HashMap[address, bool])
 
-mirrored_locks: public(HashMap[address, HashMap[uint256, LockedBalance]])
+voting_escrow_count: public(uint256)
+voting_escrows: public(address[100])
 
 mirrored_chains_count: public(uint256)
-mirrored_chains: public(uint256[500])
+mirrored_chains: public(MirroredChain[100])
 
-mirrored_user_point_history: public(HashMap[address, HashMap[uint256, Point[1000000000]]])  # user -> chain -> Point[user_epoch]
-mirrored_user_point_epoch: public(HashMap[address, HashMap[uint256, uint256]])
+# user -> chain -> escrow_id -> lock
+mirrored_locks: public(HashMap[address, HashMap[uint256, HashMap[uint256, LockedBalance]]])
+
+# user -> chain -> escrow_id -> Point[user_epoch]
+mirrored_user_point_history: public(HashMap[address, HashMap[uint256, HashMap[uint256, Point[1000000000]]]])
+mirrored_user_point_epoch: public(HashMap[address, HashMap[uint256, HashMap[uint256, uint256]]])
 
 mirrored_epoch: public(uint256)
 mirrored_point_history: public(Point[100000000000000000000000000000])  # epoch -> unsigned point
@@ -61,11 +68,12 @@ def __init__(_admin: address, _voting_escrow: address, _name: String[64], _symbo
     self.version = _version
     self.decimals = VotingEscrow(_voting_escrow).decimals()
 
-    self.voting_escrow = _voting_escrow
+    self.voting_escrows[0] = _voting_escrow
+    self.voting_escrow_count = 1
 
 
 @internal
-def _checkpoint(addr: address, _chain: uint256, old_locked: LockedBalance, new_locked: LockedBalance):
+def _checkpoint(addr: address, _chain: uint256, _escrow_id: uint256, old_locked: LockedBalance, new_locked: LockedBalance):
     """
     @notice Record global and per-user data to checkpoint
     @param addr User's wallet address. No user checkpoint if 0x0
@@ -173,40 +181,44 @@ def _checkpoint(addr: address, _chain: uint256, old_locked: LockedBalance, new_l
             # else: we recorded it already in old_dslope
 
         # Now handle user history
-        user_epoch: uint256 = self.mirrored_user_point_epoch[addr][_chain] + 1
+        user_epoch: uint256 = self.mirrored_user_point_epoch[addr][_chain][_escrow_id] + 1
 
-        self.mirrored_user_point_epoch[addr][_chain] = user_epoch
+        self.mirrored_user_point_epoch[addr][_chain][_escrow_id] = user_epoch
         u_new.ts = block.timestamp
         u_new.blk = block.number
-        self.mirrored_user_point_history[addr][_chain][user_epoch] = u_new
+        self.mirrored_user_point_history[addr][_chain][_escrow_id][user_epoch] = u_new
 
 
 @external
-def mirror_lock(_user: address, _chain: uint256, _value: uint256, _unlock_time: uint256):
+def mirror_lock(_user: address, _chain: uint256, _escrow_id: uint256, _value: uint256, _unlock_time: uint256):
     assert self.whitelisted_mirrors[msg.sender] == True # dev: only whitelisted address can mirror locks
 
-    old_locked: LockedBalance = self.mirrored_locks[_user][_chain]
+    old_locked: LockedBalance = self.mirrored_locks[_user][_chain][_escrow_id]
     new_locked: LockedBalance = old_locked
     
     new_locked.amount = convert(_value, int128)
     new_locked.end = _unlock_time
 
-    self.mirrored_locks[_user][_chain] = new_locked
+    self.mirrored_locks[_user][_chain][_escrow_id] = new_locked
 
     chain_already_mirrored: bool = False
-    for i in range(499):
+    for i in range(99):
         if i >= self.mirrored_chains_count:
             break
 
-        if self.mirrored_chains[i] == _chain:
+        if self.mirrored_chains[i].chain_id == _chain:
             chain_already_mirrored = True
             break
     
     if not chain_already_mirrored:
-        self.mirrored_chains[self.mirrored_chains_count] = _chain
+        self.mirrored_chains[self.mirrored_chains_count] = empty(MirroredChain)
+        self.mirrored_chains[self.mirrored_chains_count].chain_id = _chain
+        self.mirrored_chains[self.mirrored_chains_count].escrow_ids[0] = _escrow_id
+        self.mirrored_chains[self.mirrored_chains_count].escrow_count = 1
+
         self.mirrored_chains_count += 1
     
-    self._checkpoint(_user, _chain, old_locked, new_locked)
+    self._checkpoint(_user, _chain, _escrow_id, old_locked, new_locked)
 
 
 @external
@@ -214,43 +226,58 @@ def checkpoint():
     """
     @notice Record global data to checkpoint
     """
-    self._checkpoint(ZERO_ADDRESS, 0, empty(LockedBalance), empty(LockedBalance))
+    self._checkpoint(ZERO_ADDRESS, 0, 0, empty(LockedBalance), empty(LockedBalance))
 
 
 @external
 @view
-def user_point_epoch(_user: address, _chain: uint256 = 0) -> uint256:
+def user_point_epoch(_user: address, _chain: uint256 = 0, _escrow_id: uint256 = 0) -> uint256:
     if _chain == 0:
-        return VotingEscrow(self.voting_escrow).user_point_epoch(_user)
+        return VotingEscrow(self.voting_escrows[_escrow_id]).user_point_epoch(_user)
 
-    return self.mirrored_user_point_epoch[_user][_chain]
+    return self.mirrored_user_point_epoch[_user][_chain][_escrow_id]
     
 
 @external
 @view
-def user_point_history__ts(_addr: address, _idx: uint256, _chain: uint256 = 0) -> uint256:
+def user_point_history__ts(_addr: address, _idx: uint256, _chain: uint256 = 0, _escrow_id: uint256 = 0) -> uint256:
     if _chain == 0:
-        return VotingEscrow(self.voting_escrow).user_point_history__ts(_addr, _idx)
+        return VotingEscrow(self.voting_escrows[_escrow_id]).user_point_history__ts(_addr, _idx)
 
-    return self.mirrored_user_point_history[_addr][_chain][_idx].ts
+    return self.mirrored_user_point_history[_addr][_chain][_escrow_id][_idx].ts
 
 
 @external
 @view
 def user_last_checkpoint_ts(_user: address) -> uint256:
-    _epoch: uint256 = VotingEscrow(self.voting_escrow).user_point_epoch(_user)
-    _ts: uint256 = VotingEscrow(self.voting_escrow).user_point_history__ts(_user, _epoch)
+    _epoch: uint256 = 0
+    _ts: uint256 = 0
 
-    for i in range(499):
+    for i in range(99):
+        if i >= self.voting_escrow_count:
+            break
+
+        _escrow_epoch: uint256 = VotingEscrow(self.voting_escrows[i]).user_point_epoch(_user)
+        _escrow_ts: uint256 = VotingEscrow(self.voting_escrows[i]).user_point_history__ts(_user, _epoch)
+
+        if _escrow_ts < _ts or _ts == 0:
+            _ts = _escrow_ts
+
+    for i in range(99):
         if i >= self.mirrored_chains_count:
             break
 
-        _chain: uint256 = self.mirrored_chains[i]
-        _chain_epoch: uint256 = self.mirrored_user_point_epoch[_user][_chain]
-        _chain_ts: uint256 = self.mirrored_user_point_history[_user][_chain][_chain_epoch].ts
+        _chain: MirroredChain = self.mirrored_chains[i]
 
-        if _chain_ts < _ts:
-            _ts = _chain_ts
+        for j in range(499):
+            if j >= _chain.escrow_count:
+                break
+
+            _escrow_epoch: uint256 = self.mirrored_user_point_epoch[_user][_chain.chain_id][_chain.escrow_ids[j]]
+            _escrow_ts: uint256 = self.mirrored_user_point_history[_user][_chain.chain_id][_chain.escrow_ids[j]][_escrow_epoch].ts
+
+            if _escrow_ts < _ts or _ts == 0:
+                _ts = _escrow_ts
     
     return _ts
 
@@ -300,7 +327,13 @@ def total_mirrored_supply(t: uint256 = block.timestamp) -> uint256:
 @external
 @view
 def totalSupply(_t: uint256 = block.timestamp) -> uint256:
-    _local_supply: uint256 = VotingEscrow(self.voting_escrow).totalSupply(_t)
+    _local_supply: uint256 = 0
+
+    for i in range(99):
+        if i >= self.voting_escrow_count:
+            break
+
+        _local_supply += VotingEscrow(self.voting_escrows[i]).totalSupply(_t)
 
     _epoch: uint256 = self.mirrored_epoch
     _last_point: Point = self.mirrored_point_history[_epoch]
@@ -315,19 +348,23 @@ def _mirrored_balance_of(addr: address, _t: uint256) -> uint256:
     _chain_count: uint256 = self.mirrored_chains_count
     _mirrored_balance: uint256 = 0
 
-    for i in range(499):
+    for i in range(99):
         if i >= _chain_count:
             break
 
-        _chain: uint256 = self.mirrored_chains[i]
+        _chain: MirroredChain = self.mirrored_chains[i]
 
-        _chain_epoch: uint256 = self.mirrored_user_point_epoch[addr][_chain]
-        if _chain_epoch > 0:
-            _last_point: Point = self.mirrored_user_point_history[addr][_chain][_chain_epoch]
-            _last_point.bias -= _last_point.slope * convert(_t - _last_point.ts, int128)
-            if _last_point.bias < 0:
-                _last_point.bias = 0
-            _mirrored_balance += convert(_last_point.bias, uint256)
+        for j in range(499):
+            if j >= _chain.escrow_count:
+                break
+
+            _escrow_epoch: uint256 = self.mirrored_user_point_epoch[addr][_chain.chain_id][_chain.escrow_ids[j]]
+            if _escrow_epoch > 0:
+                _last_point: Point = self.mirrored_user_point_history[addr][_chain.chain_id][_chain.escrow_ids[j]][_escrow_epoch]
+                _last_point.bias -= _last_point.slope * convert(_t - _last_point.ts, int128)
+                if _last_point.bias < 0:
+                    _last_point.bias = 0
+                _mirrored_balance += convert(_last_point.bias, uint256)
 
     return _mirrored_balance
 
@@ -335,7 +372,13 @@ def _mirrored_balance_of(addr: address, _t: uint256) -> uint256:
 @external
 @view
 def balanceOf(_addr: address, _t: uint256 = block.timestamp) -> uint256:
-    _local_balance: uint256 = VotingEscrow(self.voting_escrow).balanceOf(_addr, _t)
+    _local_balance: uint256 = 0
+    for i in range(99):
+        if i >= self.voting_escrow_count:
+            break
+
+        _local_balance += VotingEscrow(self.voting_escrows[i]).balanceOf(_addr, _t)
+
     _mirrored_balance: uint256 = self._mirrored_balance_of(_addr, _t)
 
     return _local_balance + _mirrored_balance
@@ -349,38 +392,51 @@ def mirrored_balance_of(addr: address, _t: uint256) -> uint256:
 
 @external
 @view
-def locked__end(_addr: address, _chain: uint256 = 0) -> uint256:
+def locked__end(_addr: address, _chain: uint256 = 0, _escrow_id: uint256 = 0) -> uint256:
 
     if _chain == 0:
-        return VotingEscrow(self.voting_escrow).locked__end(_addr)
+        return VotingEscrow(self.voting_escrows[_escrow_id]).locked__end(_addr)
 
-    return self.mirrored_locks[_addr][_chain].end
+    return self.mirrored_locks[_addr][_chain][_escrow_id].end
 
 
 @external
 @view
 def nearest_locked__end(_addr: address) -> uint256:
-    _lock_end: uint256 = VotingEscrow(self.voting_escrow).locked__end(_addr)
+    _lock_end: uint256 = 0
+
+    for i in range(99):
+        if i >= self.voting_escrow_count:
+            break
+
+        _escrow_lock_end: uint256 = VotingEscrow(self.voting_escrows[i]).locked__end(_addr)
+        if _escrow_lock_end < _lock_end or _lock_end == 0:
+            _lock_end = _escrow_lock_end
+
     _chain_count: uint256 = self.mirrored_chains_count
-    for i in range(499):
+    for i in range(99):
         if i >= _chain_count:
             break
         
-        _chain: uint256 = self.mirrored_chains[i]
-        _chain_lock_end: uint256 = self.mirrored_locks[_addr][_chain].end
-        if _chain_lock_end != 0 and (_chain_lock_end < _lock_end or _lock_end == 0):
-            _lock_end = _chain_lock_end
+        _chain: MirroredChain = self.mirrored_chains[i]
+        for j in range(499):
+            if j >= _chain.escrow_count:
+                break
+
+            _escrow_lock_end: uint256 = self.mirrored_locks[_addr][_chain.chain_id][_chain.escrow_ids[j]].end
+            if _escrow_lock_end != 0 and (_escrow_lock_end < _lock_end or _lock_end == 0):
+                _lock_end = _escrow_lock_end
     
     return _lock_end
 
 @external
 @view
-def get_last_user_slope(_addr: address, _chain: uint256 = 0) -> int128:
+def get_last_user_slope(_addr: address, _chain: uint256 = 0, _escrow_id: uint256 = 0) -> int128:
     if _chain == 0:
-        return VotingEscrow(self.voting_escrow).get_last_user_slope(_addr)
+        return VotingEscrow(self.voting_escrows[_escrow_id]).get_last_user_slope(_addr)
     
-    _chain_uepoch: uint256 = self.mirrored_user_point_epoch[_addr][_chain]
-    return self.mirrored_user_point_history[_addr][_chain][_chain_uepoch].slope
+    _chain_uepoch: uint256 = self.mirrored_user_point_epoch[_addr][_chain][_escrow_id]
+    return self.mirrored_user_point_history[_addr][_chain][_escrow_id][_chain_uepoch].slope
 
 
 @external
@@ -389,8 +445,17 @@ def set_admin(_new_admin: address):
 
     self.admin = _new_admin
 
+
 @external
 def set_mirror_whitelist(_addr: address, _is_whitelisted: bool):
     assert msg.sender == self.admin # dev: only admin
 
-    self.whitelisted_mirrors[_addr] = _is_whitelisted  
+    self.whitelisted_mirrors[_addr] = _is_whitelisted
+
+
+@external
+def add_voting_escrow(_addr: address):
+    assert msg.sender == self.admin # dev: only admin
+
+    self.voting_escrows[self.voting_escrow_count] = _addr
+    self.voting_escrow_count += 1
