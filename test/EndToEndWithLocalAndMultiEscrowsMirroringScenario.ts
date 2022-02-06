@@ -23,7 +23,7 @@ import {
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 import {BigNumber} from "ethers";
 
-describe("End to End with Local and Multi Chain Mirroring", function () {
+describe("End to End with Local and Multi Escrows Mirroring", function () {
 
     const DAY = 86400;
     const A_YEAR_FROM_NOW = 1668902400
@@ -124,7 +124,7 @@ describe("End to End with Local and Multi Chain Mirroring", function () {
             await votingEscrow.connect(alice).create_lock(ethers.utils.parseEther("5000"), A_YEAR_FROM_NOW);
             await mirroredVotingEscrow.connect(owner).mirror_lock(alice.address, 1, 0, ethers.utils.parseEther("5000"), A_YEAR_FROM_NOW);
 
-            await mirroredVotingEscrow.connect(owner).mirror_lock(bob.address, 250, 0, ethers.utils.parseEther("1000"), A_YEAR_FROM_NOW);
+            await mirroredVotingEscrow.connect(owner).mirror_lock(bob.address, 1, 1, ethers.utils.parseEther("1000"), A_YEAR_FROM_NOW);
 
             await gaugeController.connect(alice).vote_for_gauge_weights(gauge1.address, 1000);
             await gaugeController.connect(bob).vote_for_gauge_weights(gauge2.address, 1000);
@@ -159,7 +159,7 @@ describe("End to End with Local and Multi Chain Mirroring", function () {
 
             await votingEscrow.connect(alice).create_lock(ethers.utils.parseEther("5000"), A_YEAR_FROM_NOW);
             await mirroredVotingEscrow.connect(owner).mirror_lock(alice.address, 1, 0, ethers.utils.parseEther("3000"), A_YEAR_FROM_NOW);
-            await mirroredVotingEscrow.connect(owner).mirror_lock(alice.address, 250, 0, ethers.utils.parseEther("2000"), A_YEAR_FROM_NOW);
+            await mirroredVotingEscrow.connect(owner).mirror_lock(alice.address, 1, 1, ethers.utils.parseEther("2000"), A_YEAR_FROM_NOW);
 
             await hndLpToken.connect(alice).approve(gauge.address, ethers.utils.parseEther("10000000"));
             await hndLpToken.connect(eve).approve(gauge.address, ethers.utils.parseEther("10000000"));
@@ -189,7 +189,7 @@ describe("End to End with Local and Multi Chain Mirroring", function () {
 
             await votingEscrow.connect(alice).create_lock(ethers.utils.parseEther("5000"), A_YEAR_FROM_NOW);
             await mirroredVotingEscrow.connect(owner).mirror_lock(alice.address, 1, 0, ethers.utils.parseEther("5000"), A_YEAR_FROM_NOW);
-            await mirroredVotingEscrow.connect(owner).mirror_lock(bob.address, 250, 0, ethers.utils.parseEther("1000"), A_YEAR_FROM_NOW);
+            await mirroredVotingEscrow.connect(owner).mirror_lock(bob.address, 1, 1, ethers.utils.parseEther("1000"), A_YEAR_FROM_NOW);
 
             await gaugeController.connect(alice).vote_for_gauge_weights(gauge1.address, 1000);
             await gaugeController.connect(bob).vote_for_gauge_weights(gauge2.address, 1000);

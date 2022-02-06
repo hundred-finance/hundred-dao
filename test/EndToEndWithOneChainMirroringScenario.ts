@@ -23,7 +23,7 @@ import {
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 import {BigNumber} from "ethers";
 
-describe("End to End with Multi Chain Mirroring", function () {
+describe("End to End with One Chain Mirroring", function () {
 
     const DAY = 86400;
     const A_YEAR_FROM_NOW = 1668902400

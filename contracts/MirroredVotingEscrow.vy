@@ -200,8 +200,8 @@ def mirror_lock(_user: address, _chain: uint256, _escrow_id: uint256, _value: ui
     assert self.whitelisted_mirrors[msg.sender] == True # dev: only whitelisted address can mirror locks
 
     old_locked: LockedBalance = self.mirrored_locks[_user][_chain][_escrow_id]
-    new_locked: LockedBalance = old_locked
-    
+
+    new_locked: LockedBalance = empty(LockedBalance)
     new_locked.amount = convert(_value, int128)
     new_locked.end = _unlock_time
 
