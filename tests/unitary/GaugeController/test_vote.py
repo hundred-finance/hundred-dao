@@ -21,6 +21,20 @@ def test_vote(accounts, gauge_controller, three_gauges):
     assert gauge_controller.user_vote_power(accounts[0]) == 10000
 
 
+def test_vote_on_multiple_gauges(accounts, gauge_controller, three_gauges):
+    gauge_controller.vote_for_many_gauge_weights(
+        [three_gauges[0], three_gauges[1], '0x0000000000000000000000000000000000000000',
+        '0x0000000000000000000000000000000000000000', '0x0000000000000000000000000000000000000000',
+        '0x0000000000000000000000000000000000000000', '0x0000000000000000000000000000000000000000',
+        '0x0000000000000000000000000000000000000000', '0x0000000000000000000000000000000000000000',
+        '0x0000000000000000000000000000000000000000'],
+        [7000, 3000, 0, 0, 0, 0, 0, 0, 0, 0],
+        {"from": accounts[0]}
+    )
+
+    assert gauge_controller.user_vote_power(accounts[0]) == 10000
+
+
 def test_vote_partial(accounts, gauge_controller, three_gauges):
     gauge_controller.vote_for_gauge_weights(three_gauges[1], 1234, {"from": accounts[0]})
 

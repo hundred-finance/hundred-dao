@@ -485,7 +485,7 @@ def change_gauge_weight(addr: address, weight: uint256):
 
 
 @internal
-def _vote_for_gauge_weights(_user: address, _chain: uint256, _escrow_id: uint256, _gauge_addr: address, _user_weight: uint256):
+def _vote_for_chain_gauge_weights(_user: address, _chain: uint256, _escrow_id: uint256, _gauge_addr: address, _user_weight: uint256):
     escrow: address = self.voting_escrow
     slope: uint256 = convert(MirroredVotingEscrow(escrow).get_last_user_slope(_user, _chain, _escrow_id), uint256)
     lock_end: uint256 = MirroredVotingEscrow(escrow).locked__end(_user, _chain, _escrow_id)
@@ -550,21 +550,22 @@ def _vote_for_gauge_weights(_user: address, _chain: uint256, _escrow_id: uint256
     self.last_user_vote[_user][_gauge_addr] = block.timestamp
 
 
-@external
-def vote_for_gauge_weights(_gauge_addr: address, _user_weight: uint256):
+@internal
+def _vote_for_gauge_weights(_sender: address, _gauge_addr: address, _user_weight: uint256):
     """
     @notice Allocate voting power for changing pool weights
+    @param _sender voter address
     @param _gauge_addr Gauge which `msg.sender` votes for
     @param _user_weight Weight for a gauge in bps (units of 0.01%). Minimal is 0.01%. Ignored if 0
     """
     assert (_user_weight >= 0) and (_user_weight <= 10000), "You used all your voting power"
-    assert block.timestamp >= self.last_user_vote[msg.sender][_gauge_addr] + WEIGHT_VOTE_DELAY, "Cannot vote so often"
+    assert block.timestamp >= self.last_user_vote[_sender][_gauge_addr] + WEIGHT_VOTE_DELAY, "Cannot vote so often"
 
     _escrow_count: uint256 = MirroredVotingEscrow(self.voting_escrow).voting_escrow_count()
     for i in range(99):
         if i >= _escrow_count:
             break
-        self._vote_for_gauge_weights(msg.sender, 0, i, _gauge_addr, _user_weight)
+        self._vote_for_chain_gauge_weights(_sender, 0, i, _gauge_addr, _user_weight)
     
     _chain_count: uint256 = MirroredVotingEscrow(self.voting_escrow).mirrored_chains_count()
     for i in range(99):
@@ -575,9 +576,23 @@ def vote_for_gauge_weights(_gauge_addr: address, _user_weight: uint256):
         for j in range(99):
             if j >= _chain.escrow_count:
                 break
-            self._vote_for_gauge_weights(msg.sender, _chain.chain_id, j, _gauge_addr, _user_weight)
+            self._vote_for_chain_gauge_weights(_sender, _chain.chain_id, j, _gauge_addr, _user_weight)
 
-    log VoteForGauge(block.timestamp, msg.sender, _gauge_addr, _user_weight)
+    log VoteForGauge(block.timestamp, _sender, _gauge_addr, _user_weight)
+
+
+@external
+def vote_for_gauge_weights(_gauge_addr: address, _user_weight: uint256):
+    self._vote_for_gauge_weights(msg.sender, _gauge_addr, _user_weight)
+
+
+@external
+def vote_for_many_gauge_weights(_gauge_addr: address[10], _user_weight: uint256[10]):
+    for i in range(9):
+        if _gauge_addr[i] == ZERO_ADDRESS:
+            break
+
+        self._vote_for_gauge_weights(msg.sender, _gauge_addr[i], _user_weight[i])
 
 
 @external
