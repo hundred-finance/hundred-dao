@@ -37,6 +37,7 @@ import {Contract} from "ethers";
 import path from "path";
 
 export async function deploy(hnd: string, pools: any[], network: string, veHND: string|undefined = undefined) {
+    const deployVHND = veHND === undefined
     let deployments: Deployment = {
         Gauges: []
     };
@@ -46,7 +47,7 @@ export async function deploy(hnd: string, pools: any[], network: string, veHND: 
     console.log("Deploying contracts with the account:", deployer.address);
     console.log("Account balance:", (await deployer.getBalance()).toString());
 
-    if (!veHND) {
+    if (deployVHND) {
         const votingEscrowFactory: VotingEscrowV2__factory =
             <VotingEscrowV2__factory>await ethers.getContractFactory("VotingEscrowV2");
 
@@ -60,7 +61,6 @@ export async function deploy(hnd: string, pools: any[], network: string, veHND: 
 
         deployments.VotingEscrowV2 = votingEscrow.address;
         console.log("Deployed veHND: ", votingEscrow.address);
-        veHND = votingEscrow.address;
     } else {
         deployments.VotingEscrowV2 = veHND;
     }
@@ -70,7 +70,7 @@ export async function deploy(hnd: string, pools: any[], network: string, veHND: 
 
     const mirroredVotingEscrow = await mirroredVotingEscrowFactory.deploy(
         deployer.address,
-        veHND,
+        deployments.VotingEscrowV2,
         "Mirrored Vote-escrowed HND",
         "mveHND",
         "mveHND_1.0.0"
@@ -80,10 +80,10 @@ export async function deploy(hnd: string, pools: any[], network: string, veHND: 
     deployments.MirroredVotingEscrow = mirroredVotingEscrow.address;
     console.log("Deployed mveHND: ", mirroredVotingEscrow.address);
 
-    if (!veHND) {
+    if (deployVHND) {
         await deploySmartWalletChecker(deployer.address, network, deployments);
         await deployLockCreatorChecker(deployer.address, network, deployments);
-    } else {
+    } else if (deployments.VotingEscrowV2) {
         let votingEscrow: VotingEscrowV2 =
             <VotingEscrowV2>new Contract(deployments.VotingEscrowV2, patchAbiGasFields(VotingEscrowV2Artifact.abi), deployer);
 
