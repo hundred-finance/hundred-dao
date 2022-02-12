@@ -10,9 +10,6 @@
 # 7 * 86400 seconds - all future times are rounded by week
 WEEK: constant(uint256) = 604800
 
-# Cannot change weight votes more often than once in 10 days
-WEIGHT_VOTE_DELAY: constant(uint256) = 10 * 86400
-
 
 struct Point:
     bias: uint256
@@ -559,7 +556,6 @@ def _vote_for_gauge_weights(_sender: address, _gauge_addr: address, _user_weight
     @param _user_weight Weight for a gauge in bps (units of 0.01%). Minimal is 0.01%. Ignored if 0
     """
     assert (_user_weight >= 0) and (_user_weight <= 10000), "You used all your voting power"
-    assert block.timestamp >= self.last_user_vote[_sender][_gauge_addr] + WEIGHT_VOTE_DELAY, "Cannot vote so often"
 
     _escrow_count: uint256 = MirroredVotingEscrow(self.voting_escrow).voting_escrow_count()
     for i in range(99):
