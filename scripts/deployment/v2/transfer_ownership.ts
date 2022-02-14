@@ -5,7 +5,7 @@ const network = hre.hardhatArguments.network;
 if (!network) {
         console.error("please provide valid network");
 } else {
-        transferOwnership("0xBf3bD01bd5fB28d2381d41A8eF779E6aa6f0a811", network)
+        transferOwnership("0xB95842A5E114f5D65b5B96aee42C025331C9417a", network)
             .then(() => process.exit(0))
             .catch(error => {
                 console.error(error);
