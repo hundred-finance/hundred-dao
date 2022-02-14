@@ -2,14 +2,14 @@ import {deploy} from "./helpers";
 import hre from "hardhat";
 
 const POOLS: any = [
-    { id: "hDAI", token: "0x89db3B59381bC06FE9BF74532Afd777e5F78Ef02", weight: 1 },
-    { id: "hUST", token: "0xEdBA32185BAF7fEf9A26ca567bC4A6cbe426e499", weight: 1 },
-    { id: "hUSDC", token: "0x243E33aa7f6787154a8E59d3C27a66db3F8818ee", weight: 1 },
-    { id: "hBUSD", token: "0xb1c4426C86082D91a6c097fC588E5D5d8dD1f5a8", weight: 1 },
+    { id: "hUSDC", token: "0x951604A32e0DE8829bC7d72d5A73B4e386c07383", weight: 1 },
+    { id: "hUSDT", token: "0x21A4961B11c940fbeF57b1EB64FD646c880377e4", weight: 1 },
+    { id: "hMIM", token: "0xa8A00134d1D10Ad5886Fc4f70F7F3C8Da83D7Ab4", weight: 1 },
+    { id: "hFRAX", token: "0x30D0a2a680181643C3283A195d2f4898eB5Bf01C", weight: 1 },
 ]
 
-const HUNDRED_TOKEN = "0x10010054c81c8c01951E6A631dD228bB02d8D1e5";
-const veHND = "0xbeD8EFa1973F6E1fB3515bf94aa760174431b3F8";
+const HUNDRED_TOKEN = "0x10010078a54396F62c96dF8532dc2B4847d47ED3";
+const veHND = "0x243E33aa7f6787154a8E59d3C27a66db3F8818ee";
 
 const network = hre.hardhatArguments.network;
 if (!network) {

@@ -1,0 +1,28 @@
+{
+    "Gauges": [
+        {
+            "id": "hUSDC",
+            "address": "0xb4BAfc3d60662De362c0cB0f5e2DE76603Ea77D7"
+        },
+        {
+            "id": "hUSDT",
+            "address": "0x6BFD171dDEF7ef775E6C1d6078C10198229DD242"
+        },
+        {
+            "id": "hMIM",
+            "address": "0xF191d17dEe9943F06bB784C0492805280AeE0bf9"
+        },
+        {
+            "id": "hFRAX",
+            "address": "0x61F95b38f880a6C5A4b7DD15560D7bB8B3E36f35"
+        }
+    ],
+    "VotingEscrowV1": "0x243E33aa7f6787154a8E59d3C27a66db3F8818ee",
+    "MirroredVotingEscrow": "0x1747D329CB37e0A0f387f24065aDdbc60eAB69DD",
+    "Treasury": "0xFf39252Ce6A8fC5657235EeFEB45702B86c42E8F",
+    "RewardPolicyMaker": "0x1F8e8472e124F58b7F0D2598EaE3F4f482780b09",
+    "GaugeControllerV2": "0xAc8204a9d79CA87D192ea98A9381600642A66a5F",
+    "Minter": "0xec378cdd60E890332F7A8CC251315327a4f244B6",
+    "VotingEscrowDelegationV2": "0xBa57440fA35Fdb671E58F6F56c1A4447aB1f6C2B",
+    "DelegationProxy": "0x4adF575DBe0e6F1c5909AE9c7119927b4FaabbBd"
+}

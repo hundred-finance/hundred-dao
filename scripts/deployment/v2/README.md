@@ -12,5 +12,5 @@ The following steps are to be performed from the project root folder
    1. gauges
    2. gauge controller
    3. voting escrow
-   4. veBoot delegation
+   4. veBoost delegation
 8. Manually verify the smart contract on the network explorer
