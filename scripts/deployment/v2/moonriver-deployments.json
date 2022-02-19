@@ -2,27 +2,27 @@
     "Gauges": [
         {
             "id": "hUSDC",
-            "address": "0xb4BAfc3d60662De362c0cB0f5e2DE76603Ea77D7"
+            "address": "0x7A4fEa19F293273F880F0426E37b7597d6f9BB62"
         },
         {
             "id": "hUSDT",
-            "address": "0x6BFD171dDEF7ef775E6C1d6078C10198229DD242"
+            "address": "0x1Ac7Cb8D9e3AC86296a5DEA9d55BF846AB459bA9"
         },
         {
             "id": "hMIM",
-            "address": "0xF191d17dEe9943F06bB784C0492805280AeE0bf9"
+            "address": "0x198618d2aa6cBC89Ea24550fE896D4afa28CD635"
         },
         {
             "id": "hFRAX",
-            "address": "0x61F95b38f880a6C5A4b7DD15560D7bB8B3E36f35"
+            "address": "0xcabc8fC306fCAa4c05B58522B13756AE12eDd902"
         }
     ],
     "VotingEscrowV1": "0x243E33aa7f6787154a8E59d3C27a66db3F8818ee",
-    "MirroredVotingEscrow": "0x1747D329CB37e0A0f387f24065aDdbc60eAB69DD",
-    "Treasury": "0xFf39252Ce6A8fC5657235EeFEB45702B86c42E8F",
-    "RewardPolicyMaker": "0x1F8e8472e124F58b7F0D2598EaE3F4f482780b09",
-    "GaugeControllerV2": "0xAc8204a9d79CA87D192ea98A9381600642A66a5F",
-    "Minter": "0xec378cdd60E890332F7A8CC251315327a4f244B6",
-    "VotingEscrowDelegationV2": "0xBa57440fA35Fdb671E58F6F56c1A4447aB1f6C2B",
-    "DelegationProxy": "0x4adF575DBe0e6F1c5909AE9c7119927b4FaabbBd"
+    "MirroredVotingEscrow": "0x514b6B2A6B7651aa4aBcb2917c2B8aaFBF78BBf1",
+    "Treasury": "0xcE0247769a8Bba8fb0afA76F87324545133EB17A",
+    "RewardPolicyMaker": "0xbeD8EFa1973F6E1fB3515bf94aa760174431b3F8",
+    "GaugeControllerV2": "0x788Ac705a7B67562CdD1913b67EE091785FA4F68",
+    "Minter": "0x0d9459A2d7252c4cd62cF13416Cd319c3e0C5bB4",
+    "VotingEscrowDelegationV2": "0x3D9c47B967C717D11e6E19E61d8419B92C794223",
+    "DelegationProxy": "0x89fC1cc860dDF4fb91A7C52b12d5343bB03C332E"
 }
