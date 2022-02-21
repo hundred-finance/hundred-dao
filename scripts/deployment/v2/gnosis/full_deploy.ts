@@ -1,4 +1,4 @@
-import {deploy} from "./helpers";
+import {deploy} from "../helpers";
 import hre from "hardhat";
 
 const POOLS: any = [
@@ -7,12 +7,13 @@ const POOLS: any = [
 ]
 
 const HUNDRED_TOKEN = "0x10010078a54396F62c96dF8532dc2B4847d47ED3";
+const ADMIN = "0xB95842A5E114f5D65b5B96aee42C025331C9417a"
 
 const network = hre.hardhatArguments.network;
 if (!network) {
     console.error("please provide valid network");
 } else {
-    deploy(HUNDRED_TOKEN, POOLS, network)
+    deploy(HUNDRED_TOKEN, POOLS, network, ADMIN)
         .then(() => process.exit(0))
         .catch(error => {
             console.error(error);

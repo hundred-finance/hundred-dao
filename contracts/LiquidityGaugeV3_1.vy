@@ -1,4 +1,4 @@
-# @version 0.3.1
+# @version 0.2.15
 """
 @title Liquidity Gauge v3.1
 @author Hundred Finance (based on Curve Finance Liquidity Gauge v3)

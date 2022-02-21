@@ -18,7 +18,7 @@ import {
     VotingEscrowDelegationV2__factory,
     DelegationProxy,
     ERC20TOKEN__factory,
-    ERC20TOKEN, VotingEscrowDelegationV2, DelegationProxy__factory
+    ERC20TOKEN, VotingEscrowDelegationV2, DelegationProxy__factory, SmartWalletChecker__factory, SmartWalletChecker
 } from "../typechain";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 import {BigNumber} from "ethers";
@@ -59,6 +59,10 @@ describe("End to End with Multi Chain Mirroring", function () {
 
     let gaugeFactory: LiquidityGaugeV41__factory;
 
+    let smartWalletFactory: SmartWalletChecker__factory;
+    let smartWalletChecker: SmartWalletChecker;
+    let lockCreator: SmartWalletChecker;
+
     let owner: SignerWithAddress;
     let alice: SignerWithAddress;
     let bob: SignerWithAddress;
@@ -79,18 +83,21 @@ describe("End to End with Multi Chain Mirroring", function () {
         gaugeControllerFactory = <GaugeControllerV2__factory>await ethers.getContractFactory("GaugeControllerV2");
         minterFactory = <Minter__factory>await ethers.getContractFactory("Minter");
         gaugeFactory = <LiquidityGaugeV41__factory>await ethers.getContractFactory("LiquidityGaugeV4_1");
+        smartWalletFactory = <SmartWalletChecker__factory>await ethers.getContractFactory("SmartWalletChecker");
 
         hnd = await erc20Factory.deploy("Hundred Finance", "HND", 18, 0);
         hndLpToken = await erc20Factory.deploy("Hundred Finance Lp token", "hETH", 18, 0);
 
-        rewardPolicyMaker = await rewardPolicyMakerFactory.deploy(DAY * 7);
+        rewardPolicyMaker = await rewardPolicyMakerFactory.deploy(DAY * 7, owner.address);
 
-        treasury = await treasuryFactory.deploy(hnd.address);
-        votingEscrow = await votingEscrowFactory.deploy(hnd.address, "Voting locked HND", "veHND", "1.0");
+        smartWalletChecker = await smartWalletFactory.deploy(owner.address);
+        lockCreator = await smartWalletFactory.deploy(owner.address);
+        treasury = await treasuryFactory.deploy(hnd.address, owner.address);
+        votingEscrow = await votingEscrowFactory.deploy(hnd.address, "Voting locked HND", "veHND", "1.0", owner.address, smartWalletChecker.address, lockCreator.address);
         mirroredVotingEscrow = await mirroredVotingEscrowFactory.deploy(owner.address, votingEscrow.address, "Mirroed Voting locked HND", "mveHND", "1.0");
-        gaugeController = await gaugeControllerFactory.deploy(mirroredVotingEscrow.address);
+        gaugeController = await gaugeControllerFactory.deploy(mirroredVotingEscrow.address, owner.address);
         minter = await minterFactory.deploy(treasury.address, gaugeController.address);
-        votingEscrowDelegation = await votingEscrowDelegationFactory.deploy("veBoost", "veBoost", "", mirroredVotingEscrow.address);
+        votingEscrowDelegation = await votingEscrowDelegationFactory.deploy("veBoost", "veBoost", "", mirroredVotingEscrow.address, owner.address);
         delegationProxy = await delegationProxyFactory.deploy(votingEscrowDelegation.address, owner.address, owner.address, mirroredVotingEscrow.address);
 
         await treasury.set_minter(minter.address);

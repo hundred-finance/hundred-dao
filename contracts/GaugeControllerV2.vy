@@ -1,4 +1,4 @@
-# @version 0.3.1
+# @version 0.2.15
 
 """
 @title Gauge Controller
@@ -113,14 +113,14 @@ time_type_weight: public(uint256[1000000000])  # type_id -> last scheduled time 
 
 
 @external
-def __init__(_mirrored_voting_escrow: address):
+def __init__(_mirrored_voting_escrow: address, _admin: address):
     """
     @notice Contract constructor
     @param _mirrored_voting_escrow `MirroredVotingEscrow` contract address
     """
     assert _mirrored_voting_escrow != ZERO_ADDRESS
 
-    self.admin = msg.sender
+    self.admin = _admin
     self.voting_escrow = _mirrored_voting_escrow
     self.time_total = block.timestamp / WEEK * WEEK
 

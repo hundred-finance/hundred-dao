@@ -1,4 +1,4 @@
-# @version 0.3.1
+# @version 0.2.15
 """
 @title Liquidity Gauge v4.1
 @author Hundred Finance (based on Curve Finance Liquidity Gauge v4)
@@ -33,6 +33,7 @@ interface VotingEscrowBoost:
 
 interface ERC20Extended:
     def symbol() -> String[26]: view
+    def decimals() -> uint256: view
 
 
 event Deposit:
@@ -94,6 +95,7 @@ allowance: public(HashMap[address, HashMap[address, uint256]])
 
 name: public(String[64])
 symbol: public(String[32])
+decimals: public(uint256)
 
 working_balances: public(HashMap[address, uint256])
 working_supply: public(uint256)
@@ -147,6 +149,7 @@ def __init__(_lp_token: address, _minter: address, _admin: address, _reward_poli
     symbol: String[26] = ERC20Extended(_lp_token).symbol()
     self.name = concat(symbol, " Gauge Deposit")
     self.symbol = concat(symbol, "-gauge")
+    self.decimals = ERC20Extended(_lp_token).decimals()
 
     controller: address = Minter(_minter).controller()
 
@@ -159,17 +162,6 @@ def __init__(_lp_token: address, _minter: address, _admin: address, _reward_poli
 
     self.period_timestamp[0] = block.timestamp
     self.veboost_proxy = _veboost_proxy
-
-
-@view
-@external
-def decimals() -> uint256:
-    """
-    @notice Get the number of decimals for this token
-    @dev Implemented as a view method to reduce gas costs
-    @return uint256 decimal places
-    """
-    return 18
 
 
 @view

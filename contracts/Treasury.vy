@@ -1,4 +1,4 @@
-# @version 0.3.1
+# @version 0.2.15
 """
 @title Token Treasury
 @author Hundred Finance
@@ -13,9 +13,9 @@ minter: public(address)
 admin: public(address)
 
 @external
-def __init__(_token: address):
+def __init__(_token: address, _admin: address):
     self.token = _token
-    self.admin = msg.sender
+    self.admin = _admin
 
 @external
 @nonpayable

@@ -1,4 +1,4 @@
-# @version 0.3.1
+# @version 0.2.15
 """
 @title Voting Escrow Delegation
 @author Curve Finance
@@ -132,13 +132,13 @@ grey_list: public(HashMap[address, HashMap[address, bool]])
 
 
 @external
-def __init__(_name: String[32], _symbol: String[32], _base_uri: String[128], _voting_escrow: address):
+def __init__(_name: String[32], _symbol: String[32], _base_uri: String[128], _voting_escrow: address, _admin: address):
     self.name = _name
     self.symbol = _symbol
     self.base_uri = _base_uri
 
     self.voting_escrow = _voting_escrow
-    self.admin = msg.sender
+    self.admin = _admin
 
 
 @internal

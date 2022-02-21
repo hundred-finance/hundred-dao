@@ -50,7 +50,7 @@ export async function deploy(hnd: string, pools: any[], deployName: string) {
     const treasuryFactory: Treasury__factory =
         <Treasury__factory>await ethers.getContractFactory("Treasury");
 
-    const treasury: Treasury = await treasuryFactory.deploy(hnd);
+    const treasury: Treasury = await treasuryFactory.deploy(hnd, deployer.address);
     await treasury.deployed();
 
     deployments.Treasury = treasury.address;
@@ -58,7 +58,7 @@ export async function deploy(hnd: string, pools: any[], deployName: string) {
     const rewardPolicyMakerFactory: RewardPolicyMaker__factory =
         <RewardPolicyMaker__factory> await ethers.getContractFactory("RewardPolicyMaker");
 
-    const rewardPolicyMaker: RewardPolicyMaker = await rewardPolicyMakerFactory.deploy(86400 * 7);
+    const rewardPolicyMaker: RewardPolicyMaker = await rewardPolicyMakerFactory.deploy(86400 * 7, deployer.address);
     await rewardPolicyMaker.deployed();
 
     deployments.RewardPolicyMaker = rewardPolicyMaker.address;

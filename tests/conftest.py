@@ -120,9 +120,19 @@ def token(ERC20TOKEN, accounts):
 
 
 @pytest.fixture(scope="module")
-def voting_escrow(VotingEscrowV2, accounts, token):
+def smart_wallet_checker(SmartWalletChecker, accounts):
+    yield SmartWalletChecker.deploy(accounts[0], {"from": accounts[0]})
+
+
+@pytest.fixture(scope="module")
+def lock_creator(SmartWalletChecker, accounts):
+    yield SmartWalletChecker.deploy(accounts[0], {"from": accounts[0]})
+
+
+@pytest.fixture(scope="module")
+def voting_escrow(VotingEscrowV2, smart_wallet_checker, lock_creator, accounts, token):
     yield VotingEscrowV2.deploy(
-        token, "Voting-escrowed HND", "veHND", "veHND_0.99", {"from": accounts[0]}
+        token, "Voting-escrowed HND", "veHND", "veHND_0.99", accounts[0], smart_wallet_checker, lock_creator, {"from": accounts[0]}
     )
 
 @pytest.fixture(scope="module")
@@ -132,11 +142,11 @@ def mirrored_voting_escrow(MirroredVotingEscrow, accounts, voting_escrow):
 
 @pytest.fixture(scope="module")
 def gauge_controller(GaugeControllerV2, accounts, mirrored_voting_escrow):
-    yield GaugeControllerV2.deploy(mirrored_voting_escrow, {"from": accounts[0]})
+    yield GaugeControllerV2.deploy(mirrored_voting_escrow, accounts[0], {"from": accounts[0]})
 
 @pytest.fixture(scope="module")
 def minter(Minter, Treasury, token, accounts, gauge_controller):
-    treasury = Treasury.deploy(token, {"from": accounts[0]})
+    treasury = Treasury.deploy(token, accounts[0], {"from": accounts[0]})
     token.mint(treasury, 100_000_000 * 10 ** 18, {"from": accounts[0]})
 
     minter = Minter.deploy(treasury, gauge_controller, {"from": accounts[0]})
@@ -148,7 +158,7 @@ def minter(Minter, Treasury, token, accounts, gauge_controller):
 @pytest.fixture(scope="module")
 def reward_policy_maker(RewardPolicyMaker, accounts):
     reward = 100 * 10 ** 18
-    contract = RewardPolicyMaker.deploy(604800, {"from": accounts[0]})
+    contract = RewardPolicyMaker.deploy(604800, accounts[0], {"from": accounts[0]})
     contract.set_rewards_starting_at(contract.current_epoch() + 1, [reward, reward, reward, reward, reward, reward, reward, reward, reward, reward])
     yield contract
 
@@ -167,7 +177,7 @@ def reward_contract(CurveRewards, mock_lp_token, accounts, coin_reward):
 
 @pytest.fixture(scope="module")
 def veboost_delegation(VotingEscrowDelegationV2, alice, mirrored_voting_escrow):
-    yield VotingEscrowDelegationV2.deploy("Voting Escrow Boost Delegation", "veBoost", "", mirrored_voting_escrow,{"from": alice})
+    yield VotingEscrowDelegationV2.deploy("Voting Escrow Boost Delegation", "veBoost", "", mirrored_voting_escrow, alice, {"from": alice})
 
 
 @pytest.fixture(scope="module")
@@ -188,11 +198,6 @@ def three_gauges(LiquidityGaugeV4_1, reward_policy_maker, accounts, mock_lp_toke
     ]
 
     yield contracts
-
-
-@pytest.fixture(scope="module")
-def smart_wallet_checker(SmartWalletChecker, accounts):
-    yield SmartWalletChecker.deploy(accounts[0], {"from": accounts[0]})
 
 
 @pytest.fixture(scope="module")

@@ -1,4 +1,4 @@
-# @version 0.3.1
+# @version 0.2.15
 """
 @title HND DAO Token proxy
 @author Hundred Finanace
@@ -24,7 +24,7 @@ rewards: public(uint256[100000000000000000000000000000])
 
 
 @external
-def __init__(_epoch_length: uint256):
+def __init__(_epoch_length: uint256, _admin: address):
     """
     @notice Contract constructor
     """

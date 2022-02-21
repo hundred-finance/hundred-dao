@@ -1,15 +1,19 @@
-import {deployNewGauge} from "./helpers";
+import {deployNewGauge} from "../helpers";
 import hre from "hardhat";
+
+const ADMIN = "0xB95842A5E114f5D65b5B96aee42C025331C9417a"
+const LP_TOKEN = ""
+const LP_TOKEN_SYMBOL = ""
 
 const network = hre.hardhatArguments.network;
 if (!network) {
     console.error("please provide valid network");
 } else {
     deployNewGauge(
-        "0x8286dC6dF929C4BfA4f6951caB4dAe2EC02d4D72",
+        ADMIN,
         network,
-        "0xb1c4426C86082D91a6c097fC588E5D5d8dD1f5a8",
-        "hBUSD"
+        LP_TOKEN,
+        LP_TOKEN_SYMBOL
     )
         .then(() => process.exit(0))
         .catch(error => {

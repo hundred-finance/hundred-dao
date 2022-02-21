@@ -1,4 +1,4 @@
-# @version 0.3.1
+# @version 0.2.15
 """
 @title Voting Escrow V2
 @author Curve Finance
@@ -119,7 +119,15 @@ future_admin: public(address)
 
 
 @external
-def __init__(token_addr: address, _name: String[64], _symbol: String[32], _version: String[32]):
+def __init__(
+    token_addr: address,
+    _name: String[64],
+    _symbol: String[32],
+    _version: String[32],
+    _admin: address,
+    _smart_wallet_checker: address,
+    _lock_creator_checker: address
+    ):
     """
     @notice Contract constructor
     @param token_addr `ERC20CRV` token address
@@ -127,12 +135,14 @@ def __init__(token_addr: address, _name: String[64], _symbol: String[32], _versi
     @param _symbol Token symbol
     @param _version Contract version - required for Aragon compatibility
     """
-    self.admin = msg.sender
+    self.admin = _admin
     self.token = token_addr
     self.point_history[0].blk = block.number
     self.point_history[0].ts = block.timestamp
     self.controller = msg.sender
     self.transfersEnabled = True
+    self.smart_wallet_checker = _smart_wallet_checker
+    self.lock_creator_checker = _lock_creator_checker
 
     _decimals: uint256 = ERC20(token_addr).decimals()
     assert _decimals <= 255
