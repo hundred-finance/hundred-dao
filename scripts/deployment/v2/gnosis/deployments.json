@@ -1,0 +1,22 @@
+{
+    "Gauges": [
+        {
+            "id": "hxDAI",
+            "address": "0x7BFE7b45c8019DEDc66c695Ac70b8fc2c0421584"
+        },
+        {
+            "id": "hUSDC",
+            "address": "0x0d124443c853F8999bA14531B49E34D6540654d1"
+        }
+    ],
+    "SmartWalletChecker": "0xEE5d3c956Ff7bF49054380610D8e598793838156",
+    "LockCreatorChecker": "0xc9F08308fE6724BD7F0E87e2661DE2FDfcC9e8a8",
+    "VotingEscrowV2": "0xf64E1a3eF0d2F5659dC4c10983e595B797C6ecA4",
+    "MirroredVotingEscrow": "0x988174f4AB5ad41E1313F1b07877dFe4A78CE5F2",
+    "Treasury": "0x1B65EDec9370a29adb618f741C22fdbe20EB68DD",
+    "RewardPolicyMaker": "0x89Aa51685a2B658be8a7b9C3Af70D66557544181",
+    "GaugeControllerV2": "0x2105dE165eD364919703186905B9BB5B8015F13c",
+    "Minter": "0x818b3dff96d01590Caf72965e6F50b24331EfdEC",
+    "VotingEscrowDelegationV2": "0x629e95631602Ad5751e79557f297c32C93598B64",
+    "DelegationProxy": "0x989b2F0722808d9F9c574363fA8759e925f30F12"
+}
