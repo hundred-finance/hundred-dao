@@ -1,0 +1,10 @@
+{
+    "Gauges": [
+        {
+            "id": "lUSDC",
+            "address": "0x333E3312b1D496a8dcA5cbF2BDaaC769D209A22D"
+        }
+    ],
+    "RewardPolicyMaker": "0xc8e2C35b7C9CD784635B72df14179746B7C0f2a7",
+    "GaugeController": "0x27a1B793b5B51a8862F66B0a1181EF42b2A8D9C2"
+}

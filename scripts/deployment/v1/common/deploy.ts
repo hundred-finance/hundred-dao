@@ -20,7 +20,7 @@ import * as LiquidityGaugeV31Artifact from "../../../../artifacts/contracts/Liqu
 import * as SmartWalletCheckerArtifact from "../../../../artifacts/contracts/SmartWalletChecker.vy/SmartWalletChecker.json";
 
 import * as fs from "fs";
-import {BigNumber, BigNumberish, Contract} from "ethers";
+import {BigNumber, Contract} from "ethers";
 
 export async function deploy(hnd: string, pools: any[], deployName: string) {
 
@@ -100,6 +100,60 @@ export async function deploy(hnd: string, pools: any[], deployName: string) {
     }
 
     fs.writeFileSync(`./scripts/deployment/v1/${deployName}/deployments.json`, JSON.stringify(deployments, null, 4));
+}
+
+export async function deploy_with_existing_escrow(
+    flavour: string,
+    admin: string,
+    hnd: string,
+    pools: any[],
+    deployName: string
+) {
+
+    let deployments: Deployment = {
+        Gauges: []
+    };
+    const [deployer] = await ethers.getSigners();
+
+    console.log("Deploying contracts with the account:", deployer.address);
+    console.log("Account balance:", (await deployer.getBalance()).toString());
+
+    let existingDeploy: Deployment = JSON.parse(fs.readFileSync(`./scripts/deployment/v1/${deployName}/deployments.json`).toString());
+
+    const rewardPolicyMakerFactory: RewardPolicyMaker__factory =
+        <RewardPolicyMaker__factory> await ethers.getContractFactory("RewardPolicyMaker");
+
+    const rewardPolicyMaker: RewardPolicyMaker = await rewardPolicyMakerFactory.deploy(86400 * 7, admin);
+    await rewardPolicyMaker.deployed();
+
+    deployments.RewardPolicyMaker = rewardPolicyMaker.address;
+
+    if (existingDeploy.VotingEscrow) {
+        const gaugeControllerFactory: GaugeController__factory =
+            <GaugeController__factory>await ethers.getContractFactory("GaugeController");
+
+        const gaugeController: GaugeController = await gaugeControllerFactory.deploy(hnd, existingDeploy.VotingEscrow);
+        await gaugeController.deployed();
+
+        deployments.GaugeController = gaugeController.address;
+    }
+
+    if (existingDeploy.Minter) {
+        const gaugeV3Factory: LiquidityGaugeV31__factory =
+            <LiquidityGaugeV31__factory>await ethers.getContractFactory("LiquidityGaugeV3_1");
+
+        for (let i = 0; i < pools.length; i++) {
+            const pool = pools[i];
+
+            const gauge: LiquidityGaugeV31 = await gaugeV3Factory.deploy(
+                pool.token, existingDeploy.Minter, admin, rewardPolicyMaker.address
+            );
+            await gauge.deployed();
+            deployments.Gauges.push({ id: pool.id, address: gauge.address });
+        }
+    }
+
+    fs.writeFileSync(`./scripts/deployment/v1/${deployName}/${flavour}-deployments.json`, JSON.stringify(deployments, null, 4));
 }
 
 export async function transferOwnership(newOwner: string, deployName: string) {
