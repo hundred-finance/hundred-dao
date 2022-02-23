@@ -28,7 +28,7 @@ def __init__(_epoch_length: uint256, _admin: address):
     """
     @notice Contract constructor
     """
-    self.admin = msg.sender
+    self.admin = _admin
 
     self.epoch_length = _epoch_length
     self.first_epoch_time = block.timestamp / _epoch_length * _epoch_length - _epoch_length

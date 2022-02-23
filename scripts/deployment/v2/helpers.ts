@@ -22,7 +22,6 @@ import {
     VotingEscrowDelegationV2, VotingEscrow
 } from "../../../typechain";
 
-import * as GaugeControllerV2Artifact from "../../../artifacts/contracts/GaugeControllerV2.vy/GaugeControllerV2.json";
 import * as VotingEscrowV1Artifact from "../../../artifacts/contracts/VotingEscrow.vy/VotingEscrow.json";
 import * as VotingEscrowV2Artifact from "../../../artifacts/contracts/VotingEscrowV2.vy/VotingEscrowV2.json";
 import * as DelegationProxyArtifact from "../../../artifacts/contracts/ve-boost/DelegationProxy.vy/DelegationProxy.json";
@@ -183,8 +182,6 @@ export async function deployNewGauge(
     let deployments: Deployment = JSON.parse(fs.readFileSync(location).toString());
 
     if (deployments.GaugeControllerV2 && deployments.DelegationProxy && deployments.RewardPolicyMaker && deployments.Minter) {
-        let gaugeController: GaugeControllerV2 =
-            <GaugeControllerV2>new Contract(deployments.GaugeControllerV2, patchAbiGasFields(GaugeControllerV2Artifact.abi), deployer);
 
         let delegationProxy: DelegationProxy =
             <DelegationProxy>new Contract(deployments.DelegationProxy, patchAbiGasFields(DelegationProxyArtifact.abi), deployer);
