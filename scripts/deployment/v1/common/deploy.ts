@@ -173,12 +173,9 @@ export async function acceptOwnership(deployName: string) {
 export async function deployNewGauge(
     admin: string, deployName: string, token: string, tokenName: string, type: number = 0, weight: number = 1
 ) {
-    const [deployer] = await ethers.getSigners();
     let deployments: Deployment = JSON.parse(fs.readFileSync(`./scripts/deployment/v1/${deployName}/deployments.json`).toString());
 
     if (deployments.GaugeController && deployments.RewardPolicyMaker && deployments.Minter) {
-        let gaugeController: GaugeController =
-            <GaugeController>new Contract(deployments.GaugeController, patchAbiGasFields(GaugeControllerArtifact.abi), deployer);
 
         const gaugeV4Factory: LiquidityGaugeV31__factory =
             <LiquidityGaugeV31__factory>await ethers.getContractFactory("LiquidityGaugeV3_1");
@@ -189,9 +186,6 @@ export async function deployNewGauge(
         await gauge.deployed();
 
         deployments.Gauges.push({ id: tokenName, address: gauge.address });
-
-        // let trx = await gaugeController["add_gauge(address,int128,uint256)"](gauge.address, type, weight);
-        // await trx.wait();
 
         fs.writeFileSync(`./scripts/deployment/v1/${deployName}/deployments.json`, JSON.stringify(deployments, null, 4));
     }
