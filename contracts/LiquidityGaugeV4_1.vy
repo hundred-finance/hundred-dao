@@ -414,7 +414,7 @@ def kick(addr: address):
     assert self.working_balances[addr] > _balance * TOKENLESS_PRODUCTION / 100  # dev: kick not needed
 
     self._checkpoint(addr)
-    self._update_liquidity_limit(addr, self.balanceOf[addr], self.totalSupply)
+    self._update_liquidity_limit(addr, _balance, self.totalSupply)
 
 
 @external

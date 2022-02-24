@@ -486,7 +486,6 @@ def _vote_for_chain_gauge_weights(_user: address, _chain: uint256, _escrow_id: u
     escrow: address = self.voting_escrow
     slope: uint256 = convert(MirroredVotingEscrow(escrow).get_last_user_slope(_user, _chain, _escrow_id), uint256)
     lock_end: uint256 = MirroredVotingEscrow(escrow).locked__end(_user, _chain, _escrow_id)
-    _n_gauges: int128 = self.n_gauges
     next_time: uint256 = (block.timestamp + WEEK) / WEEK * WEEK
     
     # skip if lock is expired on a given chain
@@ -513,7 +512,7 @@ def _vote_for_chain_gauge_weights(_user: address, _chain: uint256, _escrow_id: u
     power_used: uint256 = self.vote_user_power[_user][_chain][_escrow_id]
     power_used = power_used + new_slope.power - old_slope.power
     self.vote_user_power[_user][_chain][_escrow_id] = power_used
-    assert (power_used >= 0) and (power_used <= 10000), 'Used too much power'
+    assert power_used <= 10000, 'Used too much power'
 
     ## Remove old and schedule new slope changes
     # Remove slope changes for old slopes

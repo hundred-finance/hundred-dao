@@ -35,7 +35,21 @@ event MirrorLock:
     value: uint256
     locktime: indexed(uint256)
 
+event CommitOwnership:
+    admin: address
+
+event ApplyOwnership:
+    admin: address
+
+event SetMirrorWhitelist:
+    addr: address
+    is_whitelisted: bool
+
+event AddVotingEscrow:
+    addr: address
+
 admin: public(address)
+future_admin: public(address)
 
 whitelisted_mirrors: public(HashMap[address, bool])
 
@@ -449,10 +463,26 @@ def get_last_user_slope(_addr: address, _chain: uint256 = 0, _escrow_id: uint256
 
 
 @external
-def set_admin(_new_admin: address):
-    assert msg.sender == self.admin # dev: only admin
+def commit_transfer_ownership(addr: address):
+    """
+    @notice Transfer ownership to `addr`
+    @param addr Address to have ownership transferred to
+    """
+    assert msg.sender == self.admin  # dev: admin only
+    self.future_admin = addr
+    log CommitOwnership(addr)
 
-    self.admin = _new_admin
+
+@external
+def apply_transfer_ownership():
+    """
+    @notice Apply pending ownership transfer
+    """
+    assert msg.sender == self.admin  # dev: admin only
+    _admin: address = self.future_admin
+    assert _admin != ZERO_ADDRESS  # dev: admin not set
+    self.admin = _admin
+    log ApplyOwnership(_admin)
 
 
 @external
@@ -460,6 +490,7 @@ def set_mirror_whitelist(_addr: address, _is_whitelisted: bool):
     assert msg.sender == self.admin # dev: only admin
 
     self.whitelisted_mirrors[_addr] = _is_whitelisted
+    log SetMirrorWhitelist(_addr, _is_whitelisted)
 
 
 @external
@@ -468,3 +499,4 @@ def add_voting_escrow(_addr: address):
 
     self.voting_escrows[self.voting_escrow_count] = _addr
     self.voting_escrow_count += 1
+    log AddVotingEscrow(_addr)
