@@ -102,58 +102,101 @@ export async function deploy(hnd: string, pools: any[], deployName: string) {
     fs.writeFileSync(`./scripts/deployment/v1/${deployName}/deployments.json`, JSON.stringify(deployments, null, 4));
 }
 
-export async function deploy_with_existing_escrow(
+export async function deploy_lendly_gauges(
     flavour: string,
     admin: string,
     hnd: string,
     pools: any[],
     deployName: string
 ) {
-
-    let deployments: Deployment = {
-        Gauges: []
-    };
     const [deployer] = await ethers.getSigners();
 
     console.log("Deploying contracts with the account:", deployer.address);
     console.log("Account balance:", (await deployer.getBalance()).toString());
 
-    let existingDeploy: Deployment = JSON.parse(fs.readFileSync(`./scripts/deployment/v1/${deployName}/deployments.json`).toString());
+    let location = `./scripts/deployment/v1/${deployName}/lendly-deployments.json`
 
-    const rewardPolicyMakerFactory: RewardPolicyMaker__factory =
-        <RewardPolicyMaker__factory> await ethers.getContractFactory("RewardPolicyMaker");
+    let deployments: Deployment = JSON.parse(fs.readFileSync(location).toString());
 
-    const rewardPolicyMaker: RewardPolicyMaker = await rewardPolicyMakerFactory.deploy(86400 * 7, admin);
-    await rewardPolicyMaker.deployed();
+    if (!deployments.RewardPolicyMaker) {
+        const rewardPolicyMakerFactory: RewardPolicyMaker__factory =
+            <RewardPolicyMaker__factory> await ethers.getContractFactory("RewardPolicyMaker");
 
-    deployments.RewardPolicyMaker = rewardPolicyMaker.address;
+        const rewardPolicyMaker: RewardPolicyMaker = await rewardPolicyMakerFactory.deploy(86400 * 7, admin);
+        await rewardPolicyMaker.deployed();
 
-    if (existingDeploy.VotingEscrow) {
+        deployments.RewardPolicyMaker = rewardPolicyMaker.address;
+        console.log("deployed reward policy maker", deployments.RewardPolicyMaker);
+    }
+
+    if (deployments.VotingEscrow && !deployments.GaugeController) {
         const gaugeControllerFactory: GaugeController__factory =
             <GaugeController__factory>await ethers.getContractFactory("GaugeController");
 
-        const gaugeController: GaugeController = await gaugeControllerFactory.deploy(hnd, existingDeploy.VotingEscrow);
+        const gaugeController: GaugeController = await gaugeControllerFactory.deploy(hnd, deployments.VotingEscrow);
         await gaugeController.deployed();
 
         deployments.GaugeController = gaugeController.address;
+        console.log("deployed gauge controller", deployments.GaugeController);
     }
 
-    if (existingDeploy.Minter) {
+    if (!deployments.Treasury) {
+        const treasuryFactory: Treasury__factory = <Treasury__factory>await ethers.getContractFactory("Treasury");
+        const treasury: Treasury = await treasuryFactory.deploy(hnd, admin);
+        await treasury.deployed();
+        deployments.Treasury = treasury.address;
+        console.log("deployed treasury", deployments.Treasury);
+    }
+
+    if (deployments.GaugeController && !deployments.Minter) {
+        const minterFactory: Minter__factory = <Minter__factory>await ethers.getContractFactory("Minter");
+        const minter = await minterFactory.deploy(deployments.Treasury, deployments.GaugeController);
+        await minter.deployed();
+
+        deployments.Minter = minter.address;
+        console.log("deployed minter", deployments.Minter);
+    }
+
+    if (deployments.Minter && deployments.GaugeController) {
+
+        let gaugeController: GaugeController =
+            <GaugeController>new Contract(deployments.GaugeController, patchAbiGasFields(GaugeControllerArtifact.abi), deployer);
+
         const gaugeV3Factory: LiquidityGaugeV31__factory =
             <LiquidityGaugeV31__factory>await ethers.getContractFactory("LiquidityGaugeV3_1");
 
+        if (!deployments.Gauges) {
+            deployments.Gauges = [];
+        }
+
+        let tx = await gaugeController["add_type(string,uint256)"]("Lendly Stables", ethers.utils.parseEther("10"));
+        await tx.wait();
+
         for (let i = 0; i < pools.length; i++) {
             const pool = pools[i];
+            const gaugeAlreadyExists = deployments.Gauges.find(g => g.id === pool.id) !== undefined
 
-            const gauge: LiquidityGaugeV31 = await gaugeV3Factory.deploy(
-                pool.token, existingDeploy.Minter, admin, rewardPolicyMaker.address
-            );
-            await gauge.deployed();
-            deployments.Gauges.push({ id: pool.id, address: gauge.address });
+            if (!gaugeAlreadyExists) {
+                const gauge: LiquidityGaugeV31 = await gaugeV3Factory.deploy(
+                    pool.token, deployments.Minter, admin, deployments.RewardPolicyMaker
+                );
+                await gauge.deployed();
+                deployments.Gauges.push({ id: pool.id, address: gauge.address });
+                console.log("deployed gauge", pool.id, gauge.address);
+
+                let tx = await gaugeController["add_gauge(address,int128)"](gauge.address, 0);
+                await tx.wait();
+            }
         }
+
+        tx = await gaugeController.commit_transfer_ownership(admin);
+        await tx.wait();
+
+        tx = await gaugeController.apply_transfer_ownership();
+        await tx.wait();
     }
 
-    fs.writeFileSync(`./scripts/deployment/v1/${deployName}/${flavour}-deployments.json`, JSON.stringify(deployments, null, 4));
+    fs.writeFileSync(location, JSON.stringify(deployments, null, 4));
 }
 
 export async function transferOwnership(newOwner: string, deployName: string) {

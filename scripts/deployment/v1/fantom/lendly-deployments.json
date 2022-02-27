@@ -1,10 +1,13 @@
 {
+    "VotingEscrow": "0x376020c5B0ba3Fd603d7722381fAA06DA8078d8a",
+    "RewardPolicyMaker": "0xbeD8EFa1973F6E1fB3515bf94aa760174431b3F8",
+    "GaugeController": "0x788ac705a7b67562cdd1913b67ee091785fa4f68",
+    "Treasury": "0x0d9459a2d7252c4cd62cf13416cd319c3e0c5bb4",
+    "Minter": "0xfa0f5d0ca1031ac6a47ca8db9cf9dcfd45b3659a",
     "Gauges": [
         {
             "id": "lUSDC",
-            "address": "0x333E3312b1D496a8dcA5cbF2BDaaC769D209A22D"
+            "address": "0x3D9c47B967C717D11e6E19E61d8419B92C794223"
         }
-    ],
-    "RewardPolicyMaker": "0xc8e2C35b7C9CD784635B72df14179746B7C0f2a7",
-    "GaugeController": "0x27a1B793b5B51a8862F66B0a1181EF42b2A8D9C2"
+    ]
 }
