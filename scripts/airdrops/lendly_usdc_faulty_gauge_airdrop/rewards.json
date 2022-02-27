@@ -1,0 +1,78 @@
+[
+    {
+        "user": "0x5275817b74021E97c980E95EdE6bbAc0D0d6f3a2",
+        "amount": 8.696946629265712
+    },
+    {
+        "user": "0x292c6DAE7417B3D31d8B6e1d2EeA0258d14C4C4b",
+        "amount": 73.49546526293727
+    },
+    {
+        "user": "0x5919b3D42Bd84E816533c2dD6A7dfF7d02303E87",
+        "amount": 33.963198813014515
+    },
+    {
+        "user": "0xbDB21E816E455E1642dBe8CeF6668A62E180657B",
+        "amount": 0.05452450778353752
+    },
+    {
+        "user": "0x4e3F244e35fFD89c9D74bbB7fe83A6ddb4654694",
+        "amount": 167.16017948960115
+    },
+    {
+        "user": "0xDcFa2dF4d2F469F4c204b703391378731d16bC88",
+        "amount": 20.211676809472365
+    },
+    {
+        "user": "0x07350c16C1E745b97Cc70eFcE3F03f50485e1961",
+        "amount": 1.6241135259855417
+    },
+    {
+        "user": "0x5aD24F12c0CD93CE5dcc5530AECBe376f2e6Aa07",
+        "amount": 94.70624888096016
+    },
+    {
+        "user": "0xB307D426A34A72A94B32BCa5c5f0c8B36440Fa80",
+        "amount": 95.64627078369891
+    },
+    {
+        "user": "0x2301a56E94FEAf343853302aa416F085eD8eE2fD",
+        "amount": 36.01111671749968
+    },
+    {
+        "user": "0x4F5FE8DA30C1c11fE537730940CeD62AC37Ea371",
+        "amount": 8.126866350222985
+    },
+    {
+        "user": "0xDebA0E5653f6966b5411e57E44109eB5834927dA",
+        "amount": 405.5404342988098
+    },
+    {
+        "user": "0x3D19fc015Be5e6e41bc42Ba0A3B31D995332574C",
+        "amount": 121.96171681148391
+    },
+    {
+        "user": "0xa0b62F0C75C3975B61d2A52e938Cab653cfd1A64",
+        "amount": 47.03540230749
+    },
+    {
+        "user": "0x537037C5ae805b9D4CeCAB5Ee07F12a8e59A15B2",
+        "amount": 924.2235337793238
+    },
+    {
+        "user": "0x588A07FdB3dDafF7E32B7fe20828afAB7D3387E7",
+        "amount": 2892.997230596826
+    },
+    {
+        "user": "0x44c70d621E7aaea5dA45cD736e35e27DF823124f",
+        "amount": 0.8511278673633781
+    },
+    {
+        "user": "0xa1f0225f1494039FE9ADe7B2F5c8cD8A1BdB277c",
+        "amount": 23.857337856820813
+    },
+    {
+        "user": "0xC4e75a1CA2EB5Ab0596F34e0ef934FAEF9A5C340",
+        "amount": 43.83660871143992
+    }
+]
