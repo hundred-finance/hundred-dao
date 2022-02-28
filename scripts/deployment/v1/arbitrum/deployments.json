@@ -15,6 +15,10 @@
         {
             "id": "hFRAX",
             "address": "0xd7f3Bf2085AD32ff95E1bCC408d37F10f6949270"
+        },
+        {
+            "id": "hDAI",
+            "address": "0x3A8609840b47E8Bd4fc0108e2CDcD88aE30C4FF2"
         }
     ],
     "VotingEscrow": "0xBa57440fA35Fdb671E58F6F56c1A4447aB1f6C2B",
