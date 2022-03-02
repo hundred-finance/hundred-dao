@@ -120,6 +120,9 @@ integrate_fraction: public(HashMap[address, uint256])
 reward_count: public(uint256)
 reward_tokens: public(address[MAX_REWARDS])
 
+reward_fee: public(uint256)
+reward_collector: public(address)
+
 reward_data: public(HashMap[address, Reward])
 
 # claimant -> default reward receiver
@@ -137,7 +140,14 @@ is_killed: public(bool)
 
 
 @external
-def __init__(_lp_token: address, _minter: address, _admin: address, _reward_policy_maker: address, _veboost_proxy: address):
+def __init__(
+        _lp_token: address,
+        _minter: address,
+        _admin: address,
+        _reward_policy_maker: address,
+        _veboost_proxy: address,
+        _reward_fee: uint256
+    ):
     """
     @notice Contract constructor
     @param _lp_token Liquidity Pool contract address
@@ -162,6 +172,23 @@ def __init__(_lp_token: address, _minter: address, _admin: address, _reward_poli
 
     self.period_timestamp[0] = block.timestamp
     self.veboost_proxy = _veboost_proxy
+
+    self.reward_fee = _reward_fee
+    self.reward_collector = _admin
+
+
+@external
+def set_reward_fee(_reward_fee: uint256):
+    assert msg.sender == self.admin # only admin
+    assert _reward_fee <= 10000 # must be less than 100%
+    self.reward_fee = _reward_fee
+
+
+@external
+def set_reward_collector(_addr: address):
+    assert msg.sender == self.admin # only admin
+    assert _addr != ZERO_ADDRESS # invalid address
+    self.reward_collector = _addr
 
 
 @view
@@ -621,6 +648,9 @@ def set_reward_distributor(_reward_token: address, _distributor: address):
 def deposit_reward_token(_reward_token: address, _amount: uint256):
     assert msg.sender == self.reward_data[_reward_token].distributor
 
+    fee: uint256 = _amount * self.reward_fee / 10000
+    reward_amount: uint256 = _amount - fee
+
     self._checkpoint_rewards(ZERO_ADDRESS, self.totalSupply, False, ZERO_ADDRESS)
 
     response: Bytes[32] = raw_call(
@@ -636,13 +666,16 @@ def deposit_reward_token(_reward_token: address, _amount: uint256):
     if len(response) != 0:
         assert convert(response, bool)
 
+    if fee > 0:
+        ERC20(_reward_token).transfer(self.reward_collector, fee)
+
     period_finish: uint256 = self.reward_data[_reward_token].period_finish
     if block.timestamp >= period_finish:
-        self.reward_data[_reward_token].rate = _amount / WEEK
+        self.reward_data[_reward_token].rate = reward_amount / WEEK
     else:
         remaining: uint256 = period_finish - block.timestamp
         leftover: uint256 = remaining * self.reward_data[_reward_token].rate
-        self.reward_data[_reward_token].rate = (_amount + leftover) / WEEK
+        self.reward_data[_reward_token].rate = (reward_amount + leftover) / WEEK
 
     self.reward_data[_reward_token].last_update = block.timestamp
     self.reward_data[_reward_token].period_finish = block.timestamp + WEEK

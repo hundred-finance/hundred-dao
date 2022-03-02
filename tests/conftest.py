@@ -187,13 +187,13 @@ def veboost_proxy(DelegationProxy, alice, veboost_delegation, mirrored_voting_es
 
 @pytest.fixture(scope="module")
 def gauge_v4_1(LiquidityGaugeV4_1, alice, mock_lp_token, minter, reward_policy_maker, veboost_proxy):
-    yield LiquidityGaugeV4_1.deploy(mock_lp_token, minter, alice, reward_policy_maker, veboost_proxy,{"from": alice})
+    yield LiquidityGaugeV4_1.deploy(mock_lp_token, minter, alice, reward_policy_maker, veboost_proxy, 200, {"from": alice})
 
 
 @pytest.fixture(scope="module")
 def three_gauges(LiquidityGaugeV4_1, reward_policy_maker, accounts, mock_lp_token, minter, veboost_proxy):
     contracts = [
-        LiquidityGaugeV4_1.deploy(mock_lp_token, minter, accounts[0], reward_policy_maker, veboost_proxy, {"from": accounts[0]})
+        LiquidityGaugeV4_1.deploy(mock_lp_token, minter, accounts[0], reward_policy_maker, veboost_proxy, 200, {"from": accounts[0]})
         for _ in range(3)
     ]
 

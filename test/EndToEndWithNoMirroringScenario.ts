@@ -118,8 +118,8 @@ describe("End to End with no mirroring", function () {
     describe("Locked voting amount", function () {
         it("Should reflect on the amount of claimable HND per gauge when users vote on gauge weights", async function () {
 
-            let gauge1 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address);
-            let gauge2 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address);
+            let gauge1 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address, 200);
+            let gauge2 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address, 200);
 
             await gaugeController["add_type(string,uint256)"]("Liquidity", ethers.utils.parseEther("10"));
             await gaugeController["add_gauge(address,int128,uint256)"](gauge1.address, 0, 1);
@@ -151,7 +151,7 @@ describe("End to End with no mirroring", function () {
 
         it("Should boost user claimable HND within same gauge", async function () {
 
-            let gauge = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address);
+            let gauge = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address, 200);
 
             await gaugeController["add_type(string,uint256)"]("Liquidity", ethers.utils.parseEther("10"));
             await gaugeController["add_gauge(address,int128,uint256)"](gauge.address, 0, 1);
@@ -177,8 +177,8 @@ describe("End to End with no mirroring", function () {
         });
 
         it("gauge vote change should reflect on next epoch", async function () {
-            let gauge1 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address);
-            let gauge2 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address);
+            let gauge1 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address, 200);
+            let gauge2 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address, 200);
 
             await gaugeController["add_type(string,uint256)"]("Liquidity", ethers.utils.parseEther("10"));
             await gaugeController["add_gauge(address,int128,uint256)"](gauge1.address, 0, 1);
