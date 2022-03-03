@@ -80,6 +80,7 @@ struct Reward:
 MAX_REWARDS: constant(uint256) = 8
 TOKENLESS_PRODUCTION: constant(uint256) = 40
 WEEK: constant(uint256) = 604800
+MAX_FEE: constant(uint256) = 1000
 
 minter: public(address)
 reward_policy_maker: public(address)
@@ -180,7 +181,7 @@ def __init__(
 @external
 def set_reward_fee(_reward_fee: uint256):
     assert msg.sender == self.admin # only admin
-    assert _reward_fee <= 10000 # must be less than 100%
+    assert _reward_fee <= MAX_FEE # must be less than 10%
     self.reward_fee = _reward_fee
 
 

@@ -162,7 +162,7 @@ export async function deploy(hnd: string, pools: any[], network: string, admin: 
         const pool = pools[i];
 
         const gauge: LiquidityGaugeV41 = await gaugeV4Factory.deploy(
-            pool.token, minter.address, admin, rewardPolicyMaker.address, delegationProxy.address
+            pool.token, minter.address, admin, rewardPolicyMaker.address, delegationProxy.address, 200
         );
         await gauge.deployed();
         deployments.Gauges.push({ id: pool.id, address: gauge.address });
@@ -190,7 +190,7 @@ export async function deployNewGauge(
             <LiquidityGaugeV41__factory>await ethers.getContractFactory("LiquidityGaugeV4_1");
 
         const gauge: LiquidityGaugeV41 = await gaugeV4Factory.deploy(
-            token, deployments.Minter, admin, deployments.RewardPolicyMaker, delegationProxy.address
+            token, deployments.Minter, admin, deployments.RewardPolicyMaker, delegationProxy.address, 200
         );
         await gauge.deployed();
 
