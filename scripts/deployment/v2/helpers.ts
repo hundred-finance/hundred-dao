@@ -30,18 +30,27 @@ import * as fs from "fs";
 import {Contract} from "ethers";
 import path from "path";
 
-export async function deploy(hnd: string, pools: any[], network: string, admin: string, veHND: string|undefined = undefined) {
-    const deployVHND = veHND === undefined
+export async function deploy(
+    hnd: string,
+    pools: any[],
+    network: string,
+    admin: string,
+    flavour: string = "deployments"
+) {
     let deployments: Deployment = {
         Gauges: []
     };
     const [deployer] = await ethers.getSigners();
-    const location = path.join(__dirname, `/${network}/deployments.json`);
+    const location = path.join(__dirname, `/${network}/${flavour}.json`);
+
+    try {
+        deployments = JSON.parse(fs.readFileSync(location).toString());
+    } catch (e) {}
 
     console.log("Deploying contracts with the account:", deployer.address);
     console.log("Account balance:", (await deployer.getBalance()).toString());
 
-    if (deployVHND) {
+    if (!deployments.VotingEscrowV1 && !deployments.VotingEscrowV2) {
         await deploySmartWalletChecker(admin, deployments);
         await deployLockCreatorChecker(admin, deployments);
 
@@ -63,24 +72,24 @@ export async function deploy(hnd: string, pools: any[], network: string, admin: 
             deployments.VotingEscrowV2 = votingEscrow.address;
             console.log("Deployed veHND: ", votingEscrow.address);
         }
-    } else {
-        deployments.VotingEscrowV1 = veHND;
     }
 
-    const mirroredVotingEscrowFactory: MirroredVotingEscrow__factory =
-        <MirroredVotingEscrow__factory>await ethers.getContractFactory("MirroredVotingEscrow");
+    if (!deployments.MirroredVotingEscrow) {
+        const mirroredVotingEscrowFactory: MirroredVotingEscrow__factory =
+            <MirroredVotingEscrow__factory>await ethers.getContractFactory("MirroredVotingEscrow");
 
-    const mirroredVotingEscrow = await mirroredVotingEscrowFactory.deploy(
-        admin,
-        veHND ? veHND : (deployments.VotingEscrowV2 ? deployments.VotingEscrowV2 : ""),
-        "Mirrored Vote-escrowed HND",
-        "mveHND",
-        "mveHND_1.0.0"
-    );
-    await mirroredVotingEscrow.deployed();
+        const mirroredVotingEscrow = await mirroredVotingEscrowFactory.deploy(
+            admin,
+            deployments.VotingEscrowV2 ? deployments.VotingEscrowV2 : (deployments.VotingEscrowV1 ? deployments.VotingEscrowV1 : ""),
+            "Mirrored Vote-escrowed HND",
+            "mveHND",
+            "mveHND_1.0.0"
+        );
+        await mirroredVotingEscrow.deployed();
 
-    deployments.MirroredVotingEscrow = mirroredVotingEscrow.address;
-    console.log("Deployed mveHND: ", mirroredVotingEscrow.address);
+        deployments.MirroredVotingEscrow = mirroredVotingEscrow.address;
+        console.log("Deployed mveHND: ", mirroredVotingEscrow.address);
+    }
 
     if (deployments.VotingEscrowV1) {
         let votingEscrow: VotingEscrow =
@@ -98,62 +107,74 @@ export async function deploy(hnd: string, pools: any[], network: string, admin: 
         deployments.LockCreatorChecker = await votingEscrow.lock_creator_checker();
     }
 
-    const treasuryFactory: Treasury__factory =
-        <Treasury__factory>await ethers.getContractFactory("Treasury");
+    if (!deployments.Treasury) {
+        const treasuryFactory: Treasury__factory =
+            <Treasury__factory>await ethers.getContractFactory("Treasury");
 
-    const treasury: Treasury = await treasuryFactory.deploy(hnd, admin);
-    await treasury.deployed();
+        const treasury: Treasury = await treasuryFactory.deploy(hnd, admin);
+        await treasury.deployed();
 
-    deployments.Treasury = treasury.address;
-    console.log("Deployed Treasury: ", treasury.address);
+        deployments.Treasury = treasury.address;
+        console.log("Deployed Treasury: ", treasury.address);
+    }
 
-    const rewardPolicyMakerFactory: RewardPolicyMaker__factory =
-        <RewardPolicyMaker__factory> await ethers.getContractFactory("RewardPolicyMaker");
+    if (!deployments.RewardPolicyMaker) {
+        const rewardPolicyMakerFactory: RewardPolicyMaker__factory =
+            <RewardPolicyMaker__factory> await ethers.getContractFactory("RewardPolicyMaker");
 
-    const rewardPolicyMaker: RewardPolicyMaker = await rewardPolicyMakerFactory.deploy(86400 * 7, admin);
-    await rewardPolicyMaker.deployed();
+        const rewardPolicyMaker: RewardPolicyMaker = await rewardPolicyMakerFactory.deploy(86400 * 7, admin);
+        await rewardPolicyMaker.deployed();
 
-    deployments.RewardPolicyMaker = rewardPolicyMaker.address;
-    console.log("Deployed rewardPolicyMaker: ", rewardPolicyMaker.address);
+        deployments.RewardPolicyMaker = rewardPolicyMaker.address;
+        console.log("Deployed rewardPolicyMaker: ", rewardPolicyMaker.address);
+    }
 
-    const gaugeControllerFactory: GaugeControllerV2__factory =
-        <GaugeControllerV2__factory>await ethers.getContractFactory("GaugeControllerV2");
+    if (!deployments.GaugeControllerV2) {
+        const gaugeControllerFactory: GaugeControllerV2__factory =
+            <GaugeControllerV2__factory>await ethers.getContractFactory("GaugeControllerV2");
 
-    const gaugeController: GaugeControllerV2 = await gaugeControllerFactory.deploy(mirroredVotingEscrow.address, admin);
-    await gaugeController.deployed();
+        const gaugeController: GaugeControllerV2 = await gaugeControllerFactory.deploy(deployments.MirroredVotingEscrow, admin);
+        await gaugeController.deployed();
 
-    deployments.GaugeControllerV2 = gaugeController.address;
-    console.log("Deployed gauge controller: ", gaugeController.address);
+        deployments.GaugeControllerV2 = gaugeController.address;
+        console.log("Deployed gauge controller: ", gaugeController.address);
+    }
 
-    const minterFactory: Minter__factory = <Minter__factory>await ethers.getContractFactory("Minter");
-    const minter: Minter = await minterFactory.deploy(treasury.address, gaugeController.address);
-    await minter.deployed();
+    if (!deployments.Minter) {
+        const minterFactory: Minter__factory = <Minter__factory>await ethers.getContractFactory("Minter");
+        const minter: Minter = await minterFactory.deploy(deployments.Treasury, deployments.GaugeControllerV2);
+        await minter.deployed();
 
-    deployments.Minter = minter.address;
-    console.log("Deployed minter: ", minter.address);
+        deployments.Minter = minter.address;
+        console.log("Deployed minter: ", minter.address);
+    }
 
-    const veBoostDelegationFactory: VotingEscrowDelegationV2__factory =
-        <VotingEscrowDelegationV2__factory>await ethers.getContractFactory("VotingEscrowDelegationV2");
+    if (!deployments.VotingEscrowDelegationV2) {
+        const veBoostDelegationFactory: VotingEscrowDelegationV2__factory =
+            <VotingEscrowDelegationV2__factory>await ethers.getContractFactory("VotingEscrowDelegationV2");
 
-    const veBoostDelegation: VotingEscrowDelegationV2 =
-        await veBoostDelegationFactory.deploy(
-            "Delegated Mirrored Vote-escrowed HND",
-            "dmveHND",
-            "",
-            mirroredVotingEscrow.address,
-            admin
-        );
-    await veBoostDelegation.deployed();
+        const veBoostDelegation: VotingEscrowDelegationV2 =
+            await veBoostDelegationFactory.deploy(
+                "Delegated Mirrored Vote-escrowed HND",
+                "dmveHND",
+                "",
+                deployments.MirroredVotingEscrow,
+                admin
+            );
+        await veBoostDelegation.deployed();
 
-    deployments.VotingEscrowDelegationV2 = veBoostDelegation.address;
-    console.log("Deployed veBoost: ", veBoostDelegation.address);
+        deployments.VotingEscrowDelegationV2 = veBoostDelegation.address;
+        console.log("Deployed veBoost: ", veBoostDelegation.address);
+    }
 
-    const delegationProxyFactory: DelegationProxy__factory = <DelegationProxy__factory>await ethers.getContractFactory("DelegationProxy");
-    const delegationProxy = await delegationProxyFactory.deploy(veBoostDelegation.address, admin, admin, mirroredVotingEscrow.address);
-    await delegationProxy.deployed();
+    if (!deployments.DelegationProxy) {
+        const delegationProxyFactory: DelegationProxy__factory = <DelegationProxy__factory>await ethers.getContractFactory("DelegationProxy");
+        const delegationProxy = await delegationProxyFactory.deploy(deployments.VotingEscrowDelegationV2, admin, admin, deployments.MirroredVotingEscrow);
+        await delegationProxy.deployed();
 
-    deployments.DelegationProxy = delegationProxy.address;
-    console.log("Deployed veBoost proxy: ", delegationProxy.address);
+        deployments.DelegationProxy = delegationProxy.address;
+        console.log("Deployed veBoost proxy: ", delegationProxy.address);
+    }
 
     const gaugeV4Factory: LiquidityGaugeV41__factory =
         <LiquidityGaugeV41__factory>await ethers.getContractFactory("LiquidityGaugeV4_1");
@@ -162,7 +183,7 @@ export async function deploy(hnd: string, pools: any[], network: string, admin: 
         const pool = pools[i];
 
         const gauge: LiquidityGaugeV41 = await gaugeV4Factory.deploy(
-            pool.token, minter.address, admin, rewardPolicyMaker.address, delegationProxy.address, 200
+            pool.token, deployments.Minter, admin, deployments.RewardPolicyMaker, deployments.DelegationProxy, 200
         );
         await gauge.deployed();
         deployments.Gauges.push({ id: pool.id, address: gauge.address });

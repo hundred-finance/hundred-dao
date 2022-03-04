@@ -9,14 +9,13 @@ const POOLS: any = [
 ]
 
 const HUNDRED_TOKEN = "0x10010078a54396F62c96dF8532dc2B4847d47ED3";
-const veHND = "0x243E33aa7f6787154a8E59d3C27a66db3F8818ee";
 const ADMIN = "0xBf3bD01bd5fB28d2381d41A8eF779E6aa6f0a811"
 
 const network = hre.hardhatArguments.network;
 if (!network) {
     console.error("please provide valid network");
 } else {
-    deploy(HUNDRED_TOKEN, POOLS, network, ADMIN, veHND)
+    deploy(HUNDRED_TOKEN, POOLS, network, ADMIN)
         .then(() => process.exit(0))
         .catch(error => {
             console.error(error);

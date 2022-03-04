@@ -23,10 +23,6 @@
         {
             "id": "hUST",
             "address": "0x3A7f310ee75b8cE3e46410Ac438419842B541D10"
-        },
-        {
-            "id": "lUSDC",
-            "address": "0x1cF3993EbA538e5f085333c86356622161Dd8C0B"
         }
     ],
     "VotingEscrow": "0x376020c5B0ba3Fd603d7722381fAA06DA8078d8a",
