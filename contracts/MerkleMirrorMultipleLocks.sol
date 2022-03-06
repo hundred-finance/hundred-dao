@@ -5,7 +5,7 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Pausable } from "@openzeppelin/contracts/security/Pausable.sol";
 import { MerkleProof } from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
-import "./ExternalMulticall.sol";
+import "./merkle-airdrop/ExternalMulticall.sol";
 
 interface IMirroredVotingEscrow {
     function mirror_lock(

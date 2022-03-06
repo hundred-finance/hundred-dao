@@ -9,6 +9,8 @@ export function patchAbiGasFields(abi: any[]) {
 export interface Deployment {
     Gauges: Array<{id: string, address: string}>
     VotingEscrow?: string
+    VotingEscrowV1?: string
+    VotingEscrowV2?: string
     GaugeController?: string
     Treasury?: string
     RewardPolicyMaker?: string
@@ -17,6 +19,11 @@ export interface Deployment {
 }
 
 export function getChainName(id: number) {
+
+    if (id === 100) {
+        return "gnosis";
+    }
+
     if (id === 250) {
         return "fantom";
     }
