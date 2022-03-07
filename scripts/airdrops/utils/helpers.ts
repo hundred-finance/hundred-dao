@@ -20,6 +20,10 @@ export interface Deployment {
 
 export function getChainName(id: number) {
 
+    if (id === 10) {
+        return "optimism";
+    }
+
     if (id === 100) {
         return "gnosis";
     }

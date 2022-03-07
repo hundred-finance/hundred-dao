@@ -270,4 +270,5 @@ export interface Deployment {
     Minter?: string
     DelegationProxy?: string
     VotingEscrowDelegationV2?: string
+    MerkleMirror?: string
 }
