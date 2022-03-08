@@ -25,5 +25,6 @@
     "Treasury": "0x4adF575DBe0e6F1c5909AE9c7119927b4FaabbBd",
     "RewardPolicyMaker": "0x3A4148DDDd121fbceD8717CB7B82370Be27F76bf",
     "GaugeController": "0xb4BAfc3d60662De362c0cB0f5e2DE76603Ea77D7",
-    "Minter": "0xc3CC9369fcB8491DaD4FA64cE1Fbd3DD2d70034f"
+    "Minter": "0xc3CC9369fcB8491DaD4FA64cE1Fbd3DD2d70034f",
+    "SmartWalletChecker": "0x603c5919FCFB13423b963b04D55d1b393da88A7e"
 }
