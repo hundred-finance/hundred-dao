@@ -1,16 +1,16 @@
 {
     "Gauges": [
         {
+            "id": "hUSDT",
+            "address": "0x1dB11Cf7C332E797ac912e11b8762e0A4b24a836"
+        },
+        {
             "id": "hDAI",
-            "address": "0xc3CC9369fcB8491DaD4FA64cE1Fbd3DD2d70034f"
+            "address": "0xd7f3Bf2085AD32ff95E1bCC408d37F10f6949270"
         },
         {
             "id": "hUSDC",
-            "address": "0x6BFD171dDEF7ef775E6C1d6078C10198229DD242"
-        },
-        {
-            "id": "hUSDT",
-            "address": "0x1dB11Cf7C332E797ac912e11b8762e0A4b24a836"
+            "address": "0x5734BB74cFac69f1c34bA66eA6608cCdEe6b81F2"
         }
     ],
     "SmartWalletChecker": "0x1747D329CB37e0A0f387f24065aDdbc60eAB69DD",

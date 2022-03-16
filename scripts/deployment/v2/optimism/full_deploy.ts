@@ -2,9 +2,8 @@ import {deploy} from "../helpers";
 import hre from "hardhat";
 
 const POOLS: any = [
-    { id: "hDAI", token: "0xbb93C7F378B9b531216f9aD7b5748be189A55807", weight: 1 },
-    { id: "hUSDC", token: "0x8e15a22853A0A60a0FBB0d875055A8E66cff0235", weight: 1 },
-    { id: "hUSDT", token: "0xfCD8570AD81e6c77b8D252bEbEBA62ed980BD64D", weight: 1 },
+    { id: "hDAI", token: "0x607312a5C671D0C511998171e634DE32156e69d0", weight: 1 },
+    { id: "hUSDC", token: "0x103f2CA2148B863942397dbc50a425cc4f4E9A27", weight: 1 },
 ]
 
 const HUNDRED_TOKEN = "0x10010078a54396F62c96dF8532dc2B4847d47ED3";
