@@ -28,6 +28,10 @@ const config: HardhatUserConfig = {
       url: `https://eth-kovan.alchemyapi.io/v2/${process.env.ALCHEMY_KOVAN_API_KEY}`,
       accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
     },
+    optimism_kovan: {
+      url: `https://kovan.optimism.io`,
+      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
+    },
     arbitrum: {
       url: `https://arb-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_ARBITRUM_API_KEY}`,
       accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
