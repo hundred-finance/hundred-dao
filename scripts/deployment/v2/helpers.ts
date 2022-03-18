@@ -91,7 +91,7 @@ export async function deploy(
         console.log("Deployed mveHND: ", mirroredVotingEscrow.address);
     }
 
-    if (deployments.VotingEscrowV1) {
+    if (deployments.VotingEscrowV1 && !deployments.SmartWalletChecker) {
         let votingEscrow: VotingEscrow =
             <VotingEscrow>new Contract(deployments.VotingEscrowV1, patchAbiGasFields(VotingEscrowV1Artifact.abi), deployer);
 
