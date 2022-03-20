@@ -19,7 +19,8 @@ import {
     DelegationProxy__factory,
     DelegationProxy,
     VotingEscrowDelegationV2__factory,
-    VotingEscrowDelegationV2, VotingEscrow
+    VotingEscrowDelegationV2, VotingEscrow,
+    MirrorGate__factory, MirrorGate
 } from "../../../typechain";
 
 import * as VotingEscrowV1Artifact from "../../../artifacts/contracts/VotingEscrow.vy/VotingEscrow.json";
@@ -35,7 +36,8 @@ export async function deploy(
     pools: any[],
     network: string,
     admin: string,
-    flavour: string = "deployments"
+    flavour: string = "deployments",
+    layerZeroEndpoint: string = ""
 ) {
     let deployments: Deployment = {
         Gauges: []
@@ -190,6 +192,10 @@ export async function deploy(
         console.log("Deployed gauge: ", pool.id, gauge.address);
     }
 
+    if (layerZeroEndpoint != "" && !deployments.MirrorGate) {
+        await deployMirrorGate(admin, layerZeroEndpoint, deployments);
+    }
+
     console.log("Please define type & call add_gauge on the contorller contract from the admin account");
 
     fs.writeFileSync(location, JSON.stringify(deployments, null, 4));
@@ -250,6 +256,26 @@ async function deployLockCreatorChecker(
     console.log("Deployed lock creator checker: ", checker.address);
 }
 
+async function deployMirrorGate(
+    admin: string, zeroLayerEndpoint: string, deployments: Deployment
+) {
+    if (deployments.MirroredVotingEscrow) {
+        const mirrorGateFactory: MirrorGate__factory = <MirrorGate__factory> await ethers.getContractFactory("MirrorGate");
+        const mirrorGate: MirrorGate = await mirrorGateFactory.deploy(zeroLayerEndpoint, deployments.MirroredVotingEscrow);
+
+        await mirrorGate.deployed();
+
+        deployments.MirrorGate = mirrorGate.address;
+        console.log("Deployed mirror gate: ", mirrorGate.address);
+
+        const [deployer] = await ethers.getSigners();
+        if (admin.toLowerCase() !== deployer.address.toLowerCase()) {
+            let tx = await mirrorGate.transferOwnership(admin);
+            await tx.wait();
+        }
+    }
+}
+
 function patchAbiGasFields(abi: any[]) {
     for(let i = 0; i < abi.length; i++) {
         abi[i].gas = undefined
@@ -271,4 +297,5 @@ export interface Deployment {
     DelegationProxy?: string
     VotingEscrowDelegationV2?: string
     MerkleMirror?: string
+    MirrorGate?: string
 }
