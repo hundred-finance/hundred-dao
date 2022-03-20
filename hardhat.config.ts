@@ -56,6 +56,10 @@ const config: HardhatUserConfig = {
       url: `https://rpc.gnosischain.com`,
       accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
     },
+    avalanche_fuji: {
+      url: `https://api.avax-test.network/ext/bc/C/rpc`,
+      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
+    },
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY

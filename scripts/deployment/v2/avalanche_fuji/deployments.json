@@ -1,0 +1,13 @@
+{
+    "Gauges": [],
+    "SmartWalletChecker": "0x1747D329CB37e0A0f387f24065aDdbc60eAB69DD",
+    "LockCreatorChecker": "0xFf39252Ce6A8fC5657235EeFEB45702B86c42E8F",
+    "VotingEscrowV2": "0x1F8e8472e124F58b7F0D2598EaE3F4f482780b09",
+    "MirroredVotingEscrow": "0xAc8204a9d79CA87D192ea98A9381600642A66a5F",
+    "Treasury": "0xec378cdd60E890332F7A8CC251315327a4f244B6",
+    "RewardPolicyMaker": "0x3ffd03Ef31F6D5A6C517CEFA9CDf43efEBeE8399",
+    "GaugeControllerV2": "0xBa57440fA35Fdb671E58F6F56c1A4447aB1f6C2B",
+    "Minter": "0x4adF575DBe0e6F1c5909AE9c7119927b4FaabbBd",
+    "VotingEscrowDelegationV2": "0x3A4148DDDd121fbceD8717CB7B82370Be27F76bf",
+    "DelegationProxy": "0xb4BAfc3d60662De362c0cB0f5e2DE76603Ea77D7"
+}
