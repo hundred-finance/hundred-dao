@@ -7,8 +7,6 @@ import "./layer-zero/ILayerZeroEndpoint.sol";
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Pausable } from "@openzeppelin/contracts/security/Pausable.sol";
 
-import "hardhat/console.sol";
-
 struct LockedBalance {
     int128 amount;
     uint256 end;
@@ -70,10 +68,6 @@ contract MirrorGate is ILayerZeroReceiver, Ownable, Pausable {
         uint64 _nonce,
         bytes calldata _payload
     ) override external whenNotPaused {
-
-        console.log("lzReceive chain", _srcChainId);
-        console.log("lzReceive src", packedBytesToAddr(_srcAddress));
-        console.log("lzReceive called gate", address(this));
 
         require(msg.sender == address(endpoint), "Not allowed LayerZero endpoint");
         require(
