@@ -98,7 +98,7 @@ describe("MirrorGate contract", function () {
     describe("Mirroring", function () {
 
         it("Should fail for non whitelisted chain", async function () {
-            expect(sourceMirrorGate.mirrorLock(1, 0))
+            expect(sourceMirrorGate.mirrorLock(1, 0, 200000))
                 .to.be.revertedWith("Unsupported target chain id");
         });
 
@@ -106,7 +106,7 @@ describe("MirrorGate contract", function () {
 
             await sourceMirrorGate.setMirrorGate(25, targetMirrorGate.address);
 
-            expect(sourceMirrorGate.mirrorLock(25, 1))
+            expect(sourceMirrorGate.mirrorLock(25, 1, 200000))
                 .to.be.revertedWith("Unsupported escrow id");
         });
 
@@ -114,7 +114,7 @@ describe("MirrorGate contract", function () {
 
             await sourceMirrorGate.setMirrorGate(25, targetMirrorGate.address);
 
-            expect(sourceMirrorGate.mirrorLock(25, 0))
+            expect(sourceMirrorGate.mirrorLock(25, 0, 200000))
                 .to.be.revertedWith("User had no lock to mirror");
         });
 
@@ -127,7 +127,7 @@ describe("MirrorGate contract", function () {
             await hnd.mint(alice.address, ethers.utils.parseEther("100"));
             await votingEscrow.connect(alice).create_lock(ethers.utils.parseEther("100"), A_YEAR_FROM_NOW);
 
-            await sourceMirrorGate.connect(alice).mirrorLock(25, 0);
+            await sourceMirrorGate.connect(alice).mirrorLock(25, 0, 200000);
 
             let originalLock = await votingEscrow.locked(alice.address);
             let mirroredLock = await targetMirroredVotingEscrow.mirrored_locks(alice.address, 1, 0);

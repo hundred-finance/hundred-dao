@@ -92,7 +92,8 @@ contract MirrorGate is ILayerZeroReceiver, Ownable, Pausable {
 
     function mirrorLock(
         uint16 _toLayerZeroChainId,
-        uint256 _escrowId
+        uint256 _escrowId,
+        uint256 _extraGas
     ) external whenNotPaused payable {
         bytes memory mirrorGate_ = mirrorGates[_toLayerZeroChainId];
         address user_ = _msgSender();
@@ -105,6 +106,7 @@ contract MirrorGate is ILayerZeroReceiver, Ownable, Pausable {
         require(lock.end > block.timestamp, "Cannot mirror expired lock");
 
         bytes memory payload = abi.encode(user_, chainId, _escrowId, lock.amount, lock.end);
+        bytes memory extraParams = abi.encodePacked(uint16(1), _extraGas);
 
         endpoint.send{value: msg.value}(
             _toLayerZeroChainId,
@@ -112,7 +114,7 @@ contract MirrorGate is ILayerZeroReceiver, Ownable, Pausable {
             payload,
             payable(user_),
             address(0),
-            bytes("")
+            extraParams
         );
     }
 
