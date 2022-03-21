@@ -32,6 +32,8 @@ interface IMirroredVotingEscrow {
 
 contract MirrorGate is ILayerZeroReceiver, Ownable, Pausable {
 
+    uint256 chainId;
+
     IMirroredVotingEscrow public mirrorEscrow;
 
     ILayerZeroEndpoint public endpoint;
@@ -40,10 +42,11 @@ contract MirrorGate is ILayerZeroReceiver, Ownable, Pausable {
 
     event MirrorSuccess(
         address _enpoint,
+        uint16 _srcChain,
         bytes _srcAddress,
         uint64 _nonce,
         address _to,
-        uint16 _chain,
+        uint256 _chain,
         uint256 _escrow_id,
         uint256 _value,
         uint256 _unlock_time
@@ -57,40 +60,41 @@ contract MirrorGate is ILayerZeroReceiver, Ownable, Pausable {
         bytes _payload
     );
 
-    constructor(ILayerZeroEndpoint _endpoint, IMirroredVotingEscrow _mirrorEscrow) {
+    constructor(ILayerZeroEndpoint _endpoint, IMirroredVotingEscrow _mirrorEscrow, uint256 _chainId) {
         endpoint = _endpoint;
         mirrorEscrow = _mirrorEscrow;
+        chainId = _chainId;
     }
 
     function lzReceive(
-        uint16 _srcChainId,
+        uint16 _srcLayerZeroChainId,
         bytes calldata _srcAddress,
         uint64 _nonce,
         bytes calldata _payload
     ) override external whenNotPaused {
-
+        bytes memory mirrorGate_ = mirrorGates[_srcLayerZeroChainId];
         require(msg.sender == address(endpoint), "Not allowed LayerZero endpoint");
         require(
-            _srcAddress.length == mirrorGates[_srcChainId].length &&
-            keccak256(_srcAddress) == keccak256(mirrorGates[_srcChainId]),
+            _srcAddress.length == mirrorGate_.length &&
+            keccak256(_srcAddress) == keccak256(mirrorGate_),
             "Unsupported source mirror gate"
         );
 
-        (address to_, uint256 escrowId_, uint256 value_, uint256 end_) =
-            abi.decode(_payload, (address, uint256, uint256, uint256));
+        (address to_, uint256 _chainId, uint256 escrowId_, uint256 value_, uint256 end_) =
+            abi.decode(_payload, (address, uint256, uint256, uint256, uint256));
 
-        try mirrorEscrow.mirror_lock(to_, _srcChainId, escrowId_, value_, end_) {
-            emit MirrorSuccess(address(endpoint), _srcAddress, _nonce, to_, _srcChainId, escrowId_, value_, end_);
+        try mirrorEscrow.mirror_lock(to_, _chainId, escrowId_, value_, end_) {
+            emit MirrorSuccess(address(endpoint), _srcLayerZeroChainId, _srcAddress, _nonce, to_, _chainId, escrowId_, value_, end_);
         } catch {
-            emit MirrorFailure(address(endpoint), _srcChainId, _srcAddress, _nonce, _payload);
+            emit MirrorFailure(address(endpoint), _srcLayerZeroChainId, _srcAddress, _nonce, _payload);
         }
     }
 
     function mirrorLock(
-        uint16 _toChainId,
+        uint16 _toLayerZeroChainId,
         uint256 _escrowId
     ) external whenNotPaused payable {
-        bytes memory mirrorGate_ = mirrorGates[_toChainId];
+        bytes memory mirrorGate_ = mirrorGates[_toLayerZeroChainId];
         address user_ = _msgSender();
 
         require(mirrorGate_.length > 0, "Unsupported target chain id ");
@@ -100,10 +104,10 @@ contract MirrorGate is ILayerZeroReceiver, Ownable, Pausable {
         require(lock.amount > 0, "User had no lock to mirror");
         require(lock.end > block.timestamp, "Cannot mirror expired lock");
 
-        bytes memory payload = abi.encode(user_, _escrowId, lock.amount, lock.end);
+        bytes memory payload = abi.encode(user_, chainId, _escrowId, lock.amount, lock.end);
 
         endpoint.send{value: msg.value}(
-            _toChainId,
+            _toLayerZeroChainId,
             mirrorGate_,
             payload,
             payable(user_),
@@ -116,8 +120,8 @@ contract MirrorGate is ILayerZeroReceiver, Ownable, Pausable {
         endpoint = _endpoint;
     }
 
-    function setMirrorGate(uint256 _chainId, bytes calldata _gate) external onlyOwner {
-        mirrorGates[_chainId] = _gate;
+    function setMirrorGate(uint256 _toLayerZeroChainId, bytes calldata _gate) external onlyOwner {
+        mirrorGates[_toLayerZeroChainId] = _gate;
     }
 
     function pause() external onlyOwner whenNotPaused {

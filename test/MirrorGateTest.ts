@@ -66,8 +66,8 @@ describe("MirrorGate contract", function () {
         );
         layerZeroEndpoint = await layerZeroEndpointFactory.deploy(1);
 
-        sourceMirrorGate = await mirrorGateFactory.deploy(layerZeroEndpoint.address, mirroredVotingEscrow.address);
-        targetMirrorGate = await mirrorGateFactory.deploy(layerZeroEndpoint.address, targetMirroredVotingEscrow.address);
+        sourceMirrorGate = await mirrorGateFactory.deploy(layerZeroEndpoint.address, mirroredVotingEscrow.address, 1);
+        targetMirrorGate = await mirrorGateFactory.deploy(layerZeroEndpoint.address, targetMirroredVotingEscrow.address, 25);
 
         await mirroredVotingEscrow.set_mirror_whitelist(sourceMirrorGate.address, true);
         await targetMirroredVotingEscrow.set_mirror_whitelist(targetMirrorGate.address, true);

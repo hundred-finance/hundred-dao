@@ -260,15 +260,17 @@ async function deployMirrorGate(
     admin: string, zeroLayerEndpoint: string, deployments: Deployment
 ) {
     if (deployments.MirroredVotingEscrow) {
+        const [deployer] = await ethers.getSigners();
+        const chainId = await deployer.getChainId()
+
         const mirrorGateFactory: MirrorGate__factory = <MirrorGate__factory> await ethers.getContractFactory("MirrorGate");
-        const mirrorGate: MirrorGate = await mirrorGateFactory.deploy(zeroLayerEndpoint, deployments.MirroredVotingEscrow);
+        const mirrorGate: MirrorGate = await mirrorGateFactory.deploy(zeroLayerEndpoint, deployments.MirroredVotingEscrow, chainId);
 
         await mirrorGate.deployed();
 
         deployments.MirrorGate = mirrorGate.address;
         console.log("Deployed mirror gate: ", mirrorGate.address);
 
-        const [deployer] = await ethers.getSigners();
         if (admin.toLowerCase() !== deployer.address.toLowerCase()) {
             let tx = await mirrorGate.transferOwnership(admin);
             await tx.wait();
