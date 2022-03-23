@@ -1,0 +1,27 @@
+{
+    "Gauges": [
+        {
+            "id": "hDAI",
+            "address": "0x5734BB74cFac69f1c34bA66eA6608cCdEe6b81F2"
+        },
+        {
+            "id": "hUSDC",
+            "address": "0xB11C769e66f1ECEA06B5c30154B880200Bf57C25"
+        },
+        {
+            "id": "hUSDT",
+            "address": "0x65116121a48BEC43f855e278DC3e2157f1132eD8"
+        }
+    ],
+    "SmartWalletChecker": "0x4adF575DBe0e6F1c5909AE9c7119927b4FaabbBd",
+    "LockCreatorChecker": "0x3A4148DDDd121fbceD8717CB7B82370Be27F76bf",
+    "VotingEscrowV2": "0xb4BAfc3d60662De362c0cB0f5e2DE76603Ea77D7",
+    "MirroredVotingEscrow": "0xc3CC9369fcB8491DaD4FA64cE1Fbd3DD2d70034f",
+    "Treasury": "0x6BFD171dDEF7ef775E6C1d6078C10198229DD242",
+    "RewardPolicyMaker": "0x1dB11Cf7C332E797ac912e11b8762e0A4b24a836",
+    "GaugeControllerV2": "0xF191d17dEe9943F06bB784C0492805280AeE0bf9",
+    "Minter": "0xC3bae38Bfa2CbBE30f442649070408f484bd5882",
+    "VotingEscrowDelegationV2": "0x61F95b38f880a6C5A4b7DD15560D7bB8B3E36f35",
+    "DelegationProxy": "0xd7f3Bf2085AD32ff95E1bCC408d37F10f6949270",
+    "MirrorGate": "0x96a0eEa3a9cff74764b73A891c3b36a4F6B81181"
+}
