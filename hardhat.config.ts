@@ -60,6 +60,14 @@ const config: HardhatUserConfig = {
       url: `https://api.avax-test.network/ext/bc/C/rpc`,
       accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
     },
+    iotex: {
+      url: `https://babel-api.mainnet.iotex.io`,
+      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
+    },
+    polygon: {
+      url: `https://polygon-rpc.com`,
+      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
+    }
   },
   etherscan: {
     apiKey: {
@@ -81,8 +89,8 @@ const config: HardhatUserConfig = {
       optimisticEthereum: process.env.OPTIMISM_SCAN_API_KEY,
       optimisticKovan: process.env.OPTIMISM_SCAN_API_KEY,
       // polygon
-      polygon: "YOUR_POLYGONSCAN_API_KEY",
-      polygonMumbai: "YOUR_POLYGONSCAN_API_KEY",
+      polygon: process.env.POLYGON_SCAN_API_KEY,
+      polygonMumbai: process.env.POLYGON_SCAN_API_KEY,
       // arbitrum
       arbitrumOne: "YOUR_ARBISCAN_API_KEY",
       arbitrumTestnet: "YOUR_ARBISCAN_API_KEY",
