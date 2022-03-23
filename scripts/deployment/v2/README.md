@@ -11,6 +11,6 @@ The following steps are to be performed from the project root folder
 7. call `add_type` on the controller to define a new gauge type if not already done
 8. For each gauge call `add_gauge` on the controller to activate the gauge.
 9. If using LayerZero endpoint for mirroring
-   1. call `set_mirror_whitelist` or `MirroredVotingEscrow` to whitelist `MirrorGate` contract
+   1. call `set_mirror_whitelist` on `MirroredVotingEscrow` to whitelist `MirrorGate` contract
    2. register other chains mirror gates on deployed `MirrorGate` using their layerZeroChainId, calling `setMirrorGate`
 10. Manually verify the smart contract on the network explorer
