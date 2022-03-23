@@ -183,13 +183,15 @@ export async function deploy(
 
     for (let i = 0; i < pools.length; i++) {
         const pool = pools[i];
-
-        const gauge: LiquidityGaugeV41 = await gaugeV4Factory.deploy(
-            pool.token, deployments.Minter, admin, deployments.RewardPolicyMaker, deployments.DelegationProxy, 200
-        );
-        await gauge.deployed();
-        deployments.Gauges.push({ id: pool.id, address: gauge.address });
-        console.log("Deployed gauge: ", pool.id, gauge.address);
+        const isAlreadyDeployed = deployments.Gauges.find(g => g.id === pool.id) !== undefined;
+        if (!isAlreadyDeployed) {
+            const gauge: LiquidityGaugeV41 = await gaugeV4Factory.deploy(
+                pool.token, deployments.Minter, admin, deployments.RewardPolicyMaker, deployments.DelegationProxy, 200
+            );
+            await gauge.deployed();
+            deployments.Gauges.push({ id: pool.id, address: gauge.address });
+            console.log("Deployed gauge: ", pool.id, gauge.address);
+        }
     }
 
     if (layerZeroEndpoint != "" && !deployments.MirrorGate) {
