@@ -17,5 +17,6 @@
     "Minter": "0x14Cb5E017a3F10B9f6254fF24b87e2297dC8b8b3",
     "VotingEscrowDelegationV2": "0xcabc8fC306fCAa4c05B58522B13756AE12eDd902",
     "DelegationProxy": "0x7100CBCa885905F922a19006cF7fD5d0E1bBb26c",
-    "SmartWalletChecker": "0x1747D329CB37e0A0f387f24065aDdbc60eAB69DD"
+    "SmartWalletChecker": "0x1747D329CB37e0A0f387f24065aDdbc60eAB69DD",
+    "MirrorGate": "0xD7a8De0672131668be0366cF517DbD1c369cE200"
 }

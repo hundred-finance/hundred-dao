@@ -83,8 +83,8 @@ const config: HardhatUserConfig = {
       heco: "YOUR_HECOINFO_API_KEY",
       hecoTestnet: "YOUR_HECOINFO_API_KEY",
       // fantom mainnet
-      opera: "YOUR_FTMSCAN_API_KEY",
-      ftmTestnet: "YOUR_FTMSCAN_API_KEY",
+      opera: process.env.FANTOM_SCAN_API_KEY,
+      ftmTestnet: process.env.FANTOM_SCAN_API_KEY,
       // optimism
       optimisticEthereum: process.env.OPTIMISM_SCAN_API_KEY,
       optimisticKovan: process.env.OPTIMISM_SCAN_API_KEY,
