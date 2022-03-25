@@ -3,7 +3,7 @@ import hre from "hardhat";
 
 const POOLS: any = [
     { id: "bhDAI", token: "0xCebDf18Ac062Cfa15fb3416dD453342e72b17E25", weight: 1 },
-    { id: "bhUSDC", token: "0xEDCE1C21ad6cb55D647671682b35766EA4a440f1", weight: 1 },
+    { id: "bhUSDC", token: "0xA8d60f5Cc2C01bd1514348753140fAA28E449e3D", weight: 1 },
     { id: "bhUSDT", token: "0xEDCE1C21ad6cb55D647671682b35766EA4a440f1", weight: 1 },
 ]
 
