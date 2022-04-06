@@ -1,4 +1,4 @@
-import { ethers } from 'hardhat';
+import hre, { ethers } from 'hardhat';
 import {
     VotingEscrowV2__factory,
     VotingEscrowV2,
@@ -20,7 +20,7 @@ import {
     DelegationProxy,
     VotingEscrowDelegationV2__factory,
     VotingEscrowDelegationV2, VotingEscrow,
-    MirrorGate__factory, MirrorGate
+    MirrorGate__factory, MirrorGate, HundredBond__factory, HundredBond
 } from "../../../typechain";
 
 import * as VotingEscrowV1Artifact from "../../../artifacts/contracts/VotingEscrow.vy/VotingEscrow.json";
@@ -30,6 +30,7 @@ import * as DelegationProxyArtifact from "../../../artifacts/contracts/ve-boost/
 import * as fs from "fs";
 import {Contract} from "ethers";
 import path from "path";
+import {boolean} from "hardhat/internal/core/params/argumentTypes";
 
 export async function deploy(
     hnd: string,
@@ -280,6 +281,65 @@ async function deployMirrorGate(
     }
 }
 
+export async function deployHundredBond(
+    hnd: string,
+    admin: string,
+    flavour: string = "deployments",
+    verify: boolean = true
+) {
+    const network = hre.hardhatArguments.network;
+    const location = path.join(__dirname, `${network}/${flavour}.json`);
+    let deployments: Deployment = JSON.parse(fs.readFileSync(location).toString());
+    let escrow = ""
+    if (deployments.VotingEscrowV2) {
+        escrow = deployments.VotingEscrowV2
+    }
+
+    if (deployments.VotingEscrowV1) {
+        escrow = deployments.VotingEscrowV1
+    }
+
+    if (escrow && escrow.length > 0) {
+        const [deployer] = await ethers.getSigners();
+
+        if (!deployments.HundredBond) {
+            const hundredBondFactory: HundredBond__factory = <HundredBond__factory> await ethers.getContractFactory("HundredBond");
+            const hundredBond: HundredBond = await hundredBondFactory.deploy(
+                hnd,
+                escrow,
+                deployments.VotingEscrowV2 !== undefined,
+                200 * 7 * 24 * 3600
+            );
+
+            await hundredBond.deployed();
+
+            deployments.HundredBond = hundredBond.address;
+            console.log("Deployed hundred bond: ", hundredBond.address);
+
+            fs.writeFileSync(location, JSON.stringify(deployments, null, 4));
+
+            if (admin.toLowerCase() !== deployer.address.toLowerCase()) {
+                let tx = await hundredBond.transferOwnership(admin);
+                await tx.wait();
+            }
+        }
+
+        if (verify) {
+            console.log("verifying hundred bond: ", deployments.HundredBond);
+
+            await hre.run("verify:verify", {
+                address: deployments.HundredBond,
+                constructorArguments: [
+                    hnd,
+                    escrow,
+                    deployments.VotingEscrowV2 !== undefined,
+                    200 * 7 * 24 * 3600
+                ],
+            });
+        }
+    }
+}
+
 function patchAbiGasFields(abi: any[]) {
     for(let i = 0; i < abi.length; i++) {
         abi[i].gas = undefined
@@ -302,4 +362,5 @@ export interface Deployment {
     VotingEscrowDelegationV2?: string
     MerkleMirror?: string
     MirrorGate?: string
+    HundredBond?: string
 }

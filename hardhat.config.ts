@@ -99,7 +99,7 @@ const config: HardhatUserConfig = {
       avalancheFujiTestnet: process.env.AVALANCHE_SCAN_API_KEY,
       // moonbeam
       moonbeam: "YOUR_MOONBEAM_MOONSCAN_API_KEY",
-      moonriver: "YOUR_MOONRIVER_MOONSCAN_API_KEY",
+      moonriver: process.env.MOONRIVER_SCAN_API_KEY,
       moonbaseAlpha: "YOUR_MOONBEAM_MOONSCAN_API_KEY",
       // harmony
       harmony: "YOUR_HARMONY_API_KEY",
