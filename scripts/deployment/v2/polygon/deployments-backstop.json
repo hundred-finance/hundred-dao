@@ -11,6 +11,10 @@
         {
             "id": "bhUSDT",
             "address": "0x274E94f03AC51779D14bD45aF77C0e0e9d97cef9"
+        },
+        {
+            "id": "bhFRAX",
+            "address": "0x2184FC0c20616AF78Ce0Bc69BB0443f29976B870"
         }
     ],
     "VotingEscrowV2": "0xb4BAfc3d60662De362c0cB0f5e2DE76603Ea77D7",
