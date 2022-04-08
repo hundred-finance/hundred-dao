@@ -19,8 +19,14 @@ import {
     DelegationProxy__factory,
     DelegationProxy,
     VotingEscrowDelegationV2__factory,
-    VotingEscrowDelegationV2, VotingEscrow,
-    MirrorGate__factory, MirrorGate, HundredBond__factory, HundredBond
+    VotingEscrowDelegationV2,
+    VotingEscrow,
+    MirrorGate__factory,
+    MirrorGate,
+    HundredBond__factory,
+    HundredBond,
+    MultiChainMirrorGate__factory,
+    MultiChainMirrorGate
 } from "../../../typechain";
 
 import * as VotingEscrowV1Artifact from "../../../artifacts/contracts/VotingEscrow.vy/VotingEscrow.json";
@@ -30,7 +36,6 @@ import * as DelegationProxyArtifact from "../../../artifacts/contracts/ve-boost/
 import * as fs from "fs";
 import {Contract} from "ethers";
 import path from "path";
-import {boolean} from "hardhat/internal/core/params/argumentTypes";
 
 export async function deploy(
     hnd: string,
@@ -38,7 +43,8 @@ export async function deploy(
     network: string,
     admin: string,
     flavour: string = "deployments",
-    layerZeroEndpoint: string = ""
+    layerZeroEndpoint: string = "",
+    multiChainEndpoint: string = ""
 ) {
     let deployments: Deployment = {
         Gauges: []
@@ -199,6 +205,10 @@ export async function deploy(
         await deployMirrorGate(admin, layerZeroEndpoint, deployments);
     }
 
+    if (multiChainEndpoint != "" && !deployments.MultichainMirrorGate) {
+        await deployMultiChainMirrorGate(admin, multiChainEndpoint, deployments);
+    }
+
     console.log("Please define type & call add_gauge on the contorller contract from the admin account");
 
     fs.writeFileSync(location, JSON.stringify(deployments, null, 4));
@@ -273,6 +283,28 @@ async function deployMirrorGate(
 
         deployments.MirrorGate = mirrorGate.address;
         console.log("Deployed mirror gate: ", mirrorGate.address);
+
+        if (admin.toLowerCase() !== deployer.address.toLowerCase()) {
+            let tx = await mirrorGate.transferOwnership(admin);
+            await tx.wait();
+        }
+    }
+}
+
+async function deployMultiChainMirrorGate(
+    admin: string, multiChainEndpoint: string, deployments: Deployment
+) {
+    if (deployments.MirroredVotingEscrow) {
+        const [deployer] = await ethers.getSigners();
+        const chainId = await deployer.getChainId()
+
+        const mirrorGateFactory: MultiChainMirrorGate__factory = <MultiChainMirrorGate__factory> await ethers.getContractFactory("MultiChainMirrorGate");
+        const mirrorGate: MultiChainMirrorGate = await mirrorGateFactory.deploy(multiChainEndpoint, deployments.MirroredVotingEscrow, chainId);
+
+        await mirrorGate.deployed();
+
+        deployments.MultichainMirrorGate = mirrorGate.address;
+        console.log("Deployed multichain mirror gate: ", mirrorGate.address);
 
         if (admin.toLowerCase() !== deployer.address.toLowerCase()) {
             let tx = await mirrorGate.transferOwnership(admin);
@@ -362,5 +394,6 @@ export interface Deployment {
     VotingEscrowDelegationV2?: string
     MerkleMirror?: string
     MirrorGate?: string
+    MultichainMirrorGate?: string
     HundredBond?: string
 }

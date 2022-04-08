@@ -19,5 +19,6 @@
     "Minter": "0x818b3dff96d01590Caf72965e6F50b24331EfdEC",
     "VotingEscrowDelegationV2": "0x629e95631602Ad5751e79557f297c32C93598B64",
     "DelegationProxy": "0x989b2F0722808d9F9c574363fA8759e925f30F12",
-    "MerkleMirror": "0x3a8609840b47e8bd4fc0108e2cdcd88ae30c4ff2"
+    "MerkleMirror": "0x3a8609840b47e8bd4fc0108e2cdcd88ae30c4ff2",
+    "MultichainMirrorGate": "0xb1A76e5454E4aF0C4F8f7b071df14a3B4011e8AF"
 }
