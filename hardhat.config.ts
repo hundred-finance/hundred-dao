@@ -67,6 +67,10 @@ const config: HardhatUserConfig = {
     polygon: {
       url: `https://polygon-rpc.com`,
       accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
+    },
+    meter: {
+      url: `https://rpc.meter.io`,
+      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
     }
   },
   etherscan: {
