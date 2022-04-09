@@ -105,8 +105,10 @@ export async function deploy(
             <VotingEscrow>new Contract(deployments.VotingEscrowV1, patchAbiGasFields(VotingEscrowV1Artifact.abi), deployer);
 
         const addr = await votingEscrow.smart_wallet_checker();
-        if (addr && addr != "0x0000000000000000000000000000000000000000") {
+        if (addr && addr !== "0x0000000000000000000000000000000000000000") {
             deployments.SmartWalletChecker = await votingEscrow.smart_wallet_checker();
+        } else {
+            await deploySmartWalletChecker(admin, deployments);
         }
     } else if (deployments.VotingEscrowV2) {
         let votingEscrow: VotingEscrowV2 =
