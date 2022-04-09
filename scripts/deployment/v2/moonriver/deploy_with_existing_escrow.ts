@@ -10,12 +10,13 @@ const POOLS: any = [
 
 const HUNDRED_TOKEN = "0x10010078a54396F62c96dF8532dc2B4847d47ED3";
 const ADMIN = "0xBf3bD01bd5fB28d2381d41A8eF779E6aa6f0a811"
+const MULTICHAIN_ENDPOINT = "0x37414a8662bC1D25be3ee51Fb27C2686e2490A89";
 
 const network = hre.hardhatArguments.network;
 if (!network) {
     console.error("please provide valid network");
 } else {
-    deploy(HUNDRED_TOKEN, POOLS, network, ADMIN)
+    deploy(HUNDRED_TOKEN, POOLS, network, ADMIN, "deployments", "", MULTICHAIN_ENDPOINT)
         .then(() => process.exit(0))
         .catch(error => {
             console.error(error);
