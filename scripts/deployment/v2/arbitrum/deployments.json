@@ -1,0 +1,35 @@
+{
+    "Gauges": [
+        {
+            "id": "hUSDC",
+            "address": "0x0Aae77Df7609933c9D9C96F1132C7D9A2bb4386e"
+        },
+        {
+            "id": "hUSDT",
+            "address": "0x6a658b955A29625FDFFf0CC8a108cFea044480c8"
+        },
+        {
+            "id": "hMIM",
+            "address": "0x12872CE4B8fcC02cbCC3266D11ef5135d8824A8f"
+        },
+        {
+            "id": "hFRAX",
+            "address": "0x67350769C7fAb430894911F29A1C2B1211a75AEd"
+        },
+        {
+            "id": "hDAI",
+            "address": "0xf287C37A433a9D5162898A94Cf69827359BaD148"
+        }
+    ],
+    "VotingEscrowV1": "0xBa57440fA35Fdb671E58F6F56c1A4447aB1f6C2B",
+    "MirroredVotingEscrow": "0x6b5f15E939C8d797E6bd8D5fFda24eDeC655D08d",
+    "VotingEscrowDelegationV2": "0x0000000000000000000000000000000000000000",
+    "SmartWalletChecker": "0x603c5919FCFB13423b963b04D55d1b393da88A7e",
+    "DelegationProxy": "0x5BA443267c09578bfd87e033a401F69d37Fe677e",
+    "MirrorGate": "0x3752F823A8E5BfE706203C87Fb5BbbD33b943F02",
+    "MultichainMirrorGate": "0x340A3F5a18c455f39714B6b692905801f21ed353",
+    "Treasury": "0x7Cec58EE233624888294fB194c224EBf66ff37B5",
+    "RewardPolicyMaker": "0xb5D66fB34DD0D874709fDB4682C89bB634E7c364",
+    "GaugeControllerV2": "0xBA427dDccba3B63497D8148276Bf64783FaBBe7E",
+    "Minter": "0xc246F4d921dd446cE5c6Bb3aABd64C2d714e21C1"
+}
