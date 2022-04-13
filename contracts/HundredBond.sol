@@ -65,9 +65,11 @@ contract HundredBond is ERC20, Ownable, Pausable {
             hnd.transfer(beneficiary_, balance_);
             escrow.deposit_for(beneficiary_, balance_);
         } else if (locked_.end == 0) {
+            hnd.approve(address(escrow), balance_);
             escrow.create_lock_for(beneficiary_, balance_, unlockTime_);
         } else {
             require(locked_.end >= unlockTime_, "HND lock needs to be extended");
+            hnd.approve(address(escrow), balance_);
             escrow.deposit_for(beneficiary_, balance_);
         }
 

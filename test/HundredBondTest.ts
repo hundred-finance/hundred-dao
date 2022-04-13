@@ -3,14 +3,12 @@ import { ethers } from 'hardhat';
 import {
     VotingEscrowV2,
     VotingEscrowV2__factory,
-    ERC20TOKEN,
-    ERC20TOKEN__factory,
     VotingEscrow__factory,
     VotingEscrow,
     HundredBond__factory,
     HundredBond,
     SmartWalletChecker__factory,
-    SmartWalletChecker
+    SmartWalletChecker, TestERC20, TestERC20__factory
 } from "../typechain";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/signers";
 
@@ -18,13 +16,13 @@ const WEEK = 7 * 86400
 
 describe("HundredBond contract", function () {
 
-    let hndFactory: ERC20TOKEN__factory;
+    let hndFactory: TestERC20__factory;
     let votingEscrowV2Factory: VotingEscrowV2__factory;
     let votingEscrowV1Factory: VotingEscrow__factory;
     let hundredBondFactory: HundredBond__factory;
     let smartWalletCheckerFactory: SmartWalletChecker__factory;
 
-    let hnd: ERC20TOKEN;
+    let hnd: TestERC20;
     let votingEscrowV2: VotingEscrowV2;
     let votingEscrowV1: VotingEscrow;
     let hundredBondV1: HundredBond;
@@ -38,13 +36,13 @@ describe("HundredBond contract", function () {
         [owner, alice] =
             await ethers.getSigners();
 
-        hndFactory = <ERC20TOKEN__factory>await ethers.getContractFactory("ERC20TOKEN");
+        hndFactory = <TestERC20__factory>await ethers.getContractFactory("TestERC20");
         votingEscrowV2Factory = <VotingEscrowV2__factory>await ethers.getContractFactory("VotingEscrowV2");
         votingEscrowV1Factory = <VotingEscrow__factory>await ethers.getContractFactory("VotingEscrow");
         hundredBondFactory = <HundredBond__factory>await ethers.getContractFactory("HundredBond");
         smartWalletCheckerFactory = <SmartWalletChecker__factory> await ethers.getContractFactory("SmartWalletChecker");
 
-        hnd = await hndFactory.deploy("HND", "HND", 18, 0);
+        hnd = await hndFactory.deploy("HND", "HND");
         smartWalletChecker = await smartWalletCheckerFactory.deploy(owner.address);
         votingEscrowV2 = await votingEscrowV2Factory.deploy(
             hnd.address, "veHND", "veHND", "2.0", owner.address,
@@ -183,6 +181,7 @@ describe("HundredBond contract", function () {
             await hnd.connect(alice).approve(votingEscrowV1.address, amount);
             await votingEscrowV1.connect(alice).create_lock(amount, blockBefore.timestamp + 204 * WEEK);
 
+            await hnd.connect(alice).approve(votingEscrowV1.address, amount);
             await hundredBondV1.connect(alice).redeem();
 
             const locked = await votingEscrowV1.locked(alice.address);
@@ -203,7 +202,7 @@ describe("HundredBond contract", function () {
             const blockNumBefore = await ethers.provider.getBlockNumber();
             const blockBefore = await ethers.provider.getBlock(blockNumBefore);
 
-            await hnd.connect(alice).approve(votingEscrowV1.address, amount);
+            await hnd.connect(alice).approve(votingEscrowV2.address, amount);
             await votingEscrowV2.connect(alice).create_lock(amount, blockBefore.timestamp + 150 * WEEK);
 
             await expect(hundredBondV2.connect(alice).redeem())
@@ -221,6 +220,7 @@ describe("HundredBond contract", function () {
             await hundredBondV2.connect(alice).redeem();
 
             const locked = await votingEscrowV2.locked(alice.address);
+
             expect(locked.amount).to.be.equals(amount);
             expect(await hnd.balanceOf(hundredBondV2.address)).to.be.equals(0);
             expect(await hundredBondV2.balanceOf(alice.address)).to.be.equals(0);
@@ -232,20 +232,20 @@ describe("HundredBond contract", function () {
             await hnd.mint(owner.address, amount);
             await hnd.mint(alice.address, amount);
 
-            await hnd.approve(hundredBondV1.address, amount);
+            await hnd.approve(hundredBondV2.address, amount);
             await hundredBondV2.mint(alice.address, amount);
 
             const blockNumBefore = await ethers.provider.getBlockNumber();
             const blockBefore = await ethers.provider.getBlock(blockNumBefore);
 
-            await hnd.connect(alice).approve(votingEscrowV1.address, amount);
+            await hnd.connect(alice).approve(votingEscrowV2.address, amount);
             await votingEscrowV2.connect(alice).create_lock(amount, blockBefore.timestamp + 204 * WEEK);
 
             await hundredBondV2.connect(alice).redeem();
 
             const locked = await votingEscrowV2.locked(alice.address);
             expect(locked.amount).to.be.equals(amount.mul(2));
-            expect(await hnd.balanceOf(hundredBondV1.address)).to.be.equals(0);
+            expect(await hnd.balanceOf(hundredBondV2.address)).to.be.equals(0);
             expect(await hundredBondV2.balanceOf(alice.address)).to.be.equals(0);
         });
     });

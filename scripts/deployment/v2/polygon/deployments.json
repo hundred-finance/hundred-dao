@@ -28,5 +28,6 @@
     "VotingEscrowDelegationV2": "0x61F95b38f880a6C5A4b7DD15560D7bB8B3E36f35",
     "DelegationProxy": "0xd7f3Bf2085AD32ff95E1bCC408d37F10f6949270",
     "MirrorGate": "0x96a0eEa3a9cff74764b73A891c3b36a4F6B81181",
-    "MultichainMirrorGate": "0x9c15a48A2ce440298815f64ddd5De91800Ad89ec"
+    "MultichainMirrorGate": "0x9c15a48A2ce440298815f64ddd5De91800Ad89ec",
+    "HundredBond": "0x636B5B572e5B6869d9d72124EbB67ecA0BaBCaEa"
 }
