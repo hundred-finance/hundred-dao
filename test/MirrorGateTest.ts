@@ -120,7 +120,6 @@ describe("MirrorGate contract", function () {
 
         it("Should succeed for user valid lock", async function () {
 
-            console.log("gates", sourceMirrorGate.address, targetMirrorGate.address);
             await sourceMirrorGate.setMirrorGate(25, targetMirrorGate.address);
             await targetMirrorGate.setMirrorGate(1, sourceMirrorGate.address);
 

@@ -34,6 +34,10 @@ interface ICallProxy {
         address _fallback,
         uint256 _toChainID
     ) external;
+
+    function withdraw(uint256 _amount) external;
+
+    function executionBudget(address _account) external returns(uint256);
 }
 
 contract MultiChainMirrorGate is Ownable, Pausable {
@@ -51,7 +55,7 @@ contract MultiChainMirrorGate is Ownable, Pausable {
     }
 
     function mirrorLock(
-        uint16 _toChainId,
+        uint256 _toChainId,
         address _toMirrorEscrow,
         uint256 _escrowId
     ) external whenNotPaused {
@@ -69,6 +73,14 @@ contract MultiChainMirrorGate is Ownable, Pausable {
         );
 
         endpoint.anyCall(_toMirrorEscrow, payload, address(0), _toChainId);
+    }
+
+    function recoverFees() external onlyOwner {
+        uint256 amount_ = endpoint.executionBudget(address(this));
+
+        endpoint.withdraw(amount_);
+        (bool success, ) = msg.sender.call{value: amount_}("");
+        require(success, "Fee transfer failed");
     }
 
     function setEndpoint(ICallProxy _endpoint) external onlyOwner {

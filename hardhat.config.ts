@@ -26,51 +26,51 @@ const config: HardhatUserConfig = {
     },
     kovan: {
       url: `https://eth-kovan.alchemyapi.io/v2/${process.env.ALCHEMY_KOVAN_API_KEY}`,
-      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
+      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`, `0x${process.env.DEV_MULTICHAIN_GATE_DEPLOYER_PRIVATE_KEY}`],
     },
     optimism_kovan: {
       url: `https://kovan.optimism.io`,
-      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
+      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`, `0x${process.env.DEV_MULTICHAIN_GATE_DEPLOYER_PRIVATE_KEY}`],
     },
     arbitrum: {
       url: `https://arb-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_ARBITRUM_API_KEY}`,
-      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
+      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`, `0x${process.env.DEV_MULTICHAIN_GATE_DEPLOYER_PRIVATE_KEY}`],
     },
     fantom: {
       url: `https://rpc.ftm.tools/`,
-      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
+      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`, `0x${process.env.DEV_MULTICHAIN_GATE_DEPLOYER_PRIVATE_KEY}`],
     },
     harmony: {
       url: `https://harmony-0-rpc.gateway.pokt.network`,
-      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
+      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`, `0x${process.env.DEV_MULTICHAIN_GATE_DEPLOYER_PRIVATE_KEY}`],
     },
     moonriver: {
       url: `https://rpc.moonriver.moonbeam.network`,
-      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
+      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`, `0x${process.env.DEV_MULTICHAIN_GATE_DEPLOYER_PRIVATE_KEY}`],
     },
     optimism: {
       url: `https://mainnet.optimism.io`,
-      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
+      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`, `0x${process.env.DEV_MULTICHAIN_GATE_DEPLOYER_PRIVATE_KEY}`],
     },
     gnosis: {
       url: `https://rpc.gnosischain.com`,
-      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
+      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`, `0x${process.env.DEV_MULTICHAIN_GATE_DEPLOYER_PRIVATE_KEY}`],
     },
     avalanche_fuji: {
       url: `https://api.avax-test.network/ext/bc/C/rpc`,
-      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
+      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`, `0x${process.env.DEV_MULTICHAIN_GATE_DEPLOYER_PRIVATE_KEY}`],
     },
     iotex: {
       url: `https://babel-api.mainnet.iotex.io`,
-      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
+      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`, `0x${process.env.DEV_MULTICHAIN_GATE_DEPLOYER_PRIVATE_KEY}`],
     },
     polygon: {
       url: `https://polygon-rpc.com`,
-      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
+      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`, `0x${process.env.DEV_MULTICHAIN_GATE_DEPLOYER_PRIVATE_KEY}`],
     },
     meter: {
       url: `https://rpc.meter.io`,
-      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
+      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`, `0x${process.env.DEV_MULTICHAIN_GATE_DEPLOYER_PRIVATE_KEY}`],
     }
   },
   etherscan: {

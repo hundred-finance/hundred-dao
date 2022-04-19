@@ -207,7 +207,7 @@ export async function deploy(
         await deployMirrorGate(admin, layerZeroEndpoint, deployments);
     }
 
-    if (multiChainEndpoint != "" && !deployments.MultichainMirrorGate) {
+    if (multiChainEndpoint != "" && !deployments.MultichainMirrorGateV2) {
         await deployMultiChainMirrorGate(admin, multiChainEndpoint, deployments);
     }
 
@@ -297,19 +297,24 @@ async function deployMultiChainMirrorGate(
     admin: string, multiChainEndpoint: string, deployments: Deployment
 ) {
     if (deployments.MirroredVotingEscrow) {
-        const [deployer] = await ethers.getSigners();
-        const chainId = await deployer.getChainId()
+        const [deployer, multiChainDeployer] = await ethers.getSigners();
+        const chainId = await multiChainDeployer.getChainId()
+
+        console.log("Deploying multichain gate contract with the account:", multiChainDeployer.address);
+        console.log("Account balance:", (await multiChainDeployer.getBalance()).toString());
 
         const mirrorGateFactory: MultiChainMirrorGate__factory = <MultiChainMirrorGate__factory> await ethers.getContractFactory("MultiChainMirrorGate");
-        const mirrorGate: MultiChainMirrorGate = await mirrorGateFactory.deploy(multiChainEndpoint, deployments.MirroredVotingEscrow, chainId);
+        const mirrorGate: MultiChainMirrorGate = await mirrorGateFactory
+            .connect(multiChainDeployer)
+            .deploy(multiChainEndpoint, deployments.MirroredVotingEscrow, chainId);
 
         await mirrorGate.deployed();
 
-        deployments.MultichainMirrorGate = mirrorGate.address;
+        deployments.MultichainMirrorGateV2 = mirrorGate.address;
         console.log("Deployed multichain mirror gate: ", mirrorGate.address);
 
-        if (admin.toLowerCase() !== deployer.address.toLowerCase()) {
-            let tx = await mirrorGate.transferOwnership(admin);
+        if (admin.toLowerCase() !== multiChainDeployer.address.toLowerCase()) {
+            let tx = await mirrorGate.connect(multiChainDeployer).transferOwnership(admin);
             await tx.wait();
         }
     }
@@ -397,5 +402,6 @@ export interface Deployment {
     MerkleMirror?: string
     MirrorGate?: string
     MultichainMirrorGate?: string
+    MultichainMirrorGateV2?: string
     HundredBond?: string
 }
