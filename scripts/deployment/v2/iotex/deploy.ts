@@ -1,4 +1,4 @@
-import {deploy} from "../helpers";
+import {deploy, initGaugesAndTreasury} from "../helpers";
 import hre from "hardhat";
 
 const POOLS: any = [
@@ -21,4 +21,6 @@ if (!network) {
             console.error(error);
             process.exit(1);
         });
+
+    // initGaugesAndTreasury(network);
 }

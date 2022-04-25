@@ -216,32 +216,28 @@ export async function deploy(
     fs.writeFileSync(location, JSON.stringify(deployments, null, 4));
 }
 
-export async function deployNewGauge(
-    admin: string, network: string, token: string, tokenName: string, type: number = 0, weight: number = 1
-) {
+export async function initGaugesAndTreasury(network: string) {
     const [deployer] = await ethers.getSigners();
     const location = path.join(__dirname, `${network}/deployments.json`);
     let deployments: Deployment = JSON.parse(fs.readFileSync(location).toString());
 
-    if (deployments.GaugeControllerV2 && deployments.DelegationProxy && deployments.RewardPolicyMaker && deployments.Minter) {
+    if (deployments.GaugeControllerV2 && deployments.Gauges.length > 0 && deployments.Treasury && deployments.Minter) {
+        const controller: GaugeControllerV2 =
+            <GaugeControllerV2>await ethers.getContractAt("GaugeControllerV2", deployments.GaugeControllerV2, deployer);
 
-        let delegationProxy: DelegationProxy =
-            <DelegationProxy>new Contract(deployments.DelegationProxy, patchAbiGasFields(DelegationProxyArtifact.abi), deployer);
+        let tx = await controller["add_type(string,uint256)"]("Stables", 100);
+        await tx.wait();
 
-        const gaugeV4Factory: LiquidityGaugeV41__factory =
-            <LiquidityGaugeV41__factory>await ethers.getContractFactory("LiquidityGaugeV4_1");
+        for (let i = 0; i < deployments.Gauges.length; i++) {
+            let tx = await controller["add_gauge(address,int128,uint256)"](deployments.Gauges[i].address, 0, 1);
+            await tx.wait();
+        }
 
-        const gauge: LiquidityGaugeV41 = await gaugeV4Factory.deploy(
-            token, deployments.Minter, admin, deployments.RewardPolicyMaker, delegationProxy.address, 200
-        );
-        await gauge.deployed();
+        const treasury: Treasury =
+            <Treasury>await ethers.getContractAt("Treasury", deployments.Treasury, deployer);
 
-        deployments.Gauges.push({ id: tokenName, address: gauge.address });
-        console.log("Deployed gauge: ", tokenName, gauge.address);
-
-        console.log("Please call add_gauge on the contorller contract from the admin account");
-
-        fs.writeFileSync(location, JSON.stringify(deployments, null, 4));
+        tx = await treasury.set_minter(deployments.Minter);
+        await tx.wait();
     }
 }
 
