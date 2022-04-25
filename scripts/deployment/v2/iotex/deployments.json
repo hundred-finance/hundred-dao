@@ -26,5 +26,6 @@
     "GaugeControllerV2": "0x4adF575DBe0e6F1c5909AE9c7119927b4FaabbBd",
     "Minter": "0x3A4148DDDd121fbceD8717CB7B82370Be27F76bf",
     "VotingEscrowDelegationV2": "0xb4BAfc3d60662De362c0cB0f5e2DE76603Ea77D7",
-    "DelegationProxy": "0xc3CC9369fcB8491DaD4FA64cE1Fbd3DD2d70034f"
+    "DelegationProxy": "0xc3CC9369fcB8491DaD4FA64cE1Fbd3DD2d70034f",
+    "MultichainMirrorGateV2": "0x206eA32143b066a146990e2Aa4E5e8432C4a065E"
 }
