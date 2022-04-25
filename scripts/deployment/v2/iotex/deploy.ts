@@ -9,7 +9,7 @@ const POOLS: any = [
 ]
 
 const HUNDRED_TOKEN = "0xe0a6D4684aabBE8C08a57b3A4B54855C08165c1D";
-const ADMIN = ""
+const ADMIN = "0x8286dC6dF929C4BfA4f6951caB4dAe2EC02d4D72"
 
 const network = hre.hardhatArguments.network;
 if (!network) {
