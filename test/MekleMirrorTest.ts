@@ -73,12 +73,12 @@ describe("MerkleMirror contract", function () {
     describe("Administrating contract", function () {
 
         it("Non admin should not be able to call pause", async function () {
-            expect(merkleMirror.connect(alice).pause())
+            await expect(merkleMirror.connect(alice).pause())
                 .to.be.revertedWith("Ownable: caller is not the owner");
         });
 
         it("Non admin should not be able to call pause", async function () {
-            expect(merkleMirror.connect(alice).unPause())
+            await expect(merkleMirror.connect(alice).unPause())
                 .to.be.revertedWith("Ownable: caller is not the owner");
         });
 
@@ -95,7 +95,7 @@ describe("MerkleMirror contract", function () {
     describe("Mirroring", function () {
 
         it("Should fail for eligible user trying to mirror local chain", async function () {
-            expect(merkleMirror.mirror_lock(mirrors[0][0], 1, 1, 1, 1, 0, hexProof))
+            await expect(merkleMirror.mirror_lock(mirrors[0][0], 1, 1, 1, 1, 0, hexProof))
                 .to.be.revertedWith("Cannot mirror local chain locks");
         });
 
@@ -114,7 +114,7 @@ describe("MerkleMirror contract", function () {
         });
 
         it("Should fail for non eligible user with valid proof", async function () {
-            expect(merkleMirror.mirror_lock(alice.address,
+            await expect(merkleMirror.mirror_lock(alice.address,
                 parseInt(mirrors[0][1]),
                 parseInt(mirrors[0][2]), BigNumber.from(mirrors[0][3]),
                 BigNumber.from(mirrors[0][4]), 0,
@@ -124,7 +124,7 @@ describe("MerkleMirror contract", function () {
         });
 
         it("Should fail for eligible user with invalid proof", async function () {
-            expect(merkleMirror.mirror_lock(
+            await expect(merkleMirror.mirror_lock(
                 mirrors[0][0], parseInt(mirrors[0][1]),
                 parseInt(mirrors[0][2]), BigNumber.from(mirrors[0][3]),
                 BigNumber.from(mirrors[0][4]), 0,

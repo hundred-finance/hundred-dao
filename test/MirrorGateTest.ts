@@ -76,12 +76,12 @@ describe("MirrorGate contract", function () {
     describe("Administrating contract", function () {
 
         it("Non admin should not be able to call pause", async function () {
-            expect(sourceMirrorGate.connect(alice).pause())
+            await expect(sourceMirrorGate.connect(alice).pause())
                 .to.be.revertedWith("Ownable: caller is not the owner");
         });
 
         it("Non admin should not be able to call pause", async function () {
-            expect(sourceMirrorGate.connect(alice).unPause())
+            await expect(sourceMirrorGate.connect(alice).unPause())
                 .to.be.revertedWith("Ownable: caller is not the owner");
         });
 
@@ -98,7 +98,7 @@ describe("MirrorGate contract", function () {
     describe("Mirroring", function () {
 
         it("Should fail for non whitelisted chain", async function () {
-            expect(sourceMirrorGate.mirrorLock(1, 0, 200000))
+            await expect(sourceMirrorGate.mirrorLock(1, 0, 200000))
                 .to.be.revertedWith("Unsupported target chain id");
         });
 
@@ -106,7 +106,7 @@ describe("MirrorGate contract", function () {
 
             await sourceMirrorGate.setMirrorGate(25, targetMirrorGate.address);
 
-            expect(sourceMirrorGate.mirrorLock(25, 1, 200000))
+            await expect(sourceMirrorGate.mirrorLock(25, 1, 200000))
                 .to.be.revertedWith("Unsupported escrow id");
         });
 
@@ -114,7 +114,7 @@ describe("MirrorGate contract", function () {
 
             await sourceMirrorGate.setMirrorGate(25, targetMirrorGate.address);
 
-            expect(sourceMirrorGate.mirrorLock(25, 0, 200000))
+            await expect(sourceMirrorGate.mirrorLock(25, 0, 200000))
                 .to.be.revertedWith("User had no lock to mirror");
         });
 

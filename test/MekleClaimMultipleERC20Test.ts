@@ -56,17 +56,17 @@ describe("MerkleClaimMultipleER20 contract", function () {
     describe("Administrating contract", function () {
 
         it("Non admin should not be able to call pause", async function () {
-            expect(merkleClaim.connect(alice).pause())
+            await expect(merkleClaim.connect(alice).pause())
                 .to.be.revertedWith("Ownable: caller is not the owner");
         });
 
         it("Non admin should not be able to call pause", async function () {
-            expect(merkleClaim.connect(alice).unPause())
+            await expect(merkleClaim.connect(alice).unPause())
                 .to.be.revertedWith("Ownable: caller is not the owner");
         });
 
         it("Non admin should not be able to call sweepRemainingFunds", async function () {
-            expect(merkleClaim.connect(alice).sweepUnclaimedFunds(claimToken1.address))
+            await expect(merkleClaim.connect(alice).sweepUnclaimedFunds(claimToken1.address))
                 .to.be.revertedWith("Ownable: caller is not the owner");
         });
 
@@ -90,7 +90,7 @@ describe("MerkleClaimMultipleER20 contract", function () {
     describe("Claiming", function () {
 
         it("Should fail for eligible user with valid proof and invalid amount", async function () {
-            expect(merkleClaim.claim(eligibleUser, ["11111111111"], hexProof, 0))
+            await expect(merkleClaim.claim(eligibleUser, ["11111111111"], hexProof, 0))
                 .to.be.revertedWith("Not Valid Merkle proof");
         });
 
@@ -103,18 +103,18 @@ describe("MerkleClaimMultipleER20 contract", function () {
 
         it("Should fail for eligible user if drop is closed", async function () {
             await merkleClaim.connect(owner).closeDrop(0);
-            expect(merkleClaim.claim(eligibleUser, airdrop[eligibleUser], hexProof, 0))
+            await expect(merkleClaim.claim(eligibleUser, airdrop[eligibleUser], hexProof, 0))
                 .to.be.revertedWith("Drop is closed");
             expect(await merkleClaim.hasClaimed(eligibleUser, 0)).to.be.equals(false);
         });
 
         it("Should fail for non eligible user with valid proof", async function () {
-            expect(merkleClaim.claim(alice.address, airdrop[eligibleUser], hexProof, 0))
+            await expect(merkleClaim.claim(alice.address, airdrop[eligibleUser], hexProof, 0))
                 .to.be.revertedWith("Not Valid Merkle proof");
         });
 
         it("Should fail for eligible user with invalid proof", async function () {
-            expect(merkleClaim.claim(eligibleUser, airdrop[eligibleUser], hexProof.slice(1), 0))
+            await expect(merkleClaim.claim(eligibleUser, airdrop[eligibleUser], hexProof.slice(1), 0))
                 .to.be.revertedWith("Not Valid Merkle proof");
         });
 

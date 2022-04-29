@@ -52,17 +52,17 @@ describe("MerkleClaimER20 contract", function () {
     describe("Administrating contract", function () {
 
         it("Non admin should not be able to call pause", async function () {
-            expect(merkleClaim.connect(alice).pause())
+            await expect(merkleClaim.connect(alice).pause())
                 .to.be.revertedWith("Ownable: caller is not the owner");
         });
 
         it("Non admin should not be able to call pause", async function () {
-            expect(merkleClaim.connect(alice).unPause())
+            await expect(merkleClaim.connect(alice).unPause())
                 .to.be.revertedWith("Ownable: caller is not the owner");
         });
 
         it("Non admin should not be able to call sweepRemainingFunds", async function () {
-            expect(merkleClaim.connect(alice).sweepRemainingFunds())
+            await expect(merkleClaim.connect(alice).sweepRemainingFunds())
                 .to.be.revertedWith("Ownable: caller is not the owner");
         });
 
@@ -85,17 +85,17 @@ describe("MerkleClaimER20 contract", function () {
 
     describe("Claiming", function () {
         it("Should fail for non eligible user with valid proof", async function () {
-            expect(merkleClaim.claim(alice.address, claimAmount, hexProof))
+            await expect(merkleClaim.claim(alice.address, claimAmount, hexProof))
                 .to.be.revertedWith("Not Valid Merkle proof");
         });
 
         it("Should fail for eligible user with invalid proof", async function () {
-            expect(merkleClaim.claim(eligibleUser, claimAmount, hexProof.slice(1)))
+            await expect(merkleClaim.claim(eligibleUser, claimAmount, hexProof.slice(1)))
                 .to.be.revertedWith("Not Valid Merkle proof");
         });
 
         it("Should fail for eligible user with valid proof and invalid amount", async function () {
-            expect(merkleClaim.claim(eligibleUser, "11111111111", hexProof))
+            await expect(merkleClaim.claim(eligibleUser, "11111111111", hexProof))
                 .to.be.revertedWith("Not Valid Merkle proof");
         });
 

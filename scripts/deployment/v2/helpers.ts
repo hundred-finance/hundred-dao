@@ -25,13 +25,12 @@ import {
     MirrorGate,
     HundredBond__factory,
     HundredBond,
-    MultiChainMirrorGate__factory,
-    MultiChainMirrorGate
+    MultiChainMirrorGateV2__factory,
+    MultiChainMirrorGateV2
 } from "../../../typechain";
 
 import * as VotingEscrowV1Artifact from "../../../artifacts/contracts/VotingEscrow.vy/VotingEscrow.json";
 import * as VotingEscrowV2Artifact from "../../../artifacts/contracts/VotingEscrowV2.vy/VotingEscrowV2.json";
-import * as DelegationProxyArtifact from "../../../artifacts/contracts/ve-boost/DelegationProxy.vy/DelegationProxy.json";
 
 import * as fs from "fs";
 import {Contract} from "ethers";
@@ -294,15 +293,17 @@ async function deployMultiChainMirrorGate(
 ) {
     if (deployments.MirroredVotingEscrow) {
         const [deployer, multiChainDeployer] = await ethers.getSigners();
-        const chainId = await multiChainDeployer.getChainId()
+        const chainId = await multiChainDeployer.getChainId();
 
         console.log("Deploying multichain gate contract with the account:", multiChainDeployer.address);
         console.log("Account balance:", (await multiChainDeployer.getBalance()).toString());
 
-        const mirrorGateFactory: MultiChainMirrorGate__factory = <MultiChainMirrorGate__factory> await ethers.getContractFactory("MultiChainMirrorGate");
-        const mirrorGate: MultiChainMirrorGate = await mirrorGateFactory
+        const mirrorGateFactory: MultiChainMirrorGateV2__factory = <MultiChainMirrorGateV2__factory> await ethers.getContractFactory("MultiChainMirrorGateV2");
+        const mirrorGate: MultiChainMirrorGateV2 = await mirrorGateFactory
             .connect(multiChainDeployer)
-            .deploy(multiChainEndpoint, deployments.MirroredVotingEscrow, chainId);
+            .deploy(multiChainEndpoint, deployments.MirroredVotingEscrow, chainId, {
+                nonce: 1
+            });
 
         await mirrorGate.deployed();
 
