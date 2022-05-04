@@ -215,9 +215,9 @@ export async function deploy(
     fs.writeFileSync(location, JSON.stringify(deployments, null, 4));
 }
 
-export async function initGaugesAndTreasury(network: string) {
+export async function initGaugesAndTreasury(network: string, flavor: string = "deployments") {
     const [deployer] = await ethers.getSigners();
-    const location = path.join(__dirname, `${network}/deployments.json`);
+    const location = path.join(__dirname, `${network}/${flavor}.json`);
     let deployments: Deployment = JSON.parse(fs.readFileSync(location).toString());
 
     if (deployments.GaugeControllerV2 && deployments.Gauges.length > 0 && deployments.Treasury && deployments.Minter) {
