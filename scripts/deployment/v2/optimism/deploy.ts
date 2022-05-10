@@ -4,6 +4,7 @@ import hre from "hardhat";
 const POOLS: any = [
     { id: "hDAI", token: "0x607312a5C671D0C511998171e634DE32156e69d0", weight: 1 },
     { id: "hUSDC", token: "0x103f2CA2148B863942397dbc50a425cc4f4E9A27", weight: 1 },
+    { id: "hSUSD", token: "0x42B458056f887Fd665ed6f160A59Afe932e1F559", weight: 1 },
 ]
 
 const HUNDRED_TOKEN = "0x10010078a54396F62c96dF8532dc2B4847d47ED3";

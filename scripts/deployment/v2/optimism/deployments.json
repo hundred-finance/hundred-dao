@@ -11,6 +11,10 @@
         {
             "id": "hUSDC",
             "address": "0x5734BB74cFac69f1c34bA66eA6608cCdEe6b81F2"
+        },
+        {
+            "id": "hSUSD",
+            "address": "0x73280c390dA5c6fe05ad2d1e6837E8E8c05E4b32"
         }
     ],
     "SmartWalletChecker": "0x1747D329CB37e0A0f387f24065aDdbc60eAB69DD",
