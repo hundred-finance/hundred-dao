@@ -1,0 +1,26 @@
+{
+    "Gauges": [
+        {
+            "id": "bhUSDT",
+            "address": "0x63A7e56b969300924C7859f00db0735620A74215"
+        },
+        {
+            "id": "bhUSDC",
+            "address": "0xa5e7675be278f25BC1102C8d258A046748A18a0e"
+        },
+        {
+            "id": "bhDAI",
+            "address": "0xE78f1431E12eCe2ecE5c17F44FDabc0a25394af2"
+        }
+    ],
+    "SmartWalletChecker": "0xf83F5A1206363983A79C9767B38A65423bE2089c",
+    "LockCreatorChecker": "0x91d8E846b5a6249427b5551cCE7188D276D16CaF",
+    "VotingEscrowV2": "0x9161a35b6A126edE87E5C1D6D46076371Fbdc88c",
+    "MirroredVotingEscrow": "0x2b6E60A4e47f791028Cd27208b4Abb5B7D688F6F",
+    "VotingEscrowDelegationV2": "0x51d648c6f92430aa548883aE421f53E11cEe585d",
+    "DelegationProxy": "0x942f00a1de44D61Fa4cFeb2b7746d7C8acA0d4f8",
+    "Treasury": "0xF8AF6f34cEf5b3b94B744CAa79B0b34AFf4Ee5E5",
+    "RewardPolicyMaker": "0x45D5618b30A0B4c1eCd7BE2c005F739B31e9a46e",
+    "GaugeControllerV2": "0x192356AD583E85020A0a71540E4d538a5684849e",
+    "Minter": "0x0f4ED02A5b441176487Ff529392d9134F350550f"
+}
