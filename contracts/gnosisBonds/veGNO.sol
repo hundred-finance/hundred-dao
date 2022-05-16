@@ -8,16 +8,16 @@ import { Pausable } from "@openzeppelin/contracts/security/Pausable.sol";
 
 contract veGNO is ERC20, Ownable, Pausable {
 
-    IERC20 public gno;
+    uint256 constant public HALF_YEAR = 365 * 24 * 1800;
+
+    IERC20 immutable public gno;
+    uint256 immutable public unlockHalfTime;
 
     mapping(address => uint256) public burnedBalances;
 
-    uint256 constant public YEAR = 365 * 24 * 3600;
-    uint256 public unlockStartTime;
-
     constructor(IERC20 _gno, uint256 _unlockStartTime) ERC20("Vested Gnosis token", "vGNO") {
         gno = _gno;
-        unlockStartTime = _unlockStartTime;
+        unlockHalfTime = _unlockStartTime + HALF_YEAR;
     }
 
     function mint(address _account, uint256 _amount) external onlyOwner {
@@ -47,24 +47,19 @@ contract veGNO is ERC20, Ownable, Pausable {
 
     function unlockableAmount() public view returns(uint256) {
         uint256 currentTime_ = block.timestamp;
-        uint256 halfTime_ = unlockStartTime + YEAR / 2;
-
-        if (currentTime_ < halfTime_) {
+        if (currentTime_ < unlockHalfTime) {
             return 0;
         }
 
         uint256 amount_ = balanceOf(_msgSender());
         uint256 burnedAmount_ = burnedBalances[_msgSender()];
         uint256 totalAmount_ = amount_ + burnedAmount_;
-
-        uint256 endTime_ = unlockStartTime + YEAR;
         uint256 halfAmount_ = totalAmount_ / 2;
 
         uint256 toUnlockAmount_ =
             halfAmount_
-            + halfAmount_ * (currentTime_ - halfTime_) / (endTime_ - halfTime_)
+            + halfAmount_ * (currentTime_ - unlockHalfTime) / HALF_YEAR
             - burnedAmount_;
-
         if (toUnlockAmount_ > amount_) {
             return amount_;
         }
@@ -72,33 +67,26 @@ contract veGNO is ERC20, Ownable, Pausable {
         return toUnlockAmount_;
     }
 
-    function transfer(address recipient, uint256 amount) override public whenNotPaused returns (bool) {
-        _transferBurnedBalance(_msgSender(), recipient, amount);
-        return super.transfer(recipient, amount);
-    }
-
-    function transferFrom(
-        address sender,
-        address recipient,
+    function _beforeTokenTransfer(
+        address from,
+        address to,
         uint256 amount
-    ) override public whenNotPaused returns (bool) {
-        _transferBurnedBalance(sender, recipient, amount);
-        return super.transferFrom(sender, recipient, amount);
+    ) override internal virtual whenNotPaused {
+        uint256 balance_ = balanceOf(from);
+        if (balance_ == 0) {
+            return;
+        }
+
+        uint256 burnShareToTransfer = burnedBalances[from] * amount / balance_;
+        burnedBalances[to] += burnShareToTransfer;
+        burnedBalances[from] -= burnShareToTransfer;
     }
 
-    function _transferBurnedBalance(address sender, address recipient, uint256 amount) internal {
-        uint256 balance_ = balanceOf(sender);
-        uint256 burnShareToTransfer = burnedBalances[sender] * amount / balance_;
-
-        burnedBalances[recipient] += burnShareToTransfer;
-        burnedBalances[sender] -= burnShareToTransfer;
-    }
-
-    function pause() external onlyOwner whenNotPaused {
+    function pause() external onlyOwner {
         _pause();
     }
 
-    function unPause() external onlyOwner whenPaused {
+    function unPause() external onlyOwner {
         _unpause();
     }
 
