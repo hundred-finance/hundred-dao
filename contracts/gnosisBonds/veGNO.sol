@@ -36,11 +36,13 @@ contract veGNO is ERC20, Ownable, Pausable {
 
     function redeem() external whenNotPaused {
         uint256 gnoAmount_ = unlockableAmount();
+        uint256 previousBurnedBalance_ = burnedBalances[_msgSender()];
 
         require(gnoAmount_ > 0, "Nothing to redeem");
 
         _burn(_msgSender(), gnoAmount_);
-        burnedBalances[_msgSender()] = gnoAmount_;
+        burnedBalances[_msgSender()] = previousBurnedBalance_ + gnoAmount_;
+        burnedBalances[address(0)] = 0;
 
         gno.transfer(_msgSender(), gnoAmount_);
     }
