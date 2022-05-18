@@ -40,8 +40,7 @@ contract veGNO is ERC20, Ownable, Pausable {
         require(gnoAmount_ > 0, "Nothing to redeem");
 
         _burn(_msgSender(), gnoAmount_);
-        burnedBalances[_msgSender()] = gnoAmount_;
-        burnedBalances[address(0)] = 0;
+        burnedBalances[_msgSender()] += gnoAmount_;
 
         gno.transfer(_msgSender(), gnoAmount_);
     }
@@ -68,19 +67,26 @@ contract veGNO is ERC20, Ownable, Pausable {
         return toUnlockAmount_;
     }
 
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) override internal virtual whenNotPaused {
-        uint256 balance_ = balanceOf(from);
-        if (balance_ == 0) {
-            return;
-        }
+    function transfer(address recipient, uint256 amount) override public whenNotPaused returns (bool) {
+        _transferBurnedBalance(_msgSender(), recipient, amount);
+        return super.transfer(recipient, amount);
+    }
 
-        uint256 burnShareToTransfer = burnedBalances[from] * amount / balance_;
-        burnedBalances[to] += burnShareToTransfer;
-        burnedBalances[from] -= burnShareToTransfer;
+    function transferFrom(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) override public whenNotPaused returns (bool) {
+        _transferBurnedBalance(sender, recipient, amount);
+        return super.transferFrom(sender, recipient, amount);
+    }
+
+    function _transferBurnedBalance(address sender, address recipient, uint256 amount) internal {
+        uint256 balance_ = balanceOf(sender);
+        uint256 burnShareToTransfer = burnedBalances[sender] * amount / balance_;
+
+        burnedBalances[recipient] += burnShareToTransfer;
+        burnedBalances[sender] -= burnShareToTransfer;
     }
 
     function pause() external onlyOwner {
