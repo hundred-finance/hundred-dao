@@ -190,6 +190,49 @@ describe("Gnosis Bonds contracts", function () {
             expect(await gno.balanceOf(bob.address)).to.be.equals(ethers.utils.parseEther("100"));
         });
 
+        it("should release tokens according to schedule and track cumulated burned balances", async function() {
+            let unlockStartTime2 = UNLOCK_START_TIME + 2 * YEAR;
+            let veGNO2 = await veGNOFactory.deploy(gno.address, unlockStartTime2);
+            await gno.mint(owner.address, ethers.utils.parseEther("100"));
+
+            await gno.approve(veGNO2.address, ethers.utils.parseEther("100"));
+            await veGNO2.mint(owner.address, ethers.utils.parseEther("100"));
+            await veGNO2.transfer(bob.address, ethers.utils.parseEther("100"));
+
+            await ethers.provider.send('evm_setNextBlockTimestamp', [unlockStartTime2 + YEAR / 2]);
+            await ethers.provider.send('evm_mine', []);
+
+            await veGNO2.connect(bob).redeem();
+
+            let unRedeemedBalance = parseFloat((await veGNO2.balanceOf(bob.address)).toString()) / 1e18
+            let redeemedBalance = parseFloat((await gno.balanceOf(bob.address)).toString()) / 1e18
+
+            expect(unRedeemedBalance).approximately(50, 1e-5);
+            expect(redeemedBalance).approximately(50, 1e-5);
+
+            await ethers.provider.send('evm_setNextBlockTimestamp', [unlockStartTime2 + YEAR / 2 + 100]);
+            await ethers.provider.send('evm_mine', []);
+
+            await veGNO2.connect(bob).redeem();
+
+            unRedeemedBalance = parseFloat((await veGNO2.balanceOf(bob.address)).toString()) / 1e18
+            redeemedBalance = parseFloat((await gno.balanceOf(bob.address)).toString()) / 1e18
+
+            expect(unRedeemedBalance).approximately(49.99967, 1e-5);
+            expect(redeemedBalance).approximately(50.00032, 1e-5);
+
+            await ethers.provider.send('evm_setNextBlockTimestamp', [unlockStartTime2 + YEAR / 2 + 200]);
+            await ethers.provider.send('evm_mine', []);
+
+            await veGNO2.connect(bob).redeem();
+
+            unRedeemedBalance = parseFloat((await veGNO2.balanceOf(bob.address)).toString()) / 1e18
+            redeemedBalance = parseFloat((await gno.balanceOf(bob.address)).toString()) / 1e18
+
+            expect(unRedeemedBalance).approximately(49.99936, 1e-5);
+            expect(redeemedBalance).approximately(50.00063, 1e-5);
+        });
+
         it("moving small amounts of veGNO between wallets should not give big redeem advantage", async function() {
             let unlockStartTime = UNLOCK_START_TIME + 3 * YEAR;
             let veGNO2 = await veGNOFactory.deploy(gno.address, unlockStartTime);
@@ -206,13 +249,11 @@ describe("Gnosis Bonds contracts", function () {
             await veGNO2.connect(alice).redeem();
             await veGNO2.connect(charlie).redeem();
             expect((await veGNO2.balanceOf(alice.address)).toNumber()).to.be.equals(8);
-            expect((await veGNO2.burnedBalances(alice.address)).toNumber()).to.be.equals(7);
             expect((await veGNO2.balanceOf(charlie.address)).toNumber()).to.be.equals(8);
             expect((await veGNO2.burnedBalances(charlie.address)).toNumber()).to.be.equals(7);
 
             await veGNO2.connect(alice).transfer(bob.address, 1);
             expect((await veGNO2.balanceOf(alice.address)).toNumber()).to.be.equals(7);
-            expect((await veGNO2.burnedBalances(alice.address)).toNumber()).to.be.equals(7);
             expect((await veGNO2.balanceOf(bob.address)).toNumber()).to.be.equals(1);
             expect((await veGNO2.burnedBalances(bob.address)).toNumber()).to.be.equals(0);
 
@@ -228,19 +269,14 @@ describe("Gnosis Bonds contracts", function () {
             await veGNO2.connect(charlie).redeem();
             await expect(veGNO2.connect(bob).redeem()).to.be.revertedWith("Nothing to redeem");
             expect((await veGNO2.balanceOf(alice.address)).toNumber()).to.be.equals(4);
-            expect((await veGNO2.burnedBalances(alice.address)).toNumber()).to.be.equals(10);
             expect((await veGNO2.balanceOf(charlie.address)).toNumber()).to.be.equals(5);
-            expect((await veGNO2.burnedBalances(charlie.address)).toNumber()).to.be.equals(10);
 
             await veGNO2.connect(alice).transfer(bob.address, 1);
             expect((await veGNO2.balanceOf(alice.address)).toNumber()).to.be.equals(3);
-            expect((await veGNO2.burnedBalances(alice.address)).toNumber()).to.be.equals(8);
             expect((await veGNO2.balanceOf(bob.address)).toNumber()).to.be.equals(2);
-            expect((await veGNO2.burnedBalances(bob.address)).toNumber()).to.be.equals(2);
 
             await veGNO2.connect(bob).redeem();
             expect((await veGNO2.balanceOf(bob.address)).toNumber()).to.be.equals(1);
-            expect((await veGNO2.burnedBalances(bob.address)).toNumber()).to.be.equals(3);
 
             await veGNO2.connect(bob).transfer(alice.address, 1);
             await gno.connect(bob).transfer(alice.address, 1);
@@ -248,7 +284,6 @@ describe("Gnosis Bonds contracts", function () {
             // is able to mint 1 wei GNO before schedule
             // alice total redeem is 11
             expect((await veGNO2.balanceOf(alice.address)).toNumber()).to.be.equals(4);
-            expect((await veGNO2.burnedBalances(alice.address)).toNumber()).to.be.equals(11);
             expect((await gno.balanceOf(alice.address)).toNumber()).to.be.equals(11);
             // charlie, redeems as time goes on, he is able to redeem 10
             // in theory, at 3/4 year from schedule start, user is eligible for 15 * 3 / 4 = 11
@@ -256,7 +291,6 @@ describe("Gnosis Bonds contracts", function () {
             // and trying to play the system can help in this case getting closer
             // to the theoretical value
             expect((await veGNO2.balanceOf(charlie.address)).toNumber()).to.be.equals(5);
-            expect((await veGNO2.burnedBalances(charlie.address)).toNumber()).to.be.equals(10);
             expect((await gno.balanceOf(charlie.address)).toNumber()).to.be.equals(10);
         });
 
