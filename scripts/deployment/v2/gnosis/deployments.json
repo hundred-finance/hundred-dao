@@ -2,11 +2,11 @@
     "Gauges": [
         {
             "id": "hxDAI",
-            "address": "0x7BFE7b45c8019DEDc66c695Ac70b8fc2c0421584"
+            "address": "0x5835d6A367Ded86dbc33CE796eD5013488D205c0"
         },
         {
             "id": "hUSDC",
-            "address": "0x0d124443c853F8999bA14531B49E34D6540654d1"
+            "address": "0x5BA443267c09578bfd87e033a401F69d37Fe677e"
         }
     ],
     "SmartWalletChecker": "0xEE5d3c956Ff7bF49054380610D8e598793838156",
