@@ -26,7 +26,7 @@ import {
     HundredBond__factory,
     HundredBond,
     MultiChainMirrorGateV2__factory,
-    MultiChainMirrorGateV2
+    MultiChainMirrorGateV2, VeGNO__factory
 } from "../../../typechain";
 
 import * as VotingEscrowV1Artifact from "../../../artifacts/contracts/VotingEscrow.vy/VotingEscrow.json";
@@ -376,6 +376,30 @@ export async function deployHundredBond(
     }
 }
 
+export async function deployVeGno(gno: string, unlockTime: number, admin: string) {
+    const [deployer] = await ethers.getSigners();
+    const network = hre.hardhatArguments.network;
+    const location = path.join(__dirname, `${network}/deployments.json`);
+    let deployments: Deployment = JSON.parse(fs.readFileSync(location).toString());
+
+    const veGnoFactory: VeGNO__factory = <VeGNO__factory>await ethers.getContractFactory("veGNO");
+    const veGno = await veGnoFactory.deploy(gno, unlockTime);
+
+    await veGno.deployed();
+
+    deployments.VeGno = veGno.address;
+    console.log("Deployed veGNO: ", veGno.address);
+
+    fs.writeFileSync(location, JSON.stringify(deployments, null, 4));
+
+    if (admin.toLowerCase() !== deployer.address.toLowerCase()) {
+        console.log("Transfer veGNO ownership to: ", admin);
+        let tx = await veGno.transferOwnership(admin);
+        await tx.wait();
+    }
+
+}
+
 function patchAbiGasFields(abi: any[]) {
     for(let i = 0; i < abi.length; i++) {
         abi[i].gas = undefined
@@ -401,4 +425,5 @@ export interface Deployment {
     MultichainMirrorGate?: string
     MultichainMirrorGateV2?: string
     HundredBond?: string
+    VeGno?: string
 }
