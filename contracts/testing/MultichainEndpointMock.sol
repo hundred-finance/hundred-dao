@@ -7,25 +7,37 @@ import "../multichain/IApp.sol";
 
 contract MultichainEndpointMock is IAnyswapV6CallProxy {
 
-    constructor() {}
+    constructor(uint256 _chainId) {
+        sourceChainId = _chainId;
+        executor = new AnyCallExecutor();
+    }
 
     mapping(address => uint256) public override executionBudget;
+
+    address private caller;
+    uint256 private sourceChainId;
+
+    AnyCallExecutor public override executor;
 
     function anyCall(
         address _to,
         bytes calldata _data,
         address _fallback,
-        uint256 _toChainID
+        uint256 _toChainID,
+        uint256 _flags
     ) override external payable {
         require(msg.value == _calcSrcFees(address(0), _toChainID, _data.length), "Incorrect fee amount");
-        IApp(_to).anyExecute(_data);
+
+        caller = msg.sender;
+
+        executor.execute(_to, _data, caller, sourceChainId, 1);
     }
 
     function calcSrcFees(
         address _app,
         uint256 _toChainID,
         uint256 _dataLength
-    ) override external view returns (uint256) {
+    ) override external pure returns (uint256) {
         return _calcSrcFees(_app, _toChainID, _dataLength);
     }
 

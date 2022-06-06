@@ -2,13 +2,16 @@
 
 pragma solidity ^0.8.0;
 
+import "./AnyCallExecutor.sol";
+
 interface IAnyswapV6CallProxy {
 
     function anyCall(
         address _to,
         bytes calldata _data,
         address _fallback,
-        uint256 _toChainID
+        uint256 _toChainID,
+        uint256 _flags
     ) external payable;
 
     function calcSrcFees(
@@ -22,4 +25,6 @@ interface IAnyswapV6CallProxy {
     function withdraw(uint256 _amount) external;
 
     function executionBudget(address _account) external returns(uint256);
+
+    function executor() external returns(AnyCallExecutor);
 }

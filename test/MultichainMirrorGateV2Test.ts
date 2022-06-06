@@ -65,7 +65,7 @@ describe("MultichainMirrorGateV2 contract", function () {
             owner.address, targetVotingEscrow.address, "mveHND", "mveHND", "1.0"
         );
 
-        multichainEndpoint = await multichainEndpointFactory.deploy();
+        multichainEndpoint = await multichainEndpointFactory.deploy(1);
         sourceMirrorGate = await mirrorGateFactory.deploy(multichainEndpoint.address, mirroredVotingEscrow.address, 1);
         targetMirrorGate = await mirrorGateFactory.deploy(multichainEndpoint.address, targetMirroredVotingEscrow.address, 25);
 
@@ -120,9 +120,47 @@ describe("MultichainMirrorGateV2 contract", function () {
             )).to.be.revertedWith("Incorrect lock amount");
         });
 
+        it("Should fail if target chain is same as source", async function () {
+            let originalLock = await votingEscrow.locked(alice.address);
+            await mirroredVotingEscrow.mirror_lock(alice.address, 10, 0, originalLock.amount.add(10), originalLock.end);
+
+            let fee = await sourceMirrorGate.calculateFee(alice.address, 25, [1,10], [0,0], [originalLock.amount, originalLock.amount.add(10)], [originalLock.end, originalLock.end]);
+
+            await expect(sourceMirrorGate.connect(alice).mirrorLocks(
+                1, targetMirrorGate.address, [1,10], [0,0], [originalLock.amount, originalLock.amount.add(10)], [originalLock.end, originalLock.end],
+                {value: fee}
+            )).to.be.revertedWith("Cannot mirror from/to same chain");
+        });
+
+        it("Should fail if mirroring target chain lock", async function () {
+            let originalLock = await votingEscrow.locked(alice.address);
+            await mirroredVotingEscrow.mirror_lock(alice.address, 10, 0, originalLock.amount.add(10), originalLock.end);
+
+            let fee = await sourceMirrorGate.calculateFee(alice.address, 25, [1,10], [0,0], [originalLock.amount, originalLock.amount.add(10)], [originalLock.end, originalLock.end]);
+
+            await expect(sourceMirrorGate.connect(alice).mirrorLocks(
+                25, targetMirrorGate.address, [1,25], [0,0], [originalLock.amount, originalLock.amount.add(10)], [originalLock.end, originalLock.end],
+                {value: fee}
+            )).to.be.revertedWith("Cannot mirror target chain locks");
+        });
+
+        it("Should fail if source mirrorGate is not whitelisted", async function () {
+            let originalLock = await votingEscrow.locked(alice.address);
+            await mirroredVotingEscrow.mirror_lock(alice.address, 10, 0, originalLock.amount.add(10), originalLock.end);
+
+            let fee = await sourceMirrorGate.calculateFee(alice.address, 25, [1,10], [0,0], [originalLock.amount, originalLock.amount.add(10)], [originalLock.end, originalLock.end]);
+
+            await expect(sourceMirrorGate.connect(alice).mirrorLocks(
+                25, targetMirrorGate.address, [1,10], [0,0], [originalLock.amount, originalLock.amount.add(10)], [originalLock.end, originalLock.end],
+                {value: fee}
+            )).to.be.revertedWith("Caller is not allowed from source chain");
+        });
+
         it("Should succeed for user valid locks", async function () {
             let originalLock = await votingEscrow.locked(alice.address);
             await mirroredVotingEscrow.mirror_lock(alice.address, 10, 0, originalLock.amount.add(10), originalLock.end);
+
+            await targetMirrorGate.setupAllowedCallers([sourceMirrorGate.address], [1], [true]);
 
             let fee = await sourceMirrorGate.calculateFee(alice.address, 25, [1,10], [0,0], [originalLock.amount, originalLock.amount.add(10)], [originalLock.end, originalLock.end]);
 

@@ -1,4 +1,4 @@
-import {deploy, initGaugesAndTreasury} from "../helpers";
+import {deploy, initGaugesAndTreasury, whiteListMirrorGates} from "../helpers";
 import hre from "hardhat";
 
 const POOLS: any = [
@@ -10,7 +10,7 @@ const POOLS: any = [
 
 const HUNDRED_TOKEN = "0xe0a6D4684aabBE8C08a57b3A4B54855C08165c1D";
 const ADMIN = "0x8286dC6dF929C4BfA4f6951caB4dAe2EC02d4D72"
-const MULTICHAIN_ENDPOINT = "0x37414a8662bC1D25be3ee51Fb27C2686e2490A89";
+const MULTICHAIN_ENDPOINT = "0xC10Ef9F491C9B59f936957026020C321651ac078";
 
 const network = hre.hardhatArguments.network;
 if (!network) {
@@ -24,4 +24,6 @@ if (!network) {
         });
 
     // initGaugesAndTreasury(network);
+
+    // whiteListMirrorGates(network);
 }

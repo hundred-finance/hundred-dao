@@ -210,7 +210,7 @@ export async function deploy(
         await deployMultiChainMirrorGate(admin, multiChainEndpoint, deployments);
     }
 
-    console.log("Please define type & call add_gauge on the contorller contract from the admin account");
+    console.log("Please define type & call add_gauge on the controller contract from the admin account");
 
     fs.writeFileSync(location, JSON.stringify(deployments, null, 4));
 }
@@ -239,6 +239,31 @@ export async function initGaugesAndTreasury(network: string, flavor: string = "d
         await tx.wait();
     }
 }
+
+export async function whiteListMirrorGates(network: string, flavor: string = "deployments") {
+    const [deployer] = await ethers.getSigners();
+    const location = path.join(__dirname, `${network}/${flavor}.json`);
+    let deployments: Deployment = JSON.parse(fs.readFileSync(location).toString());
+
+    if (deployments.MirroredVotingEscrow && deployments.MultichainMirrorGateV2) {
+        const escrow: MirroredVotingEscrow =
+            <MirroredVotingEscrow>await ethers.getContractAt("MirroredVotingEscrow", deployments.MirroredVotingEscrow, deployer);
+
+        const gate: MultiChainMirrorGateV2 =
+            <MultiChainMirrorGateV2>await ethers.getContractAt("MultiChainMirrorGateV2", deployments.MultichainMirrorGateV2);
+
+        let tx = await escrow.set_mirror_whitelist(deployments.MultichainMirrorGateV2, true);
+        await tx.wait();
+
+        tx = await gate.setupAllowedCallers(
+            ["0xba0649B1a51Ab1f0074E26Ba164b26EBF6e9a91e", "0xA0c94183a74CF22dE491DcbB02fc7433267c6D32", "0xA0c94183a74CF22dE491DcbB02fc7433267c6D32", "0x1cF3993EbA538e5f085333c86356622161Dd8C0B", "0x1Ac7Cb8D9e3AC86296a5DEA9d55BF846AB459bA9", "0x989b2F0722808d9F9c574363fA8759e925f30F12", "0x6c63287CC629417E96b77DD7184748Bb6536A4e2", "0xd33d15f91A25Ec74dd9224E71C5175BA9DC4e01D"],
+            [200, 250, 100, 1666600000, 4689, 1285, 10, 137],
+            [true, true, true, true, true, true, true, true]
+        );
+        await tx.wait();
+    }
+}
+
 
 async function deploySmartWalletChecker(
     admin: string, deployments: Deployment
@@ -292,28 +317,34 @@ async function deployMultiChainMirrorGate(
     admin: string, multiChainEndpoint: string, deployments: Deployment
 ) {
     if (deployments.MirroredVotingEscrow) {
-        const [deployer, multiChainDeployer] = await ethers.getSigners();
-        const chainId = await multiChainDeployer.getChainId();
+        const [deployer] = await ethers.getSigners();
+        const chainId = await deployer.getChainId();
 
-        console.log("Deploying multichain gate contract with the account:", multiChainDeployer.address);
-        console.log("Account balance:", (await multiChainDeployer.getBalance()).toString());
+        console.log("Deploying multichain gate contract with the account:", deployer.address);
+        console.log("Account balance:", (await deployer.getBalance()).toString());
 
         const mirrorGateFactory: MultiChainMirrorGateV2__factory = <MultiChainMirrorGateV2__factory> await ethers.getContractFactory("MultiChainMirrorGateV2");
         const mirrorGate: MultiChainMirrorGateV2 = await mirrorGateFactory
-            .connect(multiChainDeployer)
-            .deploy(multiChainEndpoint, deployments.MirroredVotingEscrow, chainId, {
-                nonce: 1
-            });
+            .deploy(multiChainEndpoint, deployments.MirroredVotingEscrow, chainId);
 
         await mirrorGate.deployed();
 
         deployments.MultichainMirrorGateV2 = mirrorGate.address;
-        console.log("Deployed multichain mirror gate: ", mirrorGate.address);
+        console.log("Deployed multichain mirror gate: ", deployments.MultichainMirrorGateV2);
 
-        if (admin.toLowerCase() !== multiChainDeployer.address.toLowerCase()) {
-            let tx = await mirrorGate.connect(multiChainDeployer).transferOwnership(admin);
+        if (admin.toLowerCase() !== deployer.address.toLowerCase()) {
+            let tx = await mirrorGate.transferOwnership(admin);
             await tx.wait();
         }
+
+        console.log("verifying multichain gate contract: ", deployments.MultichainMirrorGateV2);
+
+        await hre.run("verify:verify", {
+            address: deployments.MultichainMirrorGateV2,
+            constructorArguments: [
+                multiChainEndpoint, deployments.MirroredVotingEscrow, chainId
+            ],
+        });
     }
 }
 
