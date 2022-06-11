@@ -257,7 +257,7 @@ export async function whiteListMirrorGates(network: string, flavor: string = "de
 
         tx = await gate.setupAllowedCallers(
             ["0xba0649B1a51Ab1f0074E26Ba164b26EBF6e9a91e", "0xA0c94183a74CF22dE491DcbB02fc7433267c6D32", "0xA0c94183a74CF22dE491DcbB02fc7433267c6D32", "0x1cF3993EbA538e5f085333c86356622161Dd8C0B", "0x1Ac7Cb8D9e3AC86296a5DEA9d55BF846AB459bA9", "0x989b2F0722808d9F9c574363fA8759e925f30F12", "0x6c63287CC629417E96b77DD7184748Bb6536A4e2", "0xd33d15f91A25Ec74dd9224E71C5175BA9DC4e01D"],
-            [200, 250, 100, 1666600000, 4689, 1285, 10, 137],
+            [42161, 250, 100, 1666600000, 4689, 1285, 10, 137],
             [true, true, true, true, true, true, true, true]
         );
         await tx.wait();
