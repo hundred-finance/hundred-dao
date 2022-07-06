@@ -6,6 +6,7 @@ const POOLS: any = [
     { id: "hUSDC", token: "0x607312a5C671D0C511998171e634DE32156e69d0", weight: 1 },
     { id: "hUSDT", token: "0x103f2CA2148B863942397dbc50a425cc4f4E9A27", weight: 1 },
     { id: "hFRAX", token: "0x2c7a9d9919f042C4C120199c69e126124d09BE7c", weight: 1 },
+    { id: "hagEUR", token: "0x6bb6ebCf3aC808E26545d59EA60F27A202cE8586", weight: 1 },
 ]
 
 const HUNDRED_TOKEN = "0x10010078a54396F62c96dF8532dc2B4847d47ED3";

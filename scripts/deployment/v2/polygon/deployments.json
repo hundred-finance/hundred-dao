@@ -15,6 +15,10 @@
         {
             "id": "hFRAX",
             "address": "0xbE7CA18470B4AB61741bC2dcad50B1D4052b6b04"
+        },
+        {
+            "id": "hagEUR",
+            "address": "0xc9F08308fE6724BD7F0E87e2661DE2FDfcC9e8a8"
         }
     ],
     "SmartWalletChecker": "0x4adF575DBe0e6F1c5909AE9c7119927b4FaabbBd",
