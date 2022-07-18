@@ -73,18 +73,21 @@ async function calculateTopUps(flavor: string, version: string): Promise<BigNumb
     let topUps = BigNumber.from(0);
     const blockLimits = BlockSettings.find(b => b.chain === network);
     if (blockLimits) {
-        let blockNumber = blockLimits.start;
-        let blockEnd = await ethers.provider.getBlockNumber();
-        console.log("Scanning transfer events in block range", blockNumber, blockEnd);
+        let blockStart = blockLimits.start;
+        const currentBlock = await ethers.provider.getBlockNumber();
+        console.log("Scanning transfer events in block range", blockStart, currentBlock);
         console.log("This may take a while... :(");
-        while(blockNumber < blockEnd) {
-            let events = await hndContract.queryFilter(filter, blockNumber, blockNumber + blockLimits.step);
+
+        let blockEnd = Math.min(currentBlock, blockStart + blockLimits.step);
+        while(blockStart < blockEnd) {
+            let events = await hndContract.queryFilter(filter, blockStart, blockEnd);
             if (events.length > 0) {
                 const topUp = events.map(event => event.args.value).reduce((a, b) => a.add(b));
-                console.log("Topup found in block range", blockNumber, blockNumber + blockLimits.step, +topUp.toString() / 1e18);
+                console.log("Topup found in block range", blockStart, blockEnd, +topUp.toString() / 1e18);
                 topUps = topUps.add(topUp);
             }
-            blockNumber += blockLimits.step
+            blockStart += blockLimits.step
+            blockEnd = Math.min(await ethers.provider.getBlockNumber(), blockStart + blockLimits.step);
         }
     }
 
@@ -93,4 +96,4 @@ async function calculateTopUps(flavor: string, version: string): Promise<BigNumb
     return topUps;
 }
 
-calculateMissingTopUp("deployments", "v2", 0);
+calculateMissingTopUp("deployments", "v2", 4);
