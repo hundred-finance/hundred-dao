@@ -64,6 +64,8 @@ async function calculateTopUps(flavor: string, version: string): Promise<BigNumb
     const network = hre.hardhatArguments.network;
 
     const location = path.join(__dirname, `${version}/${network}/${flavor}.json`);
+    const historyLocation = path.join(__dirname, `topups-history/${network}-${flavor}.json`);
+
     const deployments = JSON.parse(fs.readFileSync(location).toString());
 
     const hndContract = <ERC20>await ethers.getContractAt("ERC20", "0x10010078a54396F62c96dF8532dc2B4847d47ED3");
@@ -73,7 +75,21 @@ async function calculateTopUps(flavor: string, version: string): Promise<BigNumb
     let topUps = BigNumber.from(0);
     const blockLimits = BlockSettings.find(b => b.chain === network);
     if (blockLimits) {
-        let blockStart = blockLimits.start;
+        let previousTopups: {topups: any[], latestBlockNumber: number} = {
+            topups: [],
+            latestBlockNumber: blockLimits.start
+        };
+        try {
+            previousTopups = JSON.parse(fs.readFileSync(historyLocation).toString());
+        } catch (e) {}
+
+        let blockStart = previousTopups.latestBlockNumber;
+        if (previousTopups.topups.length > 0) {
+            topUps = topUps.add(
+                previousTopups.topups.map(v => BigNumber.from(v.value)).reduce((a,b) => a.add(b))
+            );
+        }
+
         const currentBlock = await ethers.provider.getBlockNumber();
         console.log("Scanning transfer events in block range", blockStart, currentBlock);
         console.log("This may take a while... :(");
@@ -82,12 +98,24 @@ async function calculateTopUps(flavor: string, version: string): Promise<BigNumb
         while(blockStart < blockEnd) {
             let events = await hndContract.queryFilter(filter, blockStart, blockEnd);
             if (events.length > 0) {
+
+                events.forEach(event => {
+                    previousTopups.topups.push({
+                        blockNumber: event.blockNumber,
+                        value: event.args.value.toString()
+                    });
+                });
+
                 const topUp = events.map(event => event.args.value).reduce((a, b) => a.add(b));
                 console.log("Topup found in block range", blockStart, blockEnd, +topUp.toString() / 1e18);
                 topUps = topUps.add(topUp);
+
             }
             blockStart += blockLimits.step
             blockEnd = Math.min(await ethers.provider.getBlockNumber(), blockStart + blockLimits.step);
+
+            previousTopups.latestBlockNumber = blockEnd;
+            fs.writeFileSync(historyLocation, JSON.stringify(previousTopups, null, 4));
         }
     }
 
@@ -96,4 +124,4 @@ async function calculateTopUps(flavor: string, version: string): Promise<BigNumb
     return topUps;
 }
 
-calculateMissingTopUp("deployments", "v2", 4);
+calculateMissingTopUp("deployments", "v2", 0);
