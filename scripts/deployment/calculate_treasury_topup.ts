@@ -47,7 +47,7 @@ async function calculateRewards(flavor: string, version: string, futureEpochsMar
 
     console.log("First epoch with non 0 rewards", epoch);
 
-    while (epochRewards.gt(0) && currenEpoch.add(futureEpochsMargin + 1).gt(epoch)) {
+    while (currenEpoch.add(futureEpochsMargin + 1).gt(epoch)) {
         totalRewards = totalRewards.add(epochRewards);
         epochRewards = await rewardContract.rewards(epoch);
 
@@ -124,4 +124,4 @@ async function calculateTopUps(flavor: string, version: string): Promise<BigNumb
     return topUps;
 }
 
-calculateMissingTopUp("deployments", "v2", 0);
+calculateMissingTopUp("deployments", "v2", 1);
