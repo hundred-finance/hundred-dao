@@ -14,24 +14,34 @@ const BlockSettings = [
     { chain: "polygon", start: 26277944, step: 10000},
 ]
 
-async function calculateMissingTopUp(flavor: string, version: string, futureEpochsMargin: number) {
-    const rewards = await calculateRewards(flavor, version, futureEpochsMargin);
-    const previousTopUps = await calculateTopUps(flavor, version);
+async function calculateMissingTopUps(version: string, futureEpochsMargin: number) {
+    await calculateMissingFlavorTopUp("deployments", version, futureEpochsMargin);
+    await calculateMissingFlavorTopUp("backstop-deployments", version, futureEpochsMargin);
+}
 
-    if (previousTopUps.lt(rewards)) {
-        console.log("Outstanding top up", +rewards.sub(previousTopUps).toString() / 1e18);
-    } else {
-        console.log("Treasury balance overflow", +previousTopUps.sub(rewards).toString() / 1e18);
+async function calculateMissingFlavorTopUp(flavor: string, version: string, futureEpochsMargin: number) {
+    const network = hre.hardhatArguments.network;
+    const location = path.join(__dirname, `${version}/${network}/${flavor}.json`);
+    try {
+        const deployments = JSON.parse(fs.readFileSync(location).toString());
+
+        console.log(`###### Processing flavor: ${flavor} on ${network} network`);
+
+        const rewards = await calculateRewards(flavor, deployments.RewardPolicyMaker, futureEpochsMargin);
+        const previousTopUps = await calculateTopUps(flavor, deployments.Treasury);
+
+        if (previousTopUps.lt(rewards)) {
+            console.log("###### Outstanding top up", +rewards.sub(previousTopUps).toString() / 1e18);
+        } else {
+            console.log("###### Treasury balance overflow", +previousTopUps.sub(rewards).toString() / 1e18);
+        }
+    } catch (e) {
+        console.log(`###### Flavor: ${flavor} not deployed on ${network} network`);
     }
 }
 
-async function calculateRewards(flavor: string, version: string, futureEpochsMargin: number): Promise<BigNumber> {
-    const network = hre.hardhatArguments.network;
-
-    const location = path.join(__dirname, `${version}/${network}/${flavor}.json`);
-    const deployments = JSON.parse(fs.readFileSync(location).toString());
-
-    const rewardContract = <RewardPolicyMaker>await ethers.getContractAt("RewardPolicyMaker", deployments.RewardPolicyMaker);
+async function calculateRewards(flavor: string, rewardPolicyMaker: string, futureEpochsMargin: number): Promise<BigNumber> {
+    const rewardContract = <RewardPolicyMaker>await ethers.getContractAt("RewardPolicyMaker", rewardPolicyMaker);
     const currenEpoch = await rewardContract.current_epoch();
     let epoch = -1;
 
@@ -45,32 +55,32 @@ async function calculateRewards(flavor: string, version: string, futureEpochsMar
         epochRewards = await rewardContract.rewards(epoch);
     }
 
-    console.log("First epoch with non 0 rewards", epoch);
+    if (epochRewards.gt(0)) {
+        console.log("First epoch with non 0 rewards", epoch);
 
-    while (currenEpoch.add(futureEpochsMargin + 1).gt(epoch)) {
-        totalRewards = totalRewards.add(epochRewards);
-        epochRewards = await rewardContract.rewards(epoch);
+        while (currenEpoch.add(futureEpochsMargin + 1).gt(epoch)) {
+            totalRewards = totalRewards.add(epochRewards);
+            epochRewards = await rewardContract.rewards(epoch);
 
-        epoch++;
+            epoch++;
+        }
+
+        console.log("Last epoch with non 0 rewards", epoch-1);
+        console.log("Total defined HND rewards", +totalRewards.toString() / 1e18);
+    } else {
+        console.log("No rewards are set");
     }
-
-    console.log("Last epoch with non 0 rewards", epoch-1);
-    console.log("Total defined HND rewards", +totalRewards.toString() / 1e18);
 
     return totalRewards;
 }
 
-async function calculateTopUps(flavor: string, version: string): Promise<BigNumber> {
+async function calculateTopUps(flavor: string, treasury: string): Promise<BigNumber> {
     const network = hre.hardhatArguments.network;
-
-    const location = path.join(__dirname, `${version}/${network}/${flavor}.json`);
     const historyLocation = path.join(__dirname, `topups-history/${network}-${flavor}.json`);
-
-    const deployments = JSON.parse(fs.readFileSync(location).toString());
 
     const hndContract = <ERC20>await ethers.getContractAt("ERC20", "0x10010078a54396F62c96dF8532dc2B4847d47ED3");
 
-    let filter = hndContract.filters.Transfer(null, deployments.Treasury, null);
+    let filter = hndContract.filters.Transfer(null, treasury, null);
 
     let topUps = BigNumber.from(0);
     const blockLimits = BlockSettings.find(b => b.chain === network);
@@ -124,4 +134,4 @@ async function calculateTopUps(flavor: string, version: string): Promise<BigNumb
     return topUps;
 }
 
-calculateMissingTopUp("deployments", "v2", 1);
+calculateMissingTopUps("v2", 1);

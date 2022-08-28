@@ -9,7 +9,7 @@ const POOLS: any = [
 
 const HUNDRED_TOKEN = "0x10010054c81c8c01951E6A631dD228bB02d8D1e5";
 const ADMIN = "0x8286dC6dF929C4BfA4f6951caB4dAe2EC02d4D72"
-const flavor = "backstop-gauges-deployments"
+const flavor = "backstop-deployments"
 
 const network = hre.hardhatArguments.network;
 if (!network) {

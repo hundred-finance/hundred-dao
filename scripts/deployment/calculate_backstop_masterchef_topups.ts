@@ -11,15 +11,16 @@ const rewardStartTime = "1637955490";
 async function calculateMissingTopUp(futureDaysMargin: number) {
     const now = BigNumber.from(Date.now()).div(1000);
     const targetDate = now.add(BigNumber.from(futureDaysMargin).mul(24).mul(3600));
-    const rewards = BigNumber.from(hndPerSecond).mul(targetDate.sub(rewardStartTime));
-    const previousTopUps = await calculateTopUps();
+    console.log(`###### Processing masterchef topups on ${hre.hardhatArguments.network} network`);
 
+    const rewards = BigNumber.from(hndPerSecond).mul(targetDate.sub(rewardStartTime));
     console.log("set rewards:", +rewards.toString()/1e18);
 
+    const previousTopUps = await calculateTopUps();
     if (previousTopUps.lt(rewards)) {
-        console.log("Outstanding top up", +rewards.sub(previousTopUps).toString() / 1e18);
+        console.log("###### Outstanding top up", +rewards.sub(previousTopUps).toString() / 1e18);
     } else {
-        console.log("Treasury balance overflow", +previousTopUps.sub(rewards).toString() / 1e18);
+        console.log("###### Treasury balance overflow", +previousTopUps.sub(rewards).toString() / 1e18);
     }
 }
 

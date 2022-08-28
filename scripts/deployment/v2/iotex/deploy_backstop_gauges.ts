@@ -15,12 +15,12 @@ const network = hre.hardhatArguments.network;
 if (!network) {
     console.error("please provide valid network");
 } else {
-    deploy(HUNDRED_TOKEN, POOLS, network, ADMIN, "backstop-gauges-deployments")
+    deploy(HUNDRED_TOKEN, POOLS, network, ADMIN, "backstop-deployments")
         .then(() => process.exit(0))
         .catch(error => {
             console.error(error);
             process.exit(1);
         });
 
-    initGaugesAndTreasury(network, "backstop-gauges-deployments");
+    initGaugesAndTreasury(network, "backstop-deployments");
 }

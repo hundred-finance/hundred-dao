@@ -16,7 +16,7 @@ const network = hre.hardhatArguments.network;
 if (!network) {
     console.error("please provide valid network");
 } else {
-    deploy(HUNDRED_TOKEN, POOLS, network, ADMIN, "deployments-backstop", LAYER_ZERO_ENDPOINT)
+    deploy(HUNDRED_TOKEN, POOLS, network, ADMIN, "backstop-deployments", LAYER_ZERO_ENDPOINT)
         .then(() => process.exit(0))
         .catch(error => {
             console.error(error);
