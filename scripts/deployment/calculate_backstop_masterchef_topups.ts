@@ -11,16 +11,16 @@ const rewardStartTime = "1637955490";
 async function calculateMissingTopUp(futureDaysMargin: number) {
     const now = BigNumber.from(Date.now()).div(1000);
     const targetDate = now.add(BigNumber.from(futureDaysMargin).mul(24).mul(3600));
-    console.log(`###### Processing masterchef topups on ${hre.hardhatArguments.network} network`);
+    // console.log(`###### Processing masterchef topups on ${hre.hardhatArguments.network} network`);
 
     const rewards = BigNumber.from(hndPerSecond).mul(targetDate.sub(rewardStartTime));
-    console.log("set rewards:", +rewards.toString()/1e18);
+    // console.log("set rewards:", +rewards.toString()/1e18);
 
     const previousTopUps = await calculateTopUps();
     if (previousTopUps.lt(rewards)) {
-        console.log("###### Outstanding top up", +rewards.sub(previousTopUps).toString() / 1e18);
+        console.log("###### Outstanding top up", +rewards.sub(previousTopUps).toString() / 1e18, `to master chef ${masterChef} on arbitrum`);
     } else {
-        console.log("###### Treasury balance overflow", +previousTopUps.sub(rewards).toString() / 1e18);
+        // console.log("###### Treasury balance overflow", +previousTopUps.sub(rewards).toString() / 1e18);
     }
 }
 
@@ -51,8 +51,8 @@ async function calculateTopUps(): Promise<BigNumber> {
     }
 
     const currentBlock = await ethers.provider.getBlockNumber();
-    console.log("Scanning transfer events in block range", blockStart, currentBlock);
-    console.log("This may take a while... :(");
+    // console.log("Scanning transfer events in block range", blockStart, currentBlock);
+    // console.log("This may take a while... :(");
 
     let blockEnd = Math.min(currentBlock, blockStart + 100000);
     while(blockStart < blockEnd) {
@@ -67,7 +67,7 @@ async function calculateTopUps(): Promise<BigNumber> {
             });
 
             const topUp = events.map(event => event.args.value).reduce((a, b) => a.add(b));
-            console.log("Topup found in block range", blockStart, blockEnd, +topUp.toString() / 1e18);
+            // console.log("Topup found in block range", blockStart, blockEnd, +topUp.toString() / 1e18);
             topUps = topUps.add(topUp);
 
         }
@@ -78,7 +78,7 @@ async function calculateTopUps(): Promise<BigNumber> {
         fs.writeFileSync(historyLocation, JSON.stringify(previousTopups, null, 4));
     }
 
-    console.log("Total treasury top up", +topUps.toString()/1e18);
+    // console.log("Total treasury top up", +topUps.toString()/1e18);
 
     return topUps;
 }

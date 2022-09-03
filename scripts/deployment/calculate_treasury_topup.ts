@@ -25,18 +25,18 @@ async function calculateMissingFlavorTopUp(flavor: string, version: string, futu
     try {
         const deployments = JSON.parse(fs.readFileSync(location).toString());
 
-        console.log(`###### Processing flavor: ${flavor} on ${network} network`);
+        // console.log(`###### Processing flavor: ${flavor} on ${network} network`);
 
         const rewards = await calculateRewards(flavor, deployments.RewardPolicyMaker, futureEpochsMargin);
         const previousTopUps = await calculateTopUps(flavor, deployments.Treasury);
 
         if (previousTopUps.lt(rewards)) {
-            console.log("###### Outstanding top up", +rewards.sub(previousTopUps).toString() / 1e18);
+            console.log("###### Outstanding top up", +rewards.sub(previousTopUps).toString() / 1e18, `for gauge treasury ${deployments.Treasury} on network ${network}`);
         } else {
-            console.log("###### Treasury balance overflow", +previousTopUps.sub(rewards).toString() / 1e18);
+            // console.log("###### Treasury balance overflow", +previousTopUps.sub(rewards).toString() / 1e18);
         }
     } catch (e) {
-        console.log(`###### Flavor: ${flavor} not deployed on ${network} network`);
+        // console.log(`###### Flavor: ${flavor} not deployed on ${network} network`);
     }
 }
 
@@ -45,7 +45,7 @@ async function calculateRewards(flavor: string, rewardPolicyMaker: string, futur
     const currenEpoch = await rewardContract.current_epoch();
     let epoch = -1;
 
-    console.log("Current epoch", currenEpoch.toString())
+    // console.log("Current epoch", currenEpoch.toString())
 
     let epochRewards = BigNumber.from(0);
     let totalRewards = BigNumber.from(0);
@@ -56,7 +56,7 @@ async function calculateRewards(flavor: string, rewardPolicyMaker: string, futur
     }
 
     if (epochRewards.gt(0)) {
-        console.log("First epoch with non 0 rewards", epoch);
+        // console.log("First epoch with non 0 rewards", epoch);
 
         while (currenEpoch.add(futureEpochsMargin + 1).gt(epoch)) {
             totalRewards = totalRewards.add(epochRewards);
@@ -65,10 +65,10 @@ async function calculateRewards(flavor: string, rewardPolicyMaker: string, futur
             epoch++;
         }
 
-        console.log("Last epoch with non 0 rewards", epoch-1);
-        console.log("Total defined HND rewards", +totalRewards.toString() / 1e18);
+        // console.log("Last epoch with non 0 rewards", epoch-1);
+        // console.log("Total defined HND rewards", +totalRewards.toString() / 1e18);
     } else {
-        console.log("No rewards are set");
+        // console.log("No rewards are set");
     }
 
     return totalRewards;
@@ -101,8 +101,8 @@ async function calculateTopUps(flavor: string, treasury: string): Promise<BigNum
         }
 
         const currentBlock = await ethers.provider.getBlockNumber();
-        console.log("Scanning transfer events in block range", blockStart, currentBlock);
-        console.log("This may take a while... :(");
+        // console.log("Scanning transfer events in block range", blockStart, currentBlock);
+        // console.log("This may take a while... :(");
 
         let blockEnd = Math.min(currentBlock, blockStart + blockLimits.step);
         while(blockStart < blockEnd) {
@@ -129,7 +129,7 @@ async function calculateTopUps(flavor: string, treasury: string): Promise<BigNum
         }
     }
 
-    console.log("Total treasury top up", +topUps.toString()/1e18);
+    // console.log("Total treasury top up", +topUps.toString()/1e18);
 
     return topUps;
 }
