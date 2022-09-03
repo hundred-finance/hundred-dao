@@ -35,6 +35,7 @@ const config: HardhatUserConfig = {
     arbitrum: {
       url: `https://arb-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_ARBITRUM_API_KEY}`,
       accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
+      gas: 3626900
     },
     fantom: {
       url: `https://rpc.ftm.tools/`,

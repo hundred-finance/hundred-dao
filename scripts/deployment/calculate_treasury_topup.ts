@@ -25,18 +25,21 @@ async function calculateMissingFlavorTopUp(flavor: string, version: string, futu
     try {
         const deployments = JSON.parse(fs.readFileSync(location).toString());
 
-        // console.log(`###### Processing flavor: ${flavor} on ${network} network`);
+        console.log(`------ Processing flavor: ${flavor} on ${network} network`);
 
         const rewards = await calculateRewards(flavor, deployments.RewardPolicyMaker, futureEpochsMargin);
-        const previousTopUps = await calculateTopUps(flavor, deployments.Treasury);
+        if (rewards.gt(0)) {
+            const previousTopUps = await calculateTopUps(flavor, deployments.Treasury);
 
-        if (previousTopUps.lt(rewards)) {
-            console.log("###### Outstanding top up", +rewards.sub(previousTopUps).toString() / 1e18, `for gauge treasury ${deployments.Treasury} on network ${network}`);
-        } else {
-            // console.log("###### Treasury balance overflow", +previousTopUps.sub(rewards).toString() / 1e18);
+            if (previousTopUps.lt(rewards)) {
+                console.log("######### Outstanding top up", +rewards.sub(previousTopUps).toString() / 1e18, `for gauge treasury ${deployments.Treasury}`);
+            } else {
+                console.log("------ Treasury balance overflow", +previousTopUps.sub(rewards).toString() / 1e18);
+            }
         }
     } catch (e) {
-        // console.log(`###### Flavor: ${flavor} not deployed on ${network} network`);
+        // console.log("error", e);
+        // console.log(`------ Flavor: ${flavor} not deployed on ${network} network`);
     }
 }
 
@@ -44,6 +47,8 @@ async function calculateRewards(flavor: string, rewardPolicyMaker: string, futur
     const rewardContract = <RewardPolicyMaker>await ethers.getContractAt("RewardPolicyMaker", rewardPolicyMaker);
     const currenEpoch = await rewardContract.current_epoch();
     let epoch = -1;
+    let lastEpochWithNonZeroRewards = -1;
+    let firstEpochWithNonZeroRewards = -1;
 
     // console.log("Current epoch", currenEpoch.toString())
 
@@ -55,21 +60,32 @@ async function calculateRewards(flavor: string, rewardPolicyMaker: string, futur
         epochRewards = await rewardContract.rewards(epoch);
     }
 
+    firstEpochWithNonZeroRewards = epoch;
+
     if (epochRewards.gt(0)) {
-        // console.log("First epoch with non 0 rewards", epoch);
+        // console.log(`First epoch with non 0 rewards ${firstEpochWithNonZeroRewards}`);
 
         while (currenEpoch.add(futureEpochsMargin + 1).gt(epoch)) {
             totalRewards = totalRewards.add(epochRewards);
-            epochRewards = await rewardContract.rewards(epoch);
 
             epoch++;
+            epochRewards = await rewardContract.rewards(epoch);
+
+            if (epochRewards.gt(0)) {
+                lastEpochWithNonZeroRewards = epoch;
+            }
         }
 
-        // console.log("Last epoch with non 0 rewards", epoch-1);
-        // console.log("Total defined HND rewards", +totalRewards.toString() / 1e18);
-    } else {
-        // console.log("No rewards are set");
+        const lastEpochRewards = await rewardContract.rewards(lastEpochWithNonZeroRewards);
+        // console.log(`Last epoch with non 0 rewards ${lastEpochWithNonZeroRewards} with rewards ${+lastEpochRewards.toString() / 1e18} HND`);
     }
+
+    if (totalRewards.gt(0) && lastEpochWithNonZeroRewards === currenEpoch.toNumber()) {
+        const lastEpochRewards = await rewardContract.rewards(currenEpoch);
+        console.log(`######### Set rewards for next epoch ${currenEpoch.toNumber()+1} (current ${+lastEpochRewards.toString() / 1e18} HND), contract: ${rewardPolicyMaker}`)
+    }
+
+    // console.log("Total defined HND rewards", +totalRewards.toString() / 1e18);
 
     return totalRewards;
 }
@@ -117,7 +133,7 @@ async function calculateTopUps(flavor: string, treasury: string): Promise<BigNum
                 });
 
                 const topUp = events.map(event => event.args.value).reduce((a, b) => a.add(b));
-                console.log("Topup found in block range", blockStart, blockEnd, +topUp.toString() / 1e18);
+                // console.log("Topup found in block range", blockStart, blockEnd, +topUp.toString() / 1e18);
                 topUps = topUps.add(topUp);
 
             }
