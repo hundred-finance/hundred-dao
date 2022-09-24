@@ -24,6 +24,10 @@ const config: HardhatUserConfig = {
         blockNumber: parseInt(<string>process.env.ETH_MAINNET_BLOCK_NUMBER),
       }
     },
+    ethereum: {
+      url: `https://eth-mainnet.alchemyapi.io/v2/${process.env.ALCHEMY_MAINNET_API_KEY}`,
+      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
+    },
     kovan: {
       url: `https://eth-kovan.alchemyapi.io/v2/${process.env.ALCHEMY_KOVAN_API_KEY}`,
       accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
@@ -50,7 +54,7 @@ const config: HardhatUserConfig = {
       accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
     },
     optimism: {
-      url: `https://mainnet.optimism.io`,
+      url: `https://opt-mainnet.g.alchemy.com/v2/${process.env.ALCHEMY_OPTIMISM_API_KEY}`,
       accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
     },
     gnosis: {

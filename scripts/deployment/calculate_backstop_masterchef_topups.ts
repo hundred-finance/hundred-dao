@@ -83,4 +83,4 @@ async function calculateTopUps(): Promise<BigNumber> {
     return topUps;
 }
 
-calculateMissingTopUp(7);
+calculateMissingTopUp(7 * 10);

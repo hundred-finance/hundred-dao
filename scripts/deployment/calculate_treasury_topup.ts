@@ -117,8 +117,6 @@ async function calculateTopUps(flavor: string, treasury: string): Promise<BigNum
         }
 
         const currentBlock = await ethers.provider.getBlockNumber();
-        // console.log("Scanning transfer events in block range", blockStart, currentBlock);
-        // console.log("This may take a while... :(");
 
         let blockEnd = Math.min(currentBlock, blockStart + blockLimits.step);
         while(blockStart < blockEnd) {
@@ -138,7 +136,7 @@ async function calculateTopUps(flavor: string, treasury: string): Promise<BigNum
 
             }
             blockStart += blockLimits.step
-            blockEnd = Math.min(await ethers.provider.getBlockNumber(), blockStart + blockLimits.step);
+            blockEnd = Math.min(currentBlock, blockStart + blockLimits.step);
 
             previousTopups.latestBlockNumber = blockEnd;
             fs.writeFileSync(historyLocation, JSON.stringify(previousTopups, null, 4));
@@ -150,4 +148,4 @@ async function calculateTopUps(flavor: string, treasury: string): Promise<BigNum
     return topUps;
 }
 
-calculateMissingTopUps("v2", 1);
+calculateMissingTopUps("v2", 10);
