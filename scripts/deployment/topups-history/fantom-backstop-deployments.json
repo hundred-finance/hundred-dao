@@ -23,7 +23,11 @@
         {
             "blockNumber": 47274196,
             "value": "8000000000000000000000"
+        },
+        {
+            "blockNumber": 47691862,
+            "value": "80000000000000000000000"
         }
     ],
-    "latestBlockNumber": 47649800
+    "latestBlockNumber": 47707064
 }
