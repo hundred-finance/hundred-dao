@@ -15,6 +15,10 @@
         {
             "id": "hSUSD",
             "address": "0x73280c390dA5c6fe05ad2d1e6837E8E8c05E4b32"
+        },
+        {
+            "id": "hFRAX",
+            "address": "0x198618d2aa6cBC89Ea24550fE896D4afa28CD635"
         }
     ],
     "SmartWalletChecker": "0x1747D329CB37e0A0f387f24065aDdbc60eAB69DD",
