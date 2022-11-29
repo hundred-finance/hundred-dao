@@ -50,7 +50,7 @@ async function calculateRewards(flavor: string, rewardPolicyMaker: string, futur
     let lastEpochWithNonZeroRewards = -1;
     let firstEpochWithNonZeroRewards = -1;
 
-    // console.log("Current epoch", currenEpoch.toString())
+    console.log("Current epoch", currenEpoch.toString())
 
     let epochRewards = BigNumber.from(0);
     let totalRewards = BigNumber.from(0);
@@ -77,7 +77,7 @@ async function calculateRewards(flavor: string, rewardPolicyMaker: string, futur
         }
 
         const lastEpochRewards = await rewardContract.rewards(lastEpochWithNonZeroRewards);
-        // console.log(`Last epoch with non 0 rewards ${lastEpochWithNonZeroRewards} with rewards ${+lastEpochRewards.toString() / 1e18} HND`);
+        console.log(`Last epoch with non 0 rewards ${lastEpochWithNonZeroRewards} with rewards ${+lastEpochRewards.toString() / 1e18} HND`);
     }
 
     if (totalRewards.gt(0) && lastEpochWithNonZeroRewards === currenEpoch.toNumber()) {

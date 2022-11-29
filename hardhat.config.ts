@@ -76,6 +76,10 @@ const config: HardhatUserConfig = {
     meter: {
       url: `https://rpc.meter.io`,
       accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
+    },
+    bnb: {
+      url: "https://bsc-dataseed1.binance.org",
+      accounts: [`0x${process.env.DEV_PRIVATE_KEY}`],
     }
   },
   etherscan: {
