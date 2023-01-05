@@ -120,6 +120,11 @@ def token(ERC20TOKEN, accounts):
 
 
 @pytest.fixture(scope="module")
+def token2(ERC20TOKEN, accounts):
+    yield ERC20TOKEN.deploy("Test Token 2", "TT2", 18, 0, {"from": accounts[0]})
+
+
+@pytest.fixture(scope="module")
 def smart_wallet_checker(SmartWalletChecker, accounts):
     yield SmartWalletChecker.deploy(accounts[0], {"from": accounts[0]})
 
@@ -145,21 +150,26 @@ def gauge_controller(GaugeControllerV2, accounts, mirrored_voting_escrow):
     yield GaugeControllerV2.deploy(mirrored_voting_escrow, accounts[0], {"from": accounts[0]})
 
 @pytest.fixture(scope="module")
-def minter(Minter, Treasury, token, accounts, gauge_controller):
-    treasury = Treasury.deploy(token, accounts[0], {"from": accounts[0]})
+def treasury(TreasuryV2, accounts):
+    yield TreasuryV2.deploy(accounts[0], {"from": accounts[0]})
+
+@pytest.fixture(scope="module")
+def minter(MinterV2, treasury, token, accounts, gauge_controller):
     token.mint(treasury, 100_000_000 * 10 ** 18, {"from": accounts[0]})
 
-    minter = Minter.deploy(treasury, gauge_controller, {"from": accounts[0]})
+    minter = MinterV2.deploy(treasury, gauge_controller, {"from": accounts[0]})
     treasury.set_minter(minter)
+
+    minter.add_token(token)
 
     yield minter
 
 
 @pytest.fixture(scope="module")
-def reward_policy_maker(RewardPolicyMaker, accounts):
+def reward_policy_maker(RewardPolicyMakerV2, token, accounts):
     reward = 100 * 10 ** 18
-    contract = RewardPolicyMaker.deploy(604800, accounts[0], {"from": accounts[0]})
-    contract.set_rewards_starting_at(contract.current_epoch() + 1, [reward, reward, reward, reward, reward, reward, reward, reward, reward, reward])
+    contract = RewardPolicyMakerV2.deploy(604800, accounts[0], {"from": accounts[0]})
+    contract.set_rewards_starting_at(contract.current_epoch() + 1, token, [reward, reward, reward, reward, reward, reward, reward, reward, reward, reward])
     yield contract
 
 
@@ -186,14 +196,14 @@ def veboost_proxy(DelegationProxy, alice, veboost_delegation, mirrored_voting_es
 
 
 @pytest.fixture(scope="module")
-def gauge_v4_1(LiquidityGaugeV4_1, alice, mock_lp_token, minter, reward_policy_maker, veboost_proxy):
-    yield LiquidityGaugeV4_1.deploy(mock_lp_token, minter, alice, reward_policy_maker, veboost_proxy, 200, {"from": alice})
+def gauge_v5(LiquidityGaugeV5, alice, mock_lp_token, token, minter, reward_policy_maker, veboost_proxy):
+    yield LiquidityGaugeV5.deploy(mock_lp_token, minter, alice, reward_policy_maker, veboost_proxy, {"from": alice})
 
 
 @pytest.fixture(scope="module")
-def three_gauges(LiquidityGaugeV4_1, reward_policy_maker, accounts, mock_lp_token, minter, veboost_proxy):
+def three_gauges(LiquidityGaugeV5, reward_policy_maker, accounts, mock_lp_token, token, minter, veboost_proxy):
     contracts = [
-        LiquidityGaugeV4_1.deploy(mock_lp_token, minter, accounts[0], reward_policy_maker, veboost_proxy, 200, {"from": accounts[0]})
+        LiquidityGaugeV5.deploy(mock_lp_token, minter, accounts[0], reward_policy_maker, veboost_proxy, {"from": accounts[0]})
         for _ in range(3)
     ]
 

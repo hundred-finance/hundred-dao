@@ -41,11 +41,11 @@ def test_mint(accounts, chain, three_gauges, minter, token):
 
     chain.sleep(MONTH)
     minter.mint(three_gauges[0], {"from": accounts[1]})
-    expected = three_gauges[0].integrate_fraction(accounts[1])
+    expected = three_gauges[0].integrate_fraction(token, accounts[1])
 
     assert expected > 0
     assert token.balanceOf(accounts[1]) == expected
-    assert minter.minted(accounts[1], three_gauges[0]) == expected
+    assert minter.minted(accounts[1], three_gauges[0], token) == expected
 
 
 def test_mint_immediate(accounts, chain, three_gauges, minter, token):
@@ -57,7 +57,7 @@ def test_mint_immediate(accounts, chain, three_gauges, minter, token):
     balance = token.balanceOf(accounts[1])
 
     assert balance > 0
-    assert minter.minted(accounts[1], three_gauges[0]) == balance
+    assert minter.minted(accounts[1], three_gauges[0], token) == balance
 
 
 def test_mint_multiple_same_gauge(accounts, chain, three_gauges, minter, token):
@@ -69,12 +69,12 @@ def test_mint_multiple_same_gauge(accounts, chain, three_gauges, minter, token):
 
     chain.sleep(MONTH)
     minter.mint(three_gauges[0], {"from": accounts[1]})
-    expected = three_gauges[0].integrate_fraction(accounts[1])
+    expected = three_gauges[0].integrate_fraction(token, accounts[1])
     final_balance = token.balanceOf(accounts[1])
 
     assert final_balance > balance
     assert final_balance == expected
-    assert minter.minted(accounts[1], three_gauges[0]) == expected
+    assert minter.minted(accounts[1], three_gauges[0], token) == expected
 
 
 def test_mint_multiple_gauges(accounts, chain, three_gauges, minter, token):
@@ -89,8 +89,8 @@ def test_mint_multiple_gauges(accounts, chain, three_gauges, minter, token):
     total_minted = 0
     for i in range(3):
         gauge = three_gauges[i]
-        minted = minter.minted(accounts[1], gauge)
-        assert minted == gauge.integrate_fraction(accounts[1])
+        minted = minter.minted(accounts[1], gauge, token)
+        assert minted == gauge.integrate_fraction(token, accounts[1])
         total_minted += minted
 
     assert token.balanceOf(accounts[1]) == total_minted
@@ -124,7 +124,7 @@ def test_no_deposit(accounts, chain, three_gauges, minter, token):
     minter.mint(three_gauges[0], {"from": accounts[1]})
 
     assert token.balanceOf(accounts[1]) == 0
-    assert minter.minted(accounts[1], three_gauges[0]) == 0
+    assert minter.minted(accounts[1], three_gauges[0], token) == 0
 
 
 def test_mint_wrong_gauge(accounts, chain, three_gauges, minter, token):
@@ -134,11 +134,11 @@ def test_mint_wrong_gauge(accounts, chain, three_gauges, minter, token):
     minter.mint(three_gauges[1], {"from": accounts[1]})
 
     assert token.balanceOf(accounts[1]) == 0
-    assert minter.minted(accounts[1], three_gauges[0]) == 0
-    assert minter.minted(accounts[1], three_gauges[1]) == 0
+    assert minter.minted(accounts[1], three_gauges[0], token) == 0
+    assert minter.minted(accounts[1], three_gauges[1], token) == 0
 
 
-def test_mint_not_a_gauge(accounts, minter):
+def test_mint_not_a_gauge(accounts, minter, token):
     with brownie.reverts("dev: gauge is not added"):
         minter.mint(accounts[1], {"from": accounts[0]})
 
@@ -150,4 +150,33 @@ def test_mint_before_inflation_begins(accounts, chain, three_gauges, minter, tok
     minter.mint(three_gauges[0], {"from": accounts[1]})
 
     assert token.balanceOf(accounts[1]) == 0
-    assert minter.minted(accounts[1], three_gauges[0]) == 0
+    assert minter.minted(accounts[1], three_gauges[0], token) == 0
+
+
+def test_mint_with_two_reward_tokens(accounts, chain, three_gauges, minter, token, token2, reward_policy_maker, treasury):
+    reward = 10 * 10 ** 18
+
+    minter.add_token(token2)
+    token2.mint(treasury, 100_000_000 * 10 ** 18, {"from": accounts[0]})
+    reward_policy_maker.set_rewards_starting_at(
+        reward_policy_maker.current_epoch() + 1,
+        token2,
+        [reward, reward, reward, reward, reward, reward, reward, reward, reward, reward]
+    )
+
+    three_gauges[0].deposit(1e18, {"from": accounts[1]})
+
+    t0 = chain.time()
+    chain.sleep((t0 + WEEK) // WEEK * WEEK - t0 + 1)  # 1 second more than enacting the weights
+
+    minter.mint(three_gauges[0], {"from": accounts[1]})
+    balance = token.balanceOf(accounts[1])
+    balance2 = token2.balanceOf(accounts[1])
+
+    assert balance > 0
+    assert balance2 > 0
+    assert balance2 == balance / 10
+    assert minter.minted(accounts[1], three_gauges[0], token) == balance
+    assert minter.minted(accounts[1], three_gauges[0], token2) == balance2
+
+

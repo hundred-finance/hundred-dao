@@ -8,13 +8,13 @@ import {
     MirroredVotingEscrow__factory,
     MirroredVotingEscrow,
     GaugeControllerV2,
-    Minter__factory,
-    Minter,
-    RewardPolicyMaker__factory,
-    RewardPolicyMaker,
-    Treasury__factory,
-    Treasury,
-    LiquidityGaugeV41__factory,
+    MinterV2__factory,
+    MinterV2,
+    RewardPolicyMakerV2__factory,
+    RewardPolicyMakerV2,
+    TreasuryV2__factory,
+    TreasuryV2,
+    LiquidityGaugeV5__factory,
     VotingEscrowDelegationV2__factory,
     DelegationProxy,
     ERC20TOKEN__factory,
@@ -33,14 +33,14 @@ describe("End to End with One Chain Mirroring", function () {
     let hnd: ERC20TOKEN;
     let hndLpToken: ERC20TOKEN;
 
-    let treasuryFactory: Treasury__factory;
-    let treasury: Treasury;
+    let treasuryFactory: TreasuryV2__factory;
+    let treasury: TreasuryV2;
 
-    let minterFactory: Minter__factory;
-    let minter: Minter;
+    let minterFactory: MinterV2__factory;
+    let minter: MinterV2;
 
-    let rewardPolicyMakerFactory: RewardPolicyMaker__factory;
-    let rewardPolicyMaker: RewardPolicyMaker;
+    let rewardPolicyMakerFactory: RewardPolicyMakerV2__factory;
+    let rewardPolicyMaker: RewardPolicyMakerV2;
 
     let votingEscrowFactory: VotingEscrowV2__factory;
     let votingEscrow: VotingEscrowV2;
@@ -57,7 +57,7 @@ describe("End to End with One Chain Mirroring", function () {
     let votingEscrowDelegationFactory: VotingEscrowDelegationV2__factory;
     let votingEscrowDelegation: VotingEscrowDelegationV2;
 
-    let gaugeFactory: LiquidityGaugeV41__factory;
+    let gaugeFactory: LiquidityGaugeV5__factory;
 
     let smartWalletFactory: SmartWalletChecker__factory;
     let smartWalletChecker: SmartWalletChecker;
@@ -74,15 +74,15 @@ describe("End to End with One Chain Mirroring", function () {
             await ethers.getSigners();
 
         erc20Factory = <ERC20TOKEN__factory>await ethers.getContractFactory("ERC20TOKEN");
-        rewardPolicyMakerFactory = <RewardPolicyMaker__factory>await ethers.getContractFactory("RewardPolicyMaker");
-        treasuryFactory = <Treasury__factory>await ethers.getContractFactory("Treasury");
+        rewardPolicyMakerFactory = <RewardPolicyMakerV2__factory>await ethers.getContractFactory("RewardPolicyMakerV2");
+        treasuryFactory = <TreasuryV2__factory>await ethers.getContractFactory("TreasuryV2");
         votingEscrowFactory = <VotingEscrowV2__factory>await ethers.getContractFactory("VotingEscrowV2");
         mirroredVotingEscrowFactory = <MirroredVotingEscrow__factory>await ethers.getContractFactory("MirroredVotingEscrow");
         delegationProxyFactory = <DelegationProxy__factory>await ethers.getContractFactory("DelegationProxy");
         votingEscrowDelegationFactory = <VotingEscrowDelegationV2__factory>await ethers.getContractFactory("VotingEscrowDelegationV2");
         gaugeControllerFactory = <GaugeControllerV2__factory>await ethers.getContractFactory("GaugeControllerV2");
-        minterFactory = <Minter__factory>await ethers.getContractFactory("Minter");
-        gaugeFactory = <LiquidityGaugeV41__factory>await ethers.getContractFactory("LiquidityGaugeV4_1");
+        minterFactory = <MinterV2__factory>await ethers.getContractFactory("MinterV2");
+        gaugeFactory = <LiquidityGaugeV5__factory>await ethers.getContractFactory("LiquidityGaugeV5");
         smartWalletFactory = <SmartWalletChecker__factory>await ethers.getContractFactory("SmartWalletChecker");
 
         hnd = await erc20Factory.deploy("Hundred Finance", "HND", 18, 0);
@@ -92,7 +92,7 @@ describe("End to End with One Chain Mirroring", function () {
 
         smartWalletChecker = await smartWalletFactory.deploy(owner.address);
         lockCreator = await smartWalletFactory.deploy(owner.address);
-        treasury = await treasuryFactory.deploy(hnd.address, owner.address);
+        treasury = await treasuryFactory.deploy(owner.address);
         votingEscrow = await votingEscrowFactory.deploy(hnd.address, "Voting locked HND", "veHND", "1.0", owner.address, smartWalletChecker.address, lockCreator.address);
         mirroredVotingEscrow = await mirroredVotingEscrowFactory.deploy(owner.address, votingEscrow.address, "Mirroed Voting locked HND", "mveHND", "1.0");
         gaugeController = await gaugeControllerFactory.deploy(mirroredVotingEscrow.address, owner.address);
@@ -101,6 +101,7 @@ describe("End to End with One Chain Mirroring", function () {
         delegationProxy = await delegationProxyFactory.deploy(votingEscrowDelegation.address, owner.address, owner.address, mirroredVotingEscrow.address);
 
         await treasury.set_minter(minter.address);
+        await minter.add_token(hnd.address);
 
         await hnd.mint(treasury.address, ethers.utils.parseEther("10000"));
 
@@ -110,15 +111,15 @@ describe("End to End with One Chain Mirroring", function () {
 
         await mirroredVotingEscrow.set_mirror_whitelist(owner.address, true);
 
-        await rewardPolicyMaker.set_rewards_at(3, ethers.utils.parseEther("100"));
+        await rewardPolicyMaker.set_rewards_at(3, hnd.address, ethers.utils.parseEther("100"));
 
     });
 
     describe("Locked voting amount", function () {
         it("Should reflect on the amount of claimable HND per gauge when users vote on gauge weights", async function () {
 
-            let gauge1 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address, 200);
-            let gauge2 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address, 200);
+            let gauge1 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address);
+            let gauge2 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address);
 
             await gaugeController["add_type(string,uint256)"]("Liquidity", ethers.utils.parseEther("10"));
             await gaugeController["add_gauge(address,int128,uint256)"](gauge1.address, 0, 1);
@@ -148,7 +149,7 @@ describe("End to End with One Chain Mirroring", function () {
 
         it("Should boost user claimable HND within same gauge", async function () {
 
-            let gauge = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address, 200);
+            let gauge = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address);
 
             await gaugeController["add_type(string,uint256)"]("Liquidity", ethers.utils.parseEther("10"));
             await gaugeController["add_gauge(address,int128,uint256)"](gauge.address, 0, 1);
@@ -172,8 +173,8 @@ describe("End to End with One Chain Mirroring", function () {
         });
 
         it("gauge vote change should reflect on next epoch", async function () {
-            let gauge1 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address, 200);
-            let gauge2 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address, 200);
+            let gauge1 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address);
+            let gauge2 = await gaugeFactory.deploy(hndLpToken.address, minter.address, owner.address, rewardPolicyMaker.address, delegationProxy.address);
 
             await gaugeController["add_type(string,uint256)"]("Liquidity", ethers.utils.parseEther("10"));
             await gaugeController["add_gauge(address,int128,uint256)"](gauge1.address, 0, 1);
@@ -191,8 +192,8 @@ describe("End to End with One Chain Mirroring", function () {
             await gauge1.connect(alice)["deposit(uint256)"](ethers.utils.parseEther("10"));
             await gauge2.connect(bob)["deposit(uint256)"](ethers.utils.parseEther("10"));
 
-            await rewardPolicyMaker.set_rewards_at(4, ethers.utils.parseEther("100"));
-            await rewardPolicyMaker.set_rewards_at(6, ethers.utils.parseEther("100"));
+            await rewardPolicyMaker.set_rewards_at(4, hnd.address, ethers.utils.parseEther("100"));
+            await rewardPolicyMaker.set_rewards_at(6, hnd.address, ethers.utils.parseEther("100"));
 
             await ethers.provider.send("evm_increaseTime", [DAY * 7 * 3]);
             await ethers.provider.send("evm_mine", []);

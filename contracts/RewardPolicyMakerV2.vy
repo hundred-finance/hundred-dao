@@ -1,6 +1,6 @@
 # @version 0.2.15
 """
-@title HND DAO Token proxy
+@title HND DAO Token proxy v2
 @author Hundred Finanace
 @license MIT
 @notice configurable ERC20 with piecewise-linear mining supply.
@@ -20,7 +20,7 @@ first_epoch_time: public(uint256)
 
 epoch_length: public(uint256)
 
-rewards: public(uint256[100000000000000000000000000000])
+rewards: public(HashMap[address, uint256[100000000000000000000000000000]])
 
 
 @external
@@ -89,7 +89,7 @@ def epoch_start_time(_epoch: uint256) -> uint256:
 
 @external
 @view
-def rate_at(_timestamp: uint256) -> uint256:
+def rate_at(_timestamp: uint256, _token: address) -> uint256:
     """
     @notice give rewards emission rate for timestamp
     @return uint256 epoch rate
@@ -97,7 +97,7 @@ def rate_at(_timestamp: uint256) -> uint256:
     if _timestamp < self.first_epoch_time:
         return 0
 
-    return self.rewards[self._epoch_at(_timestamp)] / self.epoch_length
+    return self.rewards[_token][self._epoch_at(_timestamp)] / self.epoch_length
 
 
 @external
@@ -122,12 +122,12 @@ def future_epoch_time() -> uint256:
 
 @external
 @view
-def future_epoch_rate() -> uint256:
+def future_epoch_rate(_token: address) -> uint256:
     """
     @notice Get reward rate of the next mining epoch
     @return reward rate
     """
-    return self.rewards[self._current_epoch() + 1] / self.epoch_length
+    return self.rewards[_token][self._current_epoch() + 1] / self.epoch_length
 
 
 @external
@@ -142,18 +142,18 @@ def set_admin(_admin: address):
 
 
 @external
-def set_rewards_at(_epoch: uint256, _reward: uint256):
+def set_rewards_at(_epoch: uint256, _token: address, _reward: uint256):
     """
     @notice set future epoch reward
     """
     assert msg.sender == self.admin  # dev: admin only
     assert _epoch > self._current_epoch()  # dev: can only modify future rates
 
-    self.rewards[_epoch] = _reward
+    self.rewards[_token][_epoch] = _reward
 
 
 @external
-def set_rewards_starting_at(_epoch: uint256, _rewards: uint256[10]):
+def set_rewards_starting_at(_epoch: uint256, _token: address, _rewards: uint256[10]):
     """
     @notice set future rewards starting at epoch _epoch
     """
@@ -161,4 +161,4 @@ def set_rewards_starting_at(_epoch: uint256, _rewards: uint256[10]):
     assert _epoch > self._current_epoch()  # dev: can only modify future rewards
 
     for index in range(10):
-        self.rewards[_epoch + index] = _rewards[index]
+        self.rewards[_token][_epoch + index] = _rewards[index]
