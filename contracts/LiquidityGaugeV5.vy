@@ -46,6 +46,10 @@ event Withdraw:
     provider: indexed(address)
     value: uint256
 
+event EmergencyWithdraw:
+    provider: indexed(address)
+    value: uint256
+
 event UpdateLiquidityLimit:
     user: address
     original_balance: uint256
@@ -191,6 +195,9 @@ def _checkpoint_token(addr: address, token: address, period: int128, period_time
     """
     @notice Checkpoint for a user
     @param addr User address
+    @param token Reward token
+    @param period Reward period id
+    @param period_time Reward period timestamp
     """
     _integrate_inv_supply: uint256 = self.integrate_inv_supply[token][period]
 
@@ -301,10 +308,9 @@ def kick(addr: address):
 
 @external
 @nonreentrant('lock')
-def deposit(_value: uint256, _addr: address = msg.sender, _claim_rewards: bool = False):
+def deposit(_value: uint256, _addr: address = msg.sender):
     """
     @notice Deposit `_value` LP tokens
-    @dev Depositting also claims pending reward tokens
     @param _value Number of tokens to deposit
     @param _addr Address to deposit for
     """
@@ -329,10 +335,9 @@ def deposit(_value: uint256, _addr: address = msg.sender, _claim_rewards: bool =
 
 @external
 @nonreentrant('lock')
-def withdraw(_value: uint256, _claim_rewards: bool = False):
+def withdraw(_value: uint256):
     """
     @notice Withdraw `_value` LP tokens
-    @dev Withdrawing also claims pending reward tokens
     @param _value Number of tokens to withdraw
     """
     self._checkpoint(msg.sender)
@@ -351,6 +356,29 @@ def withdraw(_value: uint256, _claim_rewards: bool = False):
 
     log Withdraw(msg.sender, _value)
     log Transfer(msg.sender, ZERO_ADDRESS, _value)
+
+
+@external
+@nonreentrant('lock')
+def emergency_withdraw():
+    """
+    @notice Withdraw all user LP tokens
+    """
+    total_supply: uint256 = self.totalSupply
+    user_balance: uint256 = self.balanceOf[msg.sender]
+
+    assert user_balance > 0  # nothing to withdraw
+
+    total_supply -= user_balance
+    self.balanceOf[msg.sender] = 0
+    self.totalSupply = total_supply
+
+    self._update_liquidity_limit(msg.sender, 0, total_supply)
+
+    ERC20(self.lp_token).transfer(msg.sender, user_balance)
+
+    log EmergencyWithdraw(msg.sender, user_balance)
+    log Transfer(msg.sender, ZERO_ADDRESS, user_balance)
 
 
 @internal
