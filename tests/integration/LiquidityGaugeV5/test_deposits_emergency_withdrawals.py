@@ -5,7 +5,7 @@ from brownie.test import strategy
 
 class StateMachine:
     """
-    Validate that deposits and withdrawals work correctly over time.
+    Validate that deposits and emergency withdrawals work correctly over time.
 
     Strategies
     ----------
@@ -43,22 +43,23 @@ class StateMachine:
 
         assert self.token.balanceOf(st_account) == balance - st_value
 
-    def rule_withdraw(self, st_account, st_value):
+    def rule_emergency_withdraw(self, st_account):
         """
         Attempt to withdraw from the `LiquidityGauge` contract.
         """
-        if self.balances[st_account] < st_value:
-            # fail path - insufficient balance
+        if self.balances[st_account] == 0:
+            # fail path - zero balance
             with brownie.reverts():
-                self.gauge_v5.withdraw(st_value, {"from": st_account})
+                self.gauge_v5.emergency_withdraw({"from": st_account})
             return
 
         # success path
         balance = self.token.balanceOf(st_account)
-        self.gauge_v5.withdraw(st_value, {"from": st_account})
-        self.balances[st_account] = 0
+        gauge_balance = self.gauge_v5.balanceOf(st_account)
+        self.gauge_v5.emergency_withdraw({"from": st_account})
+        self.balances[st_account] -= gauge_balance
 
-        assert self.token.balanceOf(st_account) == balance + st_value
+        assert self.token.balanceOf(st_account) == balance + gauge_balance
 
     def rule_advance_time(self, st_time):
         """
@@ -91,7 +92,8 @@ class StateMachine:
         """
         for account, balance in ((k, v) for k, v in self.balances.items() if v):
             initial = self.token.balanceOf(account)
-            self.gauge_v5.withdraw(balance, {"from": account})
+            if balance > 0:
+                self.gauge_v5.emergency_withdraw({"from": account})
 
             assert self.token.balanceOf(account) == initial + balance
 

@@ -208,8 +208,6 @@ def _checkpoint_token(addr: address, token: address, period: int128, period_time
         _working_supply: uint256 = self.working_supply
         _controller: address = self.controller
 
-        Controller(_controller).checkpoint_gauge(self)
-
         prev_week_time: uint256 = period_time
 
         for i in range(500):
@@ -251,6 +249,10 @@ def _checkpoint(addr: address):
     if _period_time == 0:
         _epoch: uint256 = RewardPolicyMaker(self.reward_policy_maker).epoch_at(block.timestamp)
         _period_time = RewardPolicyMaker(self.reward_policy_maker).epoch_start_time(_epoch)
+
+    if block.timestamp > _period_time and not self.is_killed:
+        _controller: address = self.controller
+        Controller(_controller).checkpoint_gauge(self)
 
     for i in range(MAX_TOKENS):
         if i == _token_count:

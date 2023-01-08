@@ -24,7 +24,7 @@ import {
     MirrorGate__factory,
     MirrorGate,
     MultiChainMirrorGateV2__factory,
-    MultiChainMirrorGateV2, VeGNO__factory
+    MultiChainMirrorGateV2
 } from "../../../typechain";
 
 import * as VotingEscrowV1Artifact from "../../../artifacts/contracts/VotingEscrow.vy/VotingEscrow.json";
@@ -36,6 +36,7 @@ import path from "path";
 
 export async function deploy(
     hnd: string,
+    rewardTokens: string[],
     pools: any[],
     network: string,
     admin: string,
@@ -115,25 +116,25 @@ export async function deploy(
         deployments.LockCreatorChecker = await votingEscrow.lock_creator_checker();
     }
 
-    if (!deployments.Treasury) {
+    if (!deployments.TreasuryV2) {
         const treasuryFactory: TreasuryV2__factory =
-            <TreasuryV2__factory>await ethers.getContractFactory("Treasury");
+            <TreasuryV2__factory>await ethers.getContractFactory("TreasuryV2");
 
-        const treasury: TreasuryV2 = await treasuryFactory.deploy(admin);
+        const treasury: TreasuryV2 = await treasuryFactory.deploy(deployer.address);
         await treasury.deployed();
 
-        deployments.Treasury = treasury.address;
+        deployments.TreasuryV2 = treasury.address;
         console.log("Deployed Treasury: ", treasury.address);
     }
 
-    if (!deployments.RewardPolicyMaker) {
+    if (!deployments.RewardPolicyMakerV2) {
         const rewardPolicyMakerFactory: RewardPolicyMakerV2__factory =
             <RewardPolicyMakerV2__factory> await ethers.getContractFactory("RewardPolicyMakerV2");
 
         const rewardPolicyMaker: RewardPolicyMakerV2 = await rewardPolicyMakerFactory.deploy(86400 * 7, admin);
         await rewardPolicyMaker.deployed();
 
-        deployments.RewardPolicyMaker = rewardPolicyMaker.address;
+        deployments.RewardPolicyMakerV2 = rewardPolicyMaker.address;
         console.log("Deployed rewardPolicyMaker: ", rewardPolicyMaker.address);
     }
 
@@ -141,25 +142,36 @@ export async function deploy(
         const gaugeControllerFactory: GaugeControllerV2__factory =
             <GaugeControllerV2__factory>await ethers.getContractFactory("GaugeControllerV2");
 
-        const gaugeController: GaugeControllerV2 = await gaugeControllerFactory.deploy(deployments.MirroredVotingEscrow, admin);
+        const gaugeController: GaugeControllerV2 = await gaugeControllerFactory.deploy(deployments.MirroredVotingEscrow, deployer.address);
         await gaugeController.deployed();
 
         deployments.GaugeControllerV2 = gaugeController.address;
         console.log("Deployed gauge controller: ", gaugeController.address);
     }
 
-    if (!deployments.Minter) {
+    if (!deployments.MinterV2) {
+        const treasury: TreasuryV2 = <TreasuryV2>await ethers.getContractAt('TreasuryV2', deployments.TreasuryV2);
         const minterFactory: MinterV2__factory = <MinterV2__factory>await ethers.getContractFactory("MinterV2");
-        const minter: MinterV2 = await minterFactory.deploy(deployments.Treasury, deployments.GaugeControllerV2);
+        const minter: MinterV2 = await minterFactory.deploy(deployments.TreasuryV2, deployments.GaugeControllerV2);
         await minter.deployed();
 
         let tx = await minter.add_token(hnd);
+        await tx.wait();
+        for (let rToken of rewardTokens) {
+            tx = await minter.add_token(rToken);
+            await tx.wait();
+        }
+
+        tx = await treasury.set_minter(minter.address);
+        await tx.wait();
+
+        tx = await treasury.set_admin(admin);
         await tx.wait();
 
         tx = await minter.set_admin(admin);
         await tx.wait();
 
-        deployments.Minter = minter.address;
+        deployments.MinterV2 = minter.address;
         console.log("Deployed minter: ", minter.address);
     }
 
@@ -193,17 +205,42 @@ export async function deploy(
     const gaugeV5Factory: LiquidityGaugeV5__factory =
         <LiquidityGaugeV5__factory>await ethers.getContractFactory("LiquidityGaugeV5");
 
+    const controller: GaugeControllerV2 =
+        <GaugeControllerV2>await ethers.getContractAt("GaugeControllerV2", deployments.GaugeControllerV2);
+
+    const gaugeTypesCount = await controller.n_gauge_types();
+    if (gaugeTypesCount.eq(0)) {
+        let tx = await controller["add_type(string,uint256)"]("Stables", 100);
+        await tx.wait();
+    }
+
+    const controllerAdmin = await controller.admin();
+
     for (let i = 0; i < pools.length; i++) {
         const pool = pools[i];
         const isAlreadyDeployed = deployments.Gauges.find(g => g.id === pool.id) !== undefined;
         if (!isAlreadyDeployed) {
             const gauge: LiquidityGaugeV5 = await gaugeV5Factory.deploy(
-                pool.token, deployments.Minter, admin, deployments.RewardPolicyMaker, deployments.DelegationProxy
+                pool.token, deployments.MinterV2, admin, deployments.RewardPolicyMakerV2, deployments.DelegationProxy
             );
             await gauge.deployed();
+
+            if (controllerAdmin.toLowerCase() === deployer.address.toLowerCase()) {
+                let tx = await controller["add_gauge(address,int128,uint256)"](gauge.address, 0, pool.weight);
+                await tx.wait();
+            }
             deployments.Gauges.push({ id: pool.id, address: gauge.address });
             console.log("Deployed gauge: ", pool.id, gauge.address);
         }
+    }
+
+
+    if (controllerAdmin.toLowerCase() !== admin.toLowerCase()) {
+        let tx = await controller.commit_transfer_ownership(admin);
+        await tx.wait();
+
+        tx = await controller.apply_transfer_ownership();
+        await tx.wait();
     }
 
     if (layerZeroEndpoint != "" && !deployments.MirrorGate) {
@@ -315,11 +352,11 @@ export interface Deployment {
     VotingEscrowV1?: string
     MirroredVotingEscrow?: string
     GaugeControllerV2?: string
-    Treasury?: string
-    RewardPolicyMaker?: string
+    TreasuryV2?: string
+    RewardPolicyMakerV2?: string
     SmartWalletChecker?: string
     LockCreatorChecker?: string
-    Minter?: string
+    MinterV2?: string
     DelegationProxy?: string
     VotingEscrowDelegationV2?: string
     MirrorGate?: string
